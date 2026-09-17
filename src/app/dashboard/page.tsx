@@ -895,29 +895,37 @@ export default function DashboardPage() {
 
         {/* MODAL 1: USER PROFILE DETAILS MODAL */}
         {showProfileModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '16px'
-          }}>
-            <div style={{
-              backgroundColor: '#111726',
-              border: '1px solid #00e5ff',
-              borderRadius: '20px',
-              maxWidth: '460px',
-              width: '100%',
-              padding: '24px',
-              boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
-            }}>
+          <div 
+            onClick={() => setShowProfileModal(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 999999,
+              padding: '16px',
+              cursor: 'pointer'
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#111726',
+                border: '1px solid #00e5ff',
+                borderRadius: '20px',
+                maxWidth: '460px',
+                width: '100%',
+                padding: '24px',
+                cursor: 'default',
+                boxShadow: '0 20px 50px rgba(0, 229, 255, 0.25)'
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <User size={20} color="#00e5ff" />
@@ -1033,31 +1041,39 @@ export default function DashboardPage() {
 
         {/* MODAL 2: STEP-BY-STEP PLATFORM DIRECTIONS & TUTORIAL */}
         {showGuideModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '16px'
-          }}>
-            <div style={{
-              backgroundColor: '#111726',
-              border: '1px solid #00e5ff',
-              borderRadius: '20px',
-              maxWidth: '520px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '24px',
-              boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
-            }}>
+          <div 
+            onClick={() => setShowGuideModal(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 999999,
+              padding: '16px',
+              cursor: 'pointer'
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#111726',
+                border: '1px solid #00e5ff',
+                borderRadius: '20px',
+                maxWidth: '520px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                padding: '24px',
+                cursor: 'default',
+                boxShadow: '0 20px 50px rgba(0, 229, 255, 0.25)'
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Compass size={22} color="#00e5ff" />
