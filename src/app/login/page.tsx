@@ -8,12 +8,13 @@ import { Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Mail, ShieldCheck } from 'l
 
 export default function LoginPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState('tradinghath');
-  const [password, setPassword] = useState('22NE1A04E1@093');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [saveLogin, setSaveLogin] = useState(true);
+  const [saveLogin, setSaveLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [signupUsername, setSignupUsername] = useState('');
