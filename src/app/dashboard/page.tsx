@@ -25,7 +25,11 @@ import {
   Mail,
   Phone,
   ShieldAlert,
-  Settings
+  Settings,
+  Maximize2,
+  Minimize2,
+  Eye,
+  X
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
@@ -35,6 +39,8 @@ export default function DashboardPage() {
   const [languageFilter, setLanguageFilter] = useState<'all' | 'english' | 'telugu'>('all');
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
   const [selectedChart, setSelectedChart] = useState<PostItem | null>(null);
+  const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
+  const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isPro, setIsPro] = useState(false);
@@ -657,10 +663,11 @@ export default function DashboardPage() {
             {selectedChart && (
               <div style={{
                 backgroundColor: '#121826',
-                border: '1px solid rgba(0, 229, 255, 0.2)',
+                border: '1px solid rgba(0, 229, 255, 0.3)',
                 borderRadius: '18px',
                 padding: '20px',
-                marginBottom: '36px'
+                marginBottom: '36px',
+                boxShadow: '0 8px 32px rgba(0, 229, 255, 0.08)'
               }}>
                 <div style={{
                   display: 'flex',
@@ -674,26 +681,50 @@ export default function DashboardPage() {
                     <span style={{
                       fontSize: '11px',
                       color: '#00e5ff',
-                      fontWeight: '700',
+                      fontWeight: '800',
                       textTransform: 'uppercase',
-                      letterSpacing: '1px'
+                      letterSpacing: '1.2px'
                     }}>
-                      Active Chart & Explanation Breakdown
+                      ⚡ Active Setup Blueprint & Video Breakdown
                     </span>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '2px' }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: '800', marginTop: '2px', color: '#fff' }}>
                       {selectedChart.title}
                     </h3>
                   </div>
 
-                  {/* Chart Download Action */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleDownloadChart(e, selectedChart.downloadUrl || selectedChart.chartUrl || '', selectedChart.title)}
-                    className="btn-trading-glow"
-                    style={{ fontSize: '13px', padding: '9px 18px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Download size={16} /> Save Chart to Gallery
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    {/* Expand Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsChartExpanded(true)}
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: '#fff',
+                        padding: '9px 15px',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Maximize2 size={15} /> Expand Chart Fullscreen
+                    </button>
+
+                    {/* Chart Download Action */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleDownloadChart(e, selectedChart.downloadUrl || selectedChart.chartUrl || '', selectedChart.title)}
+                      className="btn-trading-glow"
+                      style={{ fontSize: '13px', padding: '9px 18px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Download size={16} /> Save Chart to Gallery
+                    </button>
+                  </div>
                 </div>
 
                 {/* Side-by-Side Flex Layout (Responsive Grid) */}
@@ -707,13 +738,13 @@ export default function DashboardPage() {
                   <div style={{
                     backgroundColor: '#0a0d14',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     overflow: 'hidden',
                     position: 'relative'
                   }}>
                     <div style={{
-                      padding: '8px 14px',
-                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      padding: '10px 14px',
+                      backgroundColor: 'rgba(0,0,0,0.6)',
                       borderBottom: '1px solid rgba(255,255,255,0.06)',
                       fontSize: '12px',
                       color: '#94a3b8',
@@ -721,11 +752,38 @@ export default function DashboardPage() {
                       alignItems: 'center',
                       justifyContent: 'space-between'
                     }}>
-                      <span>Hand-Made Setup Blueprint</span>
-                      <span style={{ color: '#00e676' }}>Click to expand / Downloadable</span>
+                      <span style={{ fontWeight: '700', color: '#fff' }}>Hand-Made Setup Blueprint</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsChartExpanded(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#00e5ff',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11.5px',
+                          fontWeight: '700'
+                        }}
+                      >
+                        <Maximize2 size={13} /> Click to Expand
+                      </button>
                     </div>
-                    {/* Visual Chart */}
-                    <div style={{ position: 'relative', height: '360px', width: '100%', backgroundColor: '#161e2e' }}>
+
+                    {/* Visual Chart with Click-to-Expand */}
+                    <div 
+                      onClick={() => setIsChartExpanded(true)}
+                      style={{ 
+                        position: 'relative', 
+                        height: '380px', 
+                        width: '100%', 
+                        backgroundColor: '#161e2e',
+                        cursor: 'zoom-in'
+                      }}
+                      title="Click to expand chart fullscreen"
+                    >
                       <Image
                         src={selectedChart.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80'}
                         alt={selectedChart.title}
@@ -733,50 +791,119 @@ export default function DashboardPage() {
                         unoptimized
                         style={{ objectFit: 'contain' }}
                       />
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '10px',
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        backdropFilter: 'blur(6px)',
+                        padding: '5px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: '#00e5ff',
+                        fontWeight: '700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}>
+                        <Eye size={13} /> Tap to Zoom / View Full Dimensions
+                      </div>
                     </div>
                   </div>
 
-                  {/* Right Column: Protected Video Explanation Beside the Chart */}
+                  {/* Right Column: Protected Video Explanation Beside the Chart with Telugu & English Switcher */}
                   <div style={{
                     backgroundColor: '#0a0d14',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     overflow: 'hidden'
                   }}>
                     <div style={{
+                      padding: '10px 14px',
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <PlayCircle size={15} color="#00e5ff" />
+                        <span style={{ fontSize: '12.5px', fontWeight: '700', color: '#fff' }}>Reel Video Breakdown</span>
+                      </div>
+
+                      {/* Language Switcher Buttons (Telugu vs English) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setChartLanguage('telugu')}
+                          style={{
+                            backgroundColor: chartLanguage === 'telugu' ? '#00e5ff' : 'rgba(255, 255, 255, 0.08)',
+                            color: chartLanguage === 'telugu' ? '#000' : '#cbd5e1',
+                            border: 'none',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11.5px',
+                            fontWeight: '800',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Telugu
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChartLanguage('english')}
+                          style={{
+                            backgroundColor: chartLanguage === 'english' ? '#c084fc' : 'rgba(255, 255, 255, 0.08)',
+                            color: chartLanguage === 'english' ? '#000' : '#cbd5e1',
+                            border: 'none',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11.5px',
+                            fontWeight: '800',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          English
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Responsive Video Player Playing the Chosen Language Video */}
+                    <div style={{ position: 'relative', height: '380px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <UnifiedVideoPlayer
+                        key={`${selectedChart.id}_${chartLanguage}`}
+                        src={
+                          chartLanguage === 'english'
+                            ? (selectedChart.videoUrlEnglish || selectedChart.videoUrl)
+                            : (selectedChart.videoUrlTelugu || selectedChart.videoUrl)
+                        }
+                        title={`${selectedChart.title} (${chartLanguage})`}
+                        maxHeight="380px"
+                      />
+                    </div>
+
+                    <div style={{
                       padding: '8px 14px',
                       backgroundColor: 'rgba(0,0,0,0.5)',
-                      borderBottom: '1px solid rgba(255,255,255,0.06)',
-                      fontSize: '12px',
-                      color: '#94a3b8',
+                      fontSize: '11px',
+                      color: '#64748b',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <PlayCircle size={14} color="#00e5ff" />
-                        <span>Reel Video Explanation</span>
-                      </div>
-                      <span style={{ color: '#f59e0b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Lock size={12} /> Download Restricted
+                      <span>Playing: <b>{chartLanguage.toUpperCase()}</b> Video</span>
+                      <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Lock size={11} /> Video protected (only charts are downloadable)
                       </span>
                     </div>
-
-                    {/* Responsive Video Player Supporting YouTube Embeds, IndexedDB & Direct Video */}
-                    <div style={{ position: 'relative', height: '360px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <UnifiedVideoPlayer
-                        src={selectedChart.videoUrl}
-                        title={selectedChart.title}
-                        maxHeight="360px"
-                      />
-                    </div>
-
                   </div>
                 </div>
 
                 {/* Setup Strategy Description */}
-                <div style={{ marginTop: '16px', padding: '14px', backgroundColor: '#0f1420', borderRadius: '10px' }}>
-                  <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6' }}>
+                <div style={{ marginTop: '16px', padding: '14px', backgroundColor: '#0f1420', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6', margin: 0 }}>
                     <b style={{ color: '#00e5ff' }}>Setup Strategy: </b>
                     {selectedChart.description}
                   </p>
@@ -797,7 +924,10 @@ export default function DashboardPage() {
               {filteredPosts.map((post) => (
                 <div
                   key={post.id}
-                  onClick={() => setSelectedChart(post)}
+                  onClick={() => {
+                    setSelectedChart(post);
+                    window.scrollTo({ top: 120, behavior: 'smooth' });
+                  }}
                   style={{
                     backgroundColor: selectedChart?.id === post.id ? 'rgba(0, 229, 255, 0.08)' : '#111726',
                     border: selectedChart?.id === post.id ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.08)',
@@ -1235,6 +1365,105 @@ export default function DashboardPage() {
               >
                 Got It, Let's Start Trading!
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 3: FULLSCREEN EXPANDED CHART LIGHTBOX (Tap to Zoom & Download to Gallery) */}
+        {isChartExpanded && selectedChart && (
+          <div
+            onClick={() => setIsChartExpanded(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.94)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 9999999,
+              padding: '16px'
+            }}
+          >
+            {/* Header bar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '14px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                marginBottom: '12px',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}
+            >
+              <div>
+                <span style={{ fontSize: '11px', color: '#00e5ff', fontWeight: '800', textTransform: 'uppercase' }}>
+                  Fullscreen Blueprint View
+                </span>
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', margin: '2px 0 0 0' }}>
+                  {selectedChart.title}
+                </h3>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={(e) => handleDownloadChart(e, selectedChart.downloadUrl || selectedChart.chartUrl || '', selectedChart.title)}
+                  className="btn-trading-glow"
+                  style={{ fontSize: '12.5px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Download size={15} /> Save to Gallery
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsChartExpanded(false)}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    color: '#fff',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Close Fullscreen"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Expanded Chart Image Container */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                flex: 1,
+                position: 'relative',
+                width: '100%',
+                maxHeight: 'calc(100vh - 120px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                overflow: 'hidden'
+              }}
+            >
+              <Image
+                src={selectedChart.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&auto=format&fit=crop&q=90'}
+                alt={selectedChart.title}
+                fill
+                unoptimized
+                style={{ objectFit: 'contain' }}
+              />
             </div>
           </div>
         )}
