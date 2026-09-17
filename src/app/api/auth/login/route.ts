@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { findUserByCredentials } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -14,8 +15,7 @@ export async function POST(req: Request) {
     const cleanIdentifier = identifier.trim();
     const cleanPassword = password.trim();
 
-    // Check Admin login matching the user's reference screenshot
-    // Username: tradinghath, Password: 22NE1A04E1@093
+    // 1. Check Admin Login
     if (
       (cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com') &&
       cleanPassword === '22NE1A04E1@093'
@@ -33,16 +33,28 @@ export async function POST(req: Request) {
       });
     }
 
-    // Normal User Login (demo auto-detects or checks pro status)
-    // If the user's email has already unlocked ₹399, they are pro.
-    const isMember = true;
+    // 2. Strict Check: User MUST have registered first!
+    const existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
+
+    if (!existingUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Account not found or invalid password! Please create an account first by clicking "Sign up" below.'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Registered user authenticated successfully
     return NextResponse.json({
       success: true,
       isAdmin: false,
-      isPro: cleanIdentifier.includes('pro') || cleanIdentifier.includes('paid'), // easy demo hook, or default active
+      isPro: existingUser.isPro,
       user: {
-        username: cleanIdentifier.split('@')[0],
-        email: cleanIdentifier.includes('@') ? cleanIdentifier : `${cleanIdentifier}@gmail.com`,
+        id: existingUser.id,
+        username: existingUser.username,
+        email: existingUser.email,
         role: 'user'
       },
       token: 'user_token_' + Date.now()
@@ -54,3 +66,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

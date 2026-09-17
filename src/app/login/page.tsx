@@ -91,8 +91,10 @@ export default function LoginPage() {
         if (data.isAdmin) {
           router.push('/admin');
         } else {
-          router.push('/dashboard');
+          // Regular user goes to homepage first to explore website!
+          router.push('/');
         }
+
       } else {
         setError(data.error || 'Invalid username or password.');
       }

@@ -51,3 +51,17 @@ export function changeUserPassword(userId: string, newPass: string) {
     u.id === userId ? { ...u, password: newPass } : u
   );
 }
+
+export function findUserByCredentials(identifier: string, pass: string): UserAdminType | null {
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanPass = pass.trim();
+  const users = getAllUsers();
+  
+  const found = users.find(u =>
+    (u.username.toLowerCase() === cleanId || u.email.toLowerCase() === cleanId) &&
+    u.password === cleanPass
+  );
+
+  return found || null;
+}
+
