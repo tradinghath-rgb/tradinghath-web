@@ -82,7 +82,7 @@ export default function DashboardPage() {
                           userLower === 'abhisheknaidu';
         setIsAdmin(adminRole);
 
-        // Check if this user was explicitly revoked in overrides
+        // Initial local pro check
         let hasPro = adminRole || proStatus === 'true';
         if (!adminRole && currentUser) {
           try {
@@ -99,8 +99,40 @@ export default function DashboardPage() {
             }
           } catch (e) {}
         }
-
         setIsPro(hasPro);
+
+        // 2. REAL-TIME SERVER VERIFICATION:
+        // Always confirm live status with the server API so admin revoking or deleting takes effect IMMEDIATELY
+        if (currentUser && !adminRole) {
+          fetch('/api/auth/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              email: currentUser.email,
+              username: currentUser.username
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                if (data.deleted) {
+                  // User was deleted by admin! Log out immediately!
+                  localStorage.removeItem('tradinghath_user');
+                  localStorage.removeItem('tradinghath_role');
+                  localStorage.removeItem('tradinghath_isPro');
+                  alert('Your account has been deleted by Administrator.');
+                  window.location.href = '/login';
+                } else {
+                  // Live pro status from server
+                  const livePro = data.isPro === true;
+                  setIsPro(livePro);
+                  localStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
+                }
+              }
+            })
+            .catch(console.error);
+        }
       } catch (err) {
         console.error('Auth check error:', err);
       } finally {

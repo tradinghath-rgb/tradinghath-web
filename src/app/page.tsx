@@ -87,6 +87,36 @@ export default function HomePage() {
             }
           }
           setIsPro(pro);
+
+          // Real-time server status check for homepage
+          if (!adminCheck) {
+            fetch('/api/auth/check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: parsed.id,
+                email: parsed.email,
+                username: parsed.username
+              })
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  if (data.deleted) {
+                    localStorage.removeItem('tradinghath_user');
+                    localStorage.removeItem('tradinghath_role');
+                    localStorage.removeItem('tradinghath_isPro');
+                    setUser(null);
+                    setIsPro(false);
+                  } else {
+                    const livePro = data.isPro === true;
+                    setIsPro(livePro);
+                    localStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
+                  }
+                }
+              })
+              .catch(() => {});
+          }
         }
       } catch (e) {}
     }

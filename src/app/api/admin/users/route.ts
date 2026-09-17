@@ -21,12 +21,16 @@ export async function POST(req: Request) {
 
     if (action === 'grant_pro') {
       updateUserProStatus(userId, true);
+      if (email) updateUserProStatus(email, true);
+      if (username) updateUserProStatus(username, true);
       return NextResponse.json({ success: true, message: 'Pro access granted to user' });
     }
 
     if (action === 'revoke_pro') {
       updateUserProStatus(userId, false);
-      return NextResponse.json({ success: true, message: 'Pro access revoked' });
+      if (email) updateUserProStatus(email, false);
+      if (username) updateUserProStatus(username, false);
+      return NextResponse.json({ success: true, message: 'Pro access revoked immediately' });
     }
 
     if (action === 'delete') {
