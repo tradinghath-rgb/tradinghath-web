@@ -15,7 +15,50 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Forgot password modal states
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState('');
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSignupSuccess('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: signupUsername,
+          email: signupEmail,
+          phone: signupPhone,
+          password: signupPassword
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSignupSuccess('Account created successfully! Switching to login...');
+        setIdentifier(signupEmail || signupUsername);
+        setPassword(signupPassword);
+        setTimeout(() => {
+          setIsSignUp(false);
+          setSignupSuccess('');
+        }, 1500);
+      } else {
+        setError(data.error || 'Failed to create account.');
+      }
+    } catch (err) {
+      setError('Connection error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetStep, setResetStep] = useState<'request' | 'verify'>('request');
@@ -177,109 +220,257 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {/* Identifier Input */}
-          <div className="ig-input-container">
-            <input
-              type="text"
-              className="ig-input"
-              placeholder="Phone number, username, or email"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              required
-            />
+        {signupSuccess && (
+          <div style={{
+            backgroundColor: 'rgba(0, 230, 118, 0.15)',
+            border: '1px solid rgba(0, 230, 118, 0.4)',
+            borderRadius: '6px',
+            padding: '10px',
+            fontSize: '12.5px',
+            color: '#00e676',
+            marginBottom: '16px',
+            textAlign: 'left'
+          }}>
+            {signupSuccess}
           </div>
+        )}
 
-          {/* Password Input with Show/Hide Toggle Button */}
-          <div className="ig-input-container" style={{ paddingRight: '6px' }}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              className="ig-input"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+        {/* Dynamic Form: Login OR Create Account */}
+        {!isSignUp ? (
+          /* LOGIN FORM */
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="ig-input-container">
+              <input
+                type="text"
+                className="ig-input"
+                placeholder="Phone number, username, or email"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="ig-input-container" style={{ paddingRight: '6px' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="ig-input"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #555555',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  cursor: 'pointer',
+                  marginRight: '6px'
+                }}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontSize: '13px',
+              color: '#e0e0e0',
+              cursor: 'pointer',
+              marginTop: '8px',
+              marginBottom: '12px',
+              userSelect: 'none'
+            }}>
+              <input
+                type="checkbox"
+                checked={saveLogin}
+                onChange={(e) => setSaveLogin(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: '#3875f6',
+                  cursor: 'pointer'
+                }}
+              />
+              Save login info
+            </label>
+
             <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              type="submit"
+              disabled={loading}
+              className="ig-button-primary"
               style={{
-                background: 'transparent',
-                border: '1px solid #555555',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontSize: '13px',
-                fontWeight: '600',
-                padding: '4px 10px',
-                cursor: 'pointer',
-                marginRight: '6px'
+                backgroundColor: '#4154f5',
+                padding: '12px 16px',
+                fontSize: '14px',
+                borderRadius: '8px'
               }}
             >
-              {showPassword ? 'Hide' : 'Show'}
+              {loading ? 'Logging in...' : 'Log in'}
             </button>
-          </div>
 
-          {/* Save login info Checkbox */}
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            fontSize: '13px',
-            color: '#e0e0e0',
-            cursor: 'pointer',
-            marginTop: '8px',
-            marginBottom: '12px',
-            userSelect: 'none'
-          }}>
-            <input
-              type="checkbox"
-              checked={saveLogin}
-              onChange={(e) => setSaveLogin(e.target.checked)}
+            <div style={{ marginTop: '16px' }}>
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  opacity: 0.9
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+          </form>
+        ) : (
+          /* CREATE ACCOUNT FORM */
+          <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="ig-input-container">
+              <input
+                type="text"
+                className="ig-input"
+                placeholder="Username (e.g. rohit_nifty)"
+                value={signupUsername}
+                onChange={(e) => setSignupUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="ig-input-container">
+              <input
+                type="email"
+                className="ig-input"
+                placeholder="Email address"
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="ig-input-container">
+              <input
+                type="tel"
+                className="ig-input"
+                placeholder="Mobile number (optional)"
+                value={signupPhone}
+                onChange={(e) => setSignupPhone(e.target.value)}
+              />
+            </div>
+
+            <div className="ig-input-container" style={{ paddingRight: '6px' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="ig-input"
+                placeholder="Create Password (min 6 characters)"
+                value={signupPassword}
+                onChange={(e) => setSignupPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #555555',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  cursor: 'pointer',
+                  marginRight: '6px'
+                }}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            <p style={{ fontSize: '11px', color: '#8e8e8e', textAlign: 'left', lineHeight: '1.4', margin: '6px 0' }}>
+              By signing up, you agree to our Terms & Conditions and 24/7 Member Guidelines.
+            </p>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="ig-button-primary"
               style={{
-                width: '16px',
-                height: '16px',
-                accentColor: '#3875f6',
-                cursor: 'pointer'
+                backgroundColor: '#00e5ff',
+                color: '#000',
+                fontWeight: '700',
+                padding: '12px 16px',
+                fontSize: '14px',
+                borderRadius: '8px'
               }}
-            />
-            Save login info
-          </label>
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+        )}
+      </div>
 
-          {/* Log In Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="ig-button-primary"
-            style={{
-              backgroundColor: '#4154f5',
-              padding: '12px 16px',
-              fontSize: '14px',
-              borderRadius: '8px'
-            }}
-          >
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
-
-          {/* Forgot Password Link */}
-          <div style={{ marginTop: '20px' }}>
+      {/* Instagram Bottom Switcher Box */}
+      <div style={{
+        width: '100%',
+        maxWidth: '380px',
+        backgroundColor: '#121212',
+        border: '1px solid #262626',
+        borderRadius: '12px',
+        padding: '18px 24px',
+        marginTop: '12px',
+        textAlign: 'center',
+        fontSize: '13.5px'
+      }}>
+        {!isSignUp ? (
+          <span>
+            Don't have an account?{' '}
             <button
               type="button"
-              onClick={() => setShowForgotModal(true)}
+              onClick={() => { setIsSignUp(true); setError(''); }}
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#ffffff',
-                fontSize: '13px',
+                color: '#0095f6',
+                fontWeight: '700',
                 cursor: 'pointer',
-                opacity: 0.9
+                fontSize: '13.5px'
               }}
             >
-              Forgot password?
+              Sign up
             </button>
-          </div>
-        </form>
+          </span>
+        ) : (
+          <span>
+            Have an account?{' '}
+            <button
+              type="button"
+              onClick={() => { setIsSignUp(false); setError(''); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#0095f6',
+                fontWeight: '700',
+                cursor: 'pointer',
+                fontSize: '13.5px'
+              }}
+            >
+              Log in
+            </button>
+          </span>
+        )}
       </div>
+
 
       {/* Footer Info / Security info */}
       <div style={{
