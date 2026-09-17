@@ -52,47 +52,54 @@ export default function DashboardPage() {
   useEffect(() => {
     // Load auth status strictly
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('tradinghath_user');
-      const proStatus = localStorage.getItem('tradinghath_isPro');
-      const role = localStorage.getItem('tradinghath_role');
+      try {
+        const stored = localStorage.getItem('tradinghath_user');
+        const proStatus = localStorage.getItem('tradinghath_isPro');
+        const role = localStorage.getItem('tradinghath_role');
 
-      if (!stored && role !== 'admin') {
-        // Not logged in at all, redirect to login
-        window.location.href = '/login';
-        return;
-      }
+        if (!stored && role !== 'admin') {
+          // Not logged in at all, redirect to login
+          window.location.href = '/login';
+          return;
+        }
 
-      let currentUser: any = null;
-      if (stored) {
-        try {
-          currentUser = JSON.parse(stored);
-          setUser(currentUser);
-        } catch (e) {}
-      }
+        let currentUser: any = null;
+        if (stored) {
+          try {
+            currentUser = JSON.parse(stored);
+            setUser(currentUser);
+          } catch (e) {}
+        }
 
-      // Pro only if role is admin OR isPro is strictly 'true'
-      const adminRole = role === 'admin' || currentUser?.role === 'admin' || currentUser?.username === 'tradinghath' || currentUser?.email === 'tradinghath@gmail.com';
-      setIsAdmin(adminRole);
+        // Pro only if role is admin OR isPro is strictly 'true'
+        const adminRole = role === 'admin' || currentUser?.role === 'admin' || currentUser?.username === 'tradinghath' || currentUser?.email === 'tradinghath@gmail.com';
+        setIsAdmin(adminRole);
 
-      // Check if this user was explicitly revoked in overrides
-      let hasPro = adminRole || proStatus === 'true';
-      if (!adminRole && currentUser) {
-        try {
-          const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
-          if (storedOverrides) {
-            const overrides = JSON.parse(storedOverrides);
-            if (overrides[currentUser.id] === false || (currentUser.email && overrides[currentUser.email.toLowerCase()] === false) || (currentUser.username && overrides[currentUser.username.toLowerCase()] === false)) {
-              hasPro = false;
-              localStorage.setItem('tradinghath_isPro', 'false');
-            } else if (overrides[currentUser.id] === true || (currentUser.email && overrides[currentUser.email.toLowerCase()] === true)) {
-              hasPro = true;
-              localStorage.setItem('tradinghath_isPro', 'true');
+        // Check if this user was explicitly revoked in overrides
+        let hasPro = adminRole || proStatus === 'true';
+        if (!adminRole && currentUser) {
+          try {
+            const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
+            if (storedOverrides) {
+              const overrides = JSON.parse(storedOverrides);
+              if (overrides[currentUser.id] === false || (currentUser.email && overrides[currentUser.email.toLowerCase()] === false) || (currentUser.username && overrides[currentUser.username.toLowerCase()] === false)) {
+                hasPro = false;
+                localStorage.setItem('tradinghath_isPro', 'false');
+              } else if (overrides[currentUser.id] === true || (currentUser.email && overrides[currentUser.email.toLowerCase()] === true)) {
+                hasPro = true;
+                localStorage.setItem('tradinghath_isPro', 'true');
+              }
             }
-          }
-        } catch (e) {}
-      }
+          } catch (e) {}
+        }
 
-      setIsPro(hasPro);
+        setIsPro(hasPro);
+      } catch (err) {
+        console.error('Auth check error:', err);
+      } finally {
+        setCheckingAccess(false);
+      }
+    } else {
       setCheckingAccess(false);
     }
 
