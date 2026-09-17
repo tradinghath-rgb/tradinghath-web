@@ -96,12 +96,17 @@ export default function DashboardPage() {
       setCheckingAccess(false);
     }
 
-    // Function to load and sync all published posts (from API and local storage fallback)
+    // Function to load and sync all published posts (from API, INITIAL_POSTS, and local storage fallback)
     const loadPublishedPosts = () => {
       fetch('/api/admin/posts')
         .then(res => res.json())
         .then(data => {
           let allPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published);
+
+          // Always ensure all 24 default hand-made charts exist
+          const existingIds = new Set(allPosts.map(p => p.id));
+          const missingDefaults = INITIAL_POSTS.filter(p => !existingIds.has(p.id));
+          allPosts = [...allPosts, ...missingDefaults];
           
           if (typeof window !== 'undefined') {
             try {
@@ -109,8 +114,8 @@ export default function DashboardPage() {
               if (stored) {
                 const localPosts: PostItem[] = JSON.parse(stored);
                 const liveLocal = localPosts.filter(p => p.published);
-                const existingIds = new Set(liveLocal.map(p => p.id));
-                allPosts = [...liveLocal, ...allPosts.filter(p => !existingIds.has(p.id))];
+                const currentIds = new Set(allPosts.map(p => p.id));
+                allPosts = [...allPosts, ...liveLocal.filter(p => !currentIds.has(p.id))];
               }
             } catch (e) {}
           }
@@ -131,20 +136,22 @@ export default function DashboardPage() {
         })
         .catch(err => {
           console.error(err);
-          // Fallback to local storage if API is slow or offline
+          // Fallback to initial posts & local storage
+          let combined = [...INITIAL_POSTS];
           if (typeof window !== 'undefined') {
             try {
               const stored = localStorage.getItem('tradinghath_dynamic_posts');
               if (stored) {
                 const localPosts: PostItem[] = JSON.parse(stored);
                 const liveLocal = localPosts.filter(p => p.published);
-                const combined = [...liveLocal, ...INITIAL_POSTS];
-                setPosts(combined);
-                const firstChart = combined.find(p => p.type === 'chart');
-                if (firstChart) setSelectedChart(firstChart);
+                const existing = new Set(combined.map(p => p.id));
+                combined = [...combined, ...liveLocal.filter(p => !existing.has(p.id))];
               }
             } catch (e) {}
           }
+          setPosts(combined);
+          const firstChart = combined.find(p => p.type === 'chart');
+          if (firstChart) setSelectedChart(firstChart);
         });
     };
 

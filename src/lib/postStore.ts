@@ -10,7 +10,11 @@ if (!global.__TRADINGHATH_POSTS__) {
 
 export function getAllPosts(): PostItem[] {
   const now = new Date().toISOString();
-  if (!global.__TRADINGHATH_POSTS__) global.__TRADINGHATH_POSTS__ = [...INITIAL_POSTS];
+  if (!global.__TRADINGHATH_POSTS__ || global.__TRADINGHATH_POSTS__.length < INITIAL_POSTS.length) {
+    const existingIds = new Set((global.__TRADINGHATH_POSTS__ || []).map(p => p.id));
+    const missing = INITIAL_POSTS.filter(p => !existingIds.has(p.id));
+    global.__TRADINGHATH_POSTS__ = [...(global.__TRADINGHATH_POSTS__ || []), ...missing];
+  }
 
   return global.__TRADINGHATH_POSTS__.map(p => {
     if (p.scheduledAt && p.scheduledAt <= now && !p.published) {
