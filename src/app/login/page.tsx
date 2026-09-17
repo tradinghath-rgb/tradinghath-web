@@ -108,12 +108,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Gather any client-stored users
+      // Gather any client-stored users (excluding any deleted by admin)
       let clientUsers: any[] = [];
       if (typeof window !== 'undefined') {
         try {
           const stored = localStorage.getItem('tradinghath_client_users');
-          if (stored) clientUsers = JSON.parse(stored);
+          const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
+          const deletedList: string[] = storedDeleted ? JSON.parse(storedDeleted).map((x: string) => x.toLowerCase()) : [];
+
+          if (stored) {
+            const rawList = JSON.parse(stored);
+            clientUsers = rawList.filter((u: any) => 
+              !deletedList.includes(u.id?.toLowerCase()) &&
+              !deletedList.includes(u.email?.toLowerCase()) &&
+              !deletedList.includes(u.username?.toLowerCase())
+            );
+          }
         } catch (e) {}
       }
 

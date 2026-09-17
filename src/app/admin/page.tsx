@@ -256,18 +256,41 @@ export default function AdminPage() {
       if (typeof window !== 'undefined') {
         try {
           if (action === 'delete') {
+            const targetUser = users.find(u => u.id === userId);
             const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
             const deletedList = storedDeleted ? JSON.parse(storedDeleted) : [];
-            if (!deletedList.includes(userId)) {
-              deletedList.push(userId);
-              localStorage.setItem('tradinghath_deleted_user_ids', JSON.stringify(deletedList));
-            }
+            
+            const keysToAdd = [userId];
+            if (targetUser?.email) keysToAdd.push(targetUser.email.toLowerCase());
+            if (targetUser?.username) keysToAdd.push(targetUser.username.toLowerCase());
+
+            keysToAdd.forEach(k => {
+              if (!deletedList.includes(k)) deletedList.push(k);
+            });
+            localStorage.setItem('tradinghath_deleted_user_ids', JSON.stringify(deletedList));
 
             const storedClientUsers = localStorage.getItem('tradinghath_client_users');
             if (storedClientUsers) {
               const list = JSON.parse(storedClientUsers);
-              const filtered = list.filter((u: any) => u.id !== userId);
+              const filtered = list.filter((u: any) => 
+                u.id !== userId && 
+                (!targetUser?.email || u.email?.toLowerCase() !== targetUser.email.toLowerCase()) &&
+                (!targetUser?.username || u.username?.toLowerCase() !== targetUser.username.toLowerCase())
+              );
               localStorage.setItem('tradinghath_client_users', JSON.stringify(filtered));
+            }
+
+            // If deleted user matches current session, clear it immediately
+            const loggedInStr = localStorage.getItem('tradinghath_user');
+            if (loggedInStr) {
+              try {
+                const cur = JSON.parse(loggedInStr);
+                if (cur.id === userId || (targetUser?.email && cur.email?.toLowerCase() === targetUser.email.toLowerCase())) {
+                  localStorage.removeItem('tradinghath_user');
+                  localStorage.removeItem('tradinghath_role');
+                  localStorage.removeItem('tradinghath_isPro');
+                }
+              } catch (e) {}
             }
           }
 
@@ -315,10 +338,16 @@ export default function AdminPage() {
         } catch (e) {}
       }
 
+      const targetUser = users.find(u => u.id === userId);
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action })
+        body: JSON.stringify({ 
+          userId, 
+          action,
+          email: targetUser?.email,
+          username: targetUser?.username
+        })
       });
       const data = await res.json();
       if (data.success) {

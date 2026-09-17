@@ -55,6 +55,12 @@ if (!global.__TRADINGHATH_USERS__) {
   global.__TRADINGHATH_USERS__ = [...INITIAL_REGISTERED_USERS];
 }
 
+export function isUserDeleted(idOrEmailOrUsername: string): boolean {
+  if (!global.__TRADINGHATH_DELETED_USER_IDS__) return false;
+  const key = idOrEmailOrUsername.trim().toLowerCase();
+  return global.__TRADINGHATH_DELETED_USER_IDS__.some(d => d.toLowerCase() === key);
+}
+
 export function getAllUsers(): UserAdminType[] {
   if (!global.__TRADINGHATH_USERS__) {
     global.__TRADINGHATH_USERS__ = [...INITIAL_REGISTERED_USERS];
@@ -82,13 +88,23 @@ export function getAllUsers(): UserAdminType[] {
 
 export function registerNewUser(user: UserAdminType) {
   if (!global.__TRADINGHATH_USERS__) global.__TRADINGHATH_USERS__ = [];
+  
+  // If user is registering fresh (or was previously deleted), clear from deleted list
+  if (global.__TRADINGHATH_DELETED_USER_IDS__) {
+    const emailKey = user.email?.toLowerCase();
+    const userKey = user.username?.toLowerCase();
+    global.__TRADINGHATH_DELETED_USER_IDS__ = global.__TRADINGHATH_DELETED_USER_IDS__.filter(
+      id => id !== user.id && id !== emailKey && id !== userKey
+    );
+  }
+
   const overrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
   const effectiveIsPro = overrides[user.id] !== undefined ? overrides[user.id] : (overrides[user.email?.toLowerCase()] !== undefined ? overrides[user.email.toLowerCase()] : user.isPro);
   const userToAdd = { ...user, isPro: effectiveIsPro };
 
   // Remove if already exists with same username/email
   global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.filter(
-    u => u.username !== user.username && u.email !== user.email
+    u => u.username?.toLowerCase() !== user.username?.toLowerCase() && u.email?.toLowerCase() !== user.email?.toLowerCase()
   );
   global.__TRADINGHATH_USERS__.unshift(userToAdd);
 }
@@ -115,13 +131,40 @@ export function updateUserProStatus(userId: string, isPro: boolean) {
   });
 }
 
-export function deleteUserPermanently(userId: string) {
+export function deleteUserPermanently(userIdOrEmail: string) {
   if (!global.__TRADINGHATH_DELETED_USER_IDS__) global.__TRADINGHATH_DELETED_USER_IDS__ = [];
-  if (!global.__TRADINGHATH_DELETED_USER_IDS__.includes(userId)) {
-    global.__TRADINGHATH_DELETED_USER_IDS__.push(userId);
+  const cleanKey = userIdOrEmail.trim().toLowerCase();
+  if (!global.__TRADINGHATH_DELETED_USER_IDS__.includes(cleanKey)) {
+    global.__TRADINGHATH_DELETED_USER_IDS__.push(cleanKey);
   }
+
+  // Also remove from overrides
+  if (global.__TRADINGHATH_PRO_OVERRIDES__) {
+    delete global.__TRADINGHATH_PRO_OVERRIDES__[cleanKey];
+    delete global.__TRADINGHATH_PRO_OVERRIDES__[userIdOrEmail];
+  }
+
   if (!global.__TRADINGHATH_USERS__) return;
-  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.filter(u => u.id !== userId);
+
+  // Find user to also block their email and username
+  const target = global.__TRADINGHATH_USERS__.find(
+    u => u.id === userIdOrEmail || u.email?.toLowerCase() === cleanKey || u.username?.toLowerCase() === cleanKey
+  );
+  if (target) {
+    if (target.id && !global.__TRADINGHATH_DELETED_USER_IDS__.includes(target.id)) {
+      global.__TRADINGHATH_DELETED_USER_IDS__.push(target.id);
+    }
+    if (target.email && !global.__TRADINGHATH_DELETED_USER_IDS__.includes(target.email.toLowerCase())) {
+      global.__TRADINGHATH_DELETED_USER_IDS__.push(target.email.toLowerCase());
+    }
+    if (target.username && !global.__TRADINGHATH_DELETED_USER_IDS__.includes(target.username.toLowerCase())) {
+      global.__TRADINGHATH_DELETED_USER_IDS__.push(target.username.toLowerCase());
+    }
+  }
+
+  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.filter(
+    u => u.id !== userIdOrEmail && u.email?.toLowerCase() !== cleanKey && u.username?.toLowerCase() !== cleanKey
+  );
 }
 
 export function changeUserPassword(userId: string, newPass: string) {

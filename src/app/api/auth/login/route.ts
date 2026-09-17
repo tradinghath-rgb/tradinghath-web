@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials, registerNewUser } from '@/lib/userStore';
+import { findUserByCredentials, registerNewUser, isUserDeleted } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -15,16 +15,29 @@ export async function POST(req: Request) {
     const cleanIdentifier = identifier.trim();
     const cleanPassword = password.trim();
 
-    // Sync any registered client users into server memory if provided
+    // 1. Strict Check: If this user ID, email, or username is marked as DELETED by Admin, block completely!
+    if (isUserDeleted(cleanIdentifier)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'This account has been deleted by Administrator. Please create a new account to continue.'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Sync any registered client users into server memory if provided (skip any that were deleted)
     if (Array.isArray(clientUsers) && clientUsers.length > 0) {
       for (const cu of clientUsers) {
         if (cu && cu.email && cu.username) {
-          registerNewUser(cu);
+          if (!isUserDeleted(cu.id) && !isUserDeleted(cu.email) && !isUserDeleted(cu.username)) {
+            registerNewUser(cu);
+          }
         }
       }
     }
 
-    // 1. Check Admin Login
+    // 2. Check Admin Login
     if (
       (cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com') &&
       (cleanPassword === '22NE1A04E1@093' || cleanPassword === '22NE1A04E1' || cleanPassword === '9390')
@@ -42,16 +55,19 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Strict Check: User MUST have registered first!
+    // 3. Strict Check: User MUST have an active registered account!
     let existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
 
-    // If not found in global memory, check clientUsers fallback
+    // If not found in global memory, check clientUsers fallback (only non-deleted users)
     if (!existingUser && Array.isArray(clientUsers)) {
       const match = clientUsers.find(
         (u: any) =>
           (u.username?.toLowerCase() === cleanIdentifier.toLowerCase() ||
             u.email?.toLowerCase() === cleanIdentifier.toLowerCase()) &&
-          u.password === cleanPassword
+          u.password === cleanPassword &&
+          !isUserDeleted(u.id) &&
+          !isUserDeleted(u.email) &&
+          !isUserDeleted(u.username)
       );
       if (match) {
         registerNewUser(match);

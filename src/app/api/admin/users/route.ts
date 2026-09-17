@@ -16,7 +16,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { action, userId, newPassword } = await req.json();
+    const body = await req.json();
+    const { action, userId, newPassword, email, username } = body;
 
     if (action === 'grant_pro') {
       updateUserProStatus(userId, true);
@@ -30,7 +31,9 @@ export async function POST(req: Request) {
 
     if (action === 'delete') {
       deleteUserPermanently(userId);
-      return NextResponse.json({ success: true, message: 'User permanently deleted' });
+      if (email) deleteUserPermanently(email);
+      if (username) deleteUserPermanently(username);
+      return NextResponse.json({ success: true, message: 'User permanently deleted from system' });
     }
 
     if (action === 'change_password') {
