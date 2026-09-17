@@ -44,7 +44,12 @@ export function getAllUsers(): UserAdminType[] {
     global.__TRADINGHATH_USERS__ = [...INITIAL_REGISTERED_USERS];
   }
   const deleted = new Set(global.__TRADINGHATH_DELETED_USER_IDS__ || []);
-  return global.__TRADINGHATH_USERS__.filter(u => !deleted.has(u.id));
+  const blocked = new Set(['kiran_trader', 'suresh_kumar', 'kiran.reddy92@gmail.com', 'suresh.kumar88@gmail.com']);
+  return global.__TRADINGHATH_USERS__.filter(u => 
+    !deleted.has(u.id) &&
+    !blocked.has(u.username?.toLowerCase()) &&
+    !blocked.has(u.email?.toLowerCase())
+  );
 }
 
 export function registerNewUser(user: UserAdminType) {

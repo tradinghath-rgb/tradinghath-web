@@ -111,16 +111,41 @@ export default function AdminPage() {
           const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
           const deletedIds = new Set(storedDeleted ? JSON.parse(storedDeleted) : ['user_live_02', 'user_live_03']);
 
-          // Remove any deleted IDs from server list
-          serverUsers = serverUsers.filter((u: any) => !deletedIds.has(u.id));
+          // Always blacklist the mock demo users
+          deletedIds.add('user_live_02');
+          deletedIds.add('user_live_03');
+
+          // Remove any deleted IDs or mock demo usernames
+          const blockedUsers = new Set(['kiran_trader', 'suresh_kumar', 'kiran.reddy92@gmail.com', 'suresh.kumar88@gmail.com']);
+
+          serverUsers = serverUsers.filter((u: any) => 
+            !deletedIds.has(u.id) &&
+            !blockedUsers.has(u.username?.toLowerCase()) &&
+            !blockedUsers.has(u.email?.toLowerCase())
+          );
 
           const storedUsers = localStorage.getItem('tradinghath_client_users');
           if (storedUsers) {
             const localUsers = JSON.parse(storedUsers);
             const existingIds = new Set(serverUsers.map((u: any) => u.id));
             const existingEmails = new Set(serverUsers.map((u: any) => u.email.toLowerCase()));
-            const toAdd = localUsers.filter((u: any) => !existingIds.has(u.id) && !existingEmails.has(u.email.toLowerCase()) && !deletedIds.has(u.id));
+            const toAdd = localUsers.filter((u: any) => 
+              !existingIds.has(u.id) && 
+              !existingEmails.has(u.email.toLowerCase()) && 
+              !deletedIds.has(u.id) &&
+              !blockedUsers.has(u.username?.toLowerCase()) &&
+              !blockedUsers.has(u.email?.toLowerCase())
+            );
             serverUsers = [...serverUsers, ...toAdd];
+          }
+
+          // Clean up client storage to remove any trace of blocked mock users
+          if (storedUsers) {
+            const cleaned = JSON.parse(storedUsers).filter((u: any) => 
+              !blockedUsers.has(u.username?.toLowerCase()) &&
+              !blockedUsers.has(u.email?.toLowerCase())
+            );
+            localStorage.setItem('tradinghath_client_users', JSON.stringify(cleaned));
           }
         } catch (e) {}
       }
