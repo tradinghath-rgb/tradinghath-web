@@ -71,15 +71,16 @@ export default function DashboardPage() {
           } catch (e) {}
         }
 
-        // Pro only if role is admin OR isPro is strictly 'true'
+        // Strictly only the actual owner/admin account gets admin privileges!
         const emailLower = (currentUser?.email || '').toLowerCase();
         const userLower = (currentUser?.username || '').toLowerCase();
-        const adminRole = role === 'admin' || 
-                          currentUser?.role === 'admin' || 
-                          userLower === 'tradinghath' || 
-                          emailLower === 'tradinghath@gmail.com' ||
-                          emailLower === 'abhisheknaidu2005@gmail.com' ||
-                          userLower === 'abhisheknaidu';
+        const isOwnerAdmin = (
+          userLower === 'tradinghath' || 
+          emailLower === 'tradinghath@gmail.com' ||
+          emailLower === 'abhisheknaidu2005@gmail.com' ||
+          userLower === 'abhisheknaidu'
+        );
+        const adminRole = isOwnerAdmin && (role === 'admin' || currentUser?.role === 'admin');
         setIsAdmin(adminRole);
 
         // Initial local pro check

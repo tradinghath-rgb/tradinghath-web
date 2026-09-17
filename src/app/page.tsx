@@ -67,12 +67,13 @@ export default function HomePage() {
           setUser(parsed);
           const emailLower = (parsed?.email || '').toLowerCase();
           const userLower = (parsed?.username || '').toLowerCase();
-          const adminCheck = role === 'admin' || 
-                             parsed?.role === 'admin' || 
-                             userLower === 'tradinghath' || 
-                             emailLower === 'tradinghath@gmail.com' ||
-                             emailLower === 'abhisheknaidu2005@gmail.com' ||
-                             userLower === 'abhisheknaidu';
+          const isOwnerAdmin = (
+            userLower === 'tradinghath' || 
+            emailLower === 'tradinghath@gmail.com' ||
+            emailLower === 'abhisheknaidu2005@gmail.com' ||
+            userLower === 'abhisheknaidu'
+          );
+          const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
           setIsAdmin(adminCheck);
 
           // Check pro status (admins always have pro)
