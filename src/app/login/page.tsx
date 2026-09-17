@@ -17,9 +17,7 @@ export default function LoginPage() {
 
 
   const [isSignUp, setIsSignUp] = useState(false);
-  const [signupUsername, setSignupUsername] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
-  const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupSuccess, setSignupSuccess] = useState('');
 
@@ -30,13 +28,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const cleanEmail = signupEmail.trim().toLowerCase();
+      const derivedUsername = cleanEmail.split('@')[0] || 'user';
+
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: signupUsername,
-          email: signupEmail,
-          phone: signupPhone,
+          email: cleanEmail,
           password: signupPassword
         })
       });
@@ -50,10 +49,10 @@ export default function LoginPage() {
             const list = stored ? JSON.parse(stored) : [];
             const userObj = {
               id: data.user?.id || `user_${Date.now()}`,
-              username: signupUsername.trim(),
-              email: signupEmail.trim(),
+              username: data.user?.username || derivedUsername,
+              email: cleanEmail,
               password: signupPassword.trim(),
-              phone: signupPhone ? signupPhone.trim() : '',
+              phone: '',
               isPro: false,
               amount: 0,
               createdAt: new Date().toISOString()
@@ -64,7 +63,7 @@ export default function LoginPage() {
         }
 
         setSignupSuccess('Account created successfully! Switching to login...');
-        setIdentifier(signupEmail || signupUsername);
+        setIdentifier(cleanEmail);
         setPassword(signupPassword);
         setTimeout(() => {
           setIsSignUp(false);
@@ -397,33 +396,12 @@ export default function LoginPage() {
           <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div className="ig-input-container">
               <input
-                type="text"
-                className="ig-input"
-                placeholder="Username (e.g. rohit_nifty)"
-                value={signupUsername}
-                onChange={(e) => setSignupUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="ig-input-container">
-              <input
                 type="email"
                 className="ig-input"
-                placeholder="Email address"
+                placeholder="Gmail / Email address"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 required
-              />
-            </div>
-
-            <div className="ig-input-container">
-              <input
-                type="tel"
-                className="ig-input"
-                placeholder="Mobile number (optional)"
-                value={signupPhone}
-                onChange={(e) => setSignupPhone(e.target.value)}
               />
             </div>
 

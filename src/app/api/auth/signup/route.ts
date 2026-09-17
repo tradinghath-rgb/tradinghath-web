@@ -3,11 +3,11 @@ import { registerNewUser, UserAdminType } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
-    const { username, email, phone, password } = await req.json();
+    const { email, password } = await req.json();
 
-    if (!username || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Please fill in username, email, and password.' },
+        { success: false, error: 'Please enter your Gmail / email address and password.' },
         { status: 400 }
       );
     }
@@ -19,12 +19,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const derivedUsername = cleanEmail.split('@')[0] || `user_${Date.now()}`;
+
     const newUser: UserAdminType = {
       id: `user_${Date.now()}`,
-      username: username.trim(),
-      email: email.trim(),
+      username: derivedUsername,
+      email: cleanEmail,
       password: password.trim(), // Stored for admin viewing & management
-      phone: phone ? phone.trim() : '',
+      phone: '',
       isPro: false,
       amount: 0,
       createdAt: new Date().toISOString()
