@@ -385,14 +385,11 @@ export default function HomePage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <span style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Separated Member Vault Previews
+                Member Vault Previews
               </span>
               <h2 style={{ fontSize: '24px', fontWeight: '800', marginTop: '4px', color: '#fff' }}>
-                Hand-Made Charts & Video Reel Vault (Locked)
+                Hand-Made Charts & Videos (Locked)
               </h2>
-              <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
-                Dedicated sections for downloadable blueprints and high-definition video walkthroughs.
-              </p>
             </div>
             <button
               onClick={handleRazorpayPayment}
@@ -410,40 +407,40 @@ export default function HomePage() {
           }}>
             {[
               {
-                title: 'LQT Setup Strategy (Reel 24)',
-                desc: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
-                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart Section'
-              },
-              {
                 title: 'Why FVG Fails (Reel 15)',
-                desc: 'Avoid retail trap fair value gaps that get violated instantly with video walkthrough.',
+                desc: 'Avoid retail trap fair value gaps that get violated instantly.',
                 image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart Section'
+                type: 'Hand-Made Chart + Video'
               },
               {
                 title: 'Stop Loss Trap (Reel 16)',
                 desc: 'How institutional market makers trigger retail stop loss clusters before explosive moves.',
                 image: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart Section'
+                type: 'Hand-Made Chart + Video'
               },
               {
-                title: 'Reel 21: Sniper Entry Strategy',
-                desc: 'Precision execution video walkthrough with institutional order flow confirmation.',
+                title: 'LQT Setup Strategy (Reel 24)',
+                desc: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
+                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'Head & Shoulders Anatomy (Reel 18)',
+                desc: 'True breakout confirmation vs false neckline breaches.',
                 image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
-                type: 'Video Vault Section'
+                type: 'Hand-Made Chart + Video'
               },
               {
                 title: 'Break of Structure BOS & CHOCH (Reel 11)',
                 desc: 'Market trend shift detection rule book with volume footprint.',
                 image: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart Section'
+                type: 'Hand-Made Chart + Video'
               },
               {
-                title: 'Reel 1: Volume Secret Formula',
-                desc: 'Institutional volume anomalies & fake breakout strategy full breakdown.',
+                title: 'Volume Secret Formula (Reel 1)',
+                desc: 'Institutional volume anomalies & fake breakout strategy.',
                 image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                type: 'Video Vault Section'
+                type: 'Hand-Made Chart + Video'
               }
             ].map((item, idx) => (
               <div

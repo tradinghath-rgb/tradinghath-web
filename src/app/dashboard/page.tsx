@@ -54,19 +54,51 @@ export default function DashboardPage() {
       setCheckingAccess(false);
     }
 
-    // Set initial selected chart if exists
-    const firstChart = INITIAL_POSTS.find(p => p.type === 'chart');
-    if (firstChart) setSelectedChart(firstChart);
+    // Function to load and sync all published posts (from API and local storage fallback)
+    const loadPublishedPosts = () => {
+      fetch('/api/admin/posts')
+        .then(res => res.json())
+        .then(data => {
+          let allPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published);
+          
+          if (typeof window !== 'undefined') {
+            try {
+              const stored = localStorage.getItem('tradinghath_dynamic_posts');
+              if (stored) {
+                const localPosts: PostItem[] = JSON.parse(stored);
+                const liveLocal = localPosts.filter(p => p.published);
+                const existingIds = new Set(liveLocal.map(p => p.id));
+                allPosts = [...liveLocal, ...allPosts.filter(p => !existingIds.has(p.id))];
+              }
+            } catch (e) {}
+          }
 
-    // Fetch latest published posts
-    fetch('/api/admin/posts')
-      .then(res => res.json())
-      .then(data => {
-        if (data.posts) {
-          setPosts(data.posts.filter((p: PostItem) => p.published));
-        }
-      })
-      .catch(console.error);
+          if (allPosts.length > 0) {
+            setPosts(allPosts);
+            const firstChart = allPosts.find(p => p.type === 'chart');
+            if (firstChart) setSelectedChart(firstChart);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          // Fallback to local storage if API is slow or offline
+          if (typeof window !== 'undefined') {
+            try {
+              const stored = localStorage.getItem('tradinghath_dynamic_posts');
+              if (stored) {
+                const localPosts: PostItem[] = JSON.parse(stored);
+                const liveLocal = localPosts.filter(p => p.published);
+                const combined = [...liveLocal, ...INITIAL_POSTS];
+                setPosts(combined);
+                const firstChart = combined.find(p => p.type === 'chart');
+                if (firstChart) setSelectedChart(firstChart);
+              }
+            } catch (e) {}
+          }
+        });
+    };
+
+    loadPublishedPosts();
   }, []);
 
 
@@ -412,6 +444,7 @@ export default function DashboardPage() {
                         src={selectedChart.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80'}
                         alt={selectedChart.title}
                         fill
+                        unoptimized
                         style={{ objectFit: 'contain' }}
                       />
                     </div>
@@ -512,6 +545,7 @@ export default function DashboardPage() {
                       src={post.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80'}
                       alt={post.title}
                       fill
+                      unoptimized
                       style={{ objectFit: 'cover' }}
                     />
                     <div style={{

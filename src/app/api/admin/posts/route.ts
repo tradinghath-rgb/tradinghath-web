@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAllPosts, addNewPost, deletePost } from '@/lib/postStore';
 import { PostItem } from '@/lib/store';
-import { getAllPosts, addPost, deletePost } from '@/lib/postsStore';
 
 export async function GET() {
   const posts = getAllPosts();
@@ -15,34 +15,37 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { action, postId, title, description, type, language, chartUrl, videoUrl, scheduledAt } = body;
 
-    // Handle delete action
-    if (action === 'delete' && postId) {
-      const deleted = deletePost(postId);
-      return NextResponse.json({
-        success: deleted,
-        message: deleted ? 'Post deleted successfully!' : 'Post not found'
-      });
+    if (action === 'delete') {
+      deletePost(postId);
+      return NextResponse.json({ success: true, message: 'Post deleted successfully!' });
     }
+
+    if (!title || !title.trim()) {
+      return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
+    }
+
+    const isChart = type === 'chart';
+    const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
 
     const newPost: PostItem = {
       id: `post_${Date.now()}`,
-      title,
-      description,
+      title: title.trim(),
+      description: description ? description.trim() : '',
       type: type || 'chart',
       language: language || 'both',
-      chartUrl: chartUrl || (type === 'chart' ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : undefined),
-      videoUrl: videoUrl || (type === 'video' ? '/videos/telugu/REEL-24(LQT SETUP).mp4' : undefined),
-      downloadUrl: type === 'chart' ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      chartUrl: isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      videoUrl: videoUrl || (!isChart ? 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1' : undefined),
+      downloadUrl: isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: scheduledAt || undefined,
-      published: !scheduledAt || new Date(scheduledAt) <= new Date(),
+      published: !isScheduled,
       createdAt: new Date().toISOString()
     };
 
-    addPost(newPost);
+    addNewPost(newPost);
 
     return NextResponse.json({
       success: true,
-      message: scheduledAt ? 'Post scheduled successfully!' : `Published directly to ${type === 'chart' ? 'Charts Section' : 'Videos Vault'}!`,
+      message: isScheduled ? 'Post scheduled successfully!' : 'Post published immediately to users!',
       post: newPost
     });
   } catch (err: any) {

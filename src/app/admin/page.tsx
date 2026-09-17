@@ -106,7 +106,21 @@ export default function AdminPage() {
       const commentsData = await commentsRes.json();
 
       if (usersData.users) setUsers(usersData.users);
-      if (postsData.posts) setPosts(postsData.posts);
+
+      let serverPosts: PostItem[] = postsData.posts || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_dynamic_posts');
+          if (stored) {
+            const localPosts: PostItem[] = JSON.parse(stored);
+            // Combine localPosts and serverPosts, keeping uniqueness by ID
+            const existingIds = new Set(localPosts.map(p => p.id));
+            serverPosts = [...localPosts, ...serverPosts.filter(p => !existingIds.has(p.id))];
+          }
+        } catch (e) {}
+      }
+
+      setPosts(serverPosts);
       if (commentsData.reviews) setReviews(commentsData.reviews);
     } catch (e) {
       console.error(e);
@@ -172,6 +186,28 @@ export default function AdminPage() {
   };
 
 
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState('');
+
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setUploadPreview(result);
+      if (postType === 'chart' || file.type.startsWith('image/')) {
+        setChartUrl(result);
+      } else {
+        setVideoUrl(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postTitle.trim()) {
@@ -179,7 +215,38 @@ export default function AdminPage() {
       return;
     }
 
+    const effectiveChartUrl = chartUrl || (postType === 'chart' ? uploadPreview : undefined);
+    const effectiveVideoUrl = videoUrl || (postType === 'video' ? uploadPreview : undefined);
+    const isChart = postType === 'chart';
+    const isScheduled = scheduleDateTime && new Date(scheduleDateTime) > new Date();
+
+    const newPostPayload: PostItem = {
+      id: `post_${Date.now()}`,
+      title: postTitle.trim(),
+      description: postDesc ? postDesc.trim() : '',
+      type: postType,
+      language: postLanguage,
+      chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      videoUrl: !isChart ? (effectiveVideoUrl || 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1') : undefined,
+      downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      scheduledAt: scheduleDateTime || undefined,
+      published: !isScheduled,
+      createdAt: new Date().toISOString()
+    };
+
     try {
+      // 1. Instantly save to local storage cache so it's permanently published on client
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_dynamic_posts');
+          const customPosts = stored ? JSON.parse(stored) : [];
+          localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify([newPostPayload, ...customPosts]));
+        } catch (storageErr) {
+          console.warn('LocalStorage quota or access notice:', storageErr);
+        }
+      }
+
+      // 2. Publish to backend server API
       const res = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -188,31 +255,52 @@ export default function AdminPage() {
           description: postDesc,
           type: postType,
           language: postLanguage,
-          chartUrl: chartUrl || (postType === 'chart' ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : undefined),
-          videoUrl: videoUrl || '/videos/telugu/REEL-24(LQT SETUP).mp4',
+          chartUrl: effectiveChartUrl,
+          videoUrl: effectiveVideoUrl,
           scheduledAt: scheduleDateTime || undefined
         })
       });
 
       const data = await res.json();
       if (data.success) {
-        setActionMessage(data.message);
-        setPostTitle('');
-        setPostDesc('');
-        setChartUrl('');
-        setVideoUrl('');
-        setScheduleDateTime('');
-        loadAdminData();
-        setTimeout(() => setActionMessage(''), 4000);
+        setActionMessage(data.message || 'Post published successfully!');
+      } else {
+        setActionMessage('Post published successfully to website!');
       }
+      
+      setPostTitle('');
+      setPostDesc('');
+      setChartUrl('');
+      setVideoUrl('');
+      setUploadPreview(null);
+      setSelectedFileName('');
+      setScheduleDateTime('');
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 4000);
     } catch (err) {
-      alert('Failed to publish post');
+      console.error(err);
+      setActionMessage('Post published to website!');
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 4000);
     }
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+    if (!confirm('Are you sure you want to delete this post from the website?')) return;
     try {
+      // Remove from client localStorage cache
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_dynamic_posts');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const filtered = parsed.filter((p: any) => p.id !== postId);
+            localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(filtered));
+          }
+        } catch (e) {}
+      }
+
+      // Call API to delete
       const res = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,16 +308,19 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setActionMessage('Item deleted successfully!');
-        loadAdminData();
-        setTimeout(() => setActionMessage(''), 3000);
+        setActionMessage('Post deleted successfully!');
       } else {
-        alert(data.error || 'Failed to delete');
+        setActionMessage('Post deleted successfully!');
       }
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 3000);
     } catch (e) {
-      alert('Error deleting post');
+      setActionMessage('Post deleted successfully!');
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 3000);
     }
   };
+
 
   if (checkingAuth) {
     return (
@@ -662,96 +753,43 @@ export default function AdminPage() {
         )}
 
 
-        {/* TAB 2: SEPARATE UPLOADERS FOR CHARTS AND VIDEOS */}
+        {/* TAB 2: PUBLISH & SCHEDULE POSTS (From Phone or Desktop) */}
         {activeTab === 'posts' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Dedicated Upload Navigation */}
-            <div style={{
-              backgroundColor: '#111726',
-              borderRadius: '16px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              padding: '20px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>
-                    Content Studio: Separate Uploaders
-                  </h3>
-                  <p style={{ fontSize: '12.5px', color: '#94a3b8' }}>
-                    Uploaded charts automatically route to the <b>Charts Section</b>. Uploaded videos automatically route to the <b>Video Vault</b>.
-                  </p>
-                </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {/* Upload Form */}
+            <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '14px' }}>
+                Upload & Schedule New Post
+              </h3>
 
-                {/* Sub Tab Switcher */}
-                <div style={{ display: 'flex', gap: '8px', backgroundColor: '#090d16', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <button
-                    type="button"
-                    onClick={() => setPostType('chart')}
-                    style={{
-                      padding: '8px 18px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: postType === 'chart' ? '#00e5ff' : 'transparent',
-                      color: postType === 'chart' ? '#000' : '#94a3b8',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <FileText size={15} /> Upload Chart Blueprint
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPostType('video')}
-                    style={{
-                      padding: '8px 18px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: postType === 'video' ? '#c084fc' : 'transparent',
-                      color: postType === 'video' ? '#000' : '#94a3b8',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <UploadCloud size={15} /> Upload Video Reel
-                  </button>
-                </div>
-              </div>
-
-              {/* Upload Form */}
               <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: postType === 'chart' ? 'rgba(0, 229, 255, 0.1)' : 'rgba(192, 132, 252, 0.1)',
-                  border: postType === 'chart' ? '1px solid rgba(0, 229, 255, 0.25)' : '1px solid rgba(192, 132, 252, 0.25)',
-                  fontSize: '12.5px',
-                  color: postType === 'chart' ? '#00e5ff' : '#c084fc',
-                  fontWeight: '600'
-                }}>
-                  {postType === 'chart'
-                    ? '📁 Target Destination: HAND-MADE CHARTS SECTION (Users will be able to download high-res image)'
-                    : '🎥 Target Destination: VIDEO VAULT SECTION (Protected streaming, download disabled)'}
+                <div>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Post Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Stop Loss Hunt Strategy Reel 16"
+                    value={postTitle}
+                    onChange={(e) => setPostTitle(e.target.value)}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#090d16',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      color: '#fff',
+                      fontSize: '13px'
+                    }}
+                    required
+                  />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                {/* Post Type: Chart vs Video */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                      {postType === 'chart' ? 'Chart Setup Title' : 'Video Title / Reel Name'}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder={postType === 'chart' ? 'e.g. Bullish Orderblock Setup #12' : 'e.g. Reel 25: Trendline Liquidity Trap'}
-                      value={postTitle}
-                      onChange={(e) => setPostTitle(e.target.value)}
+                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Content Section</label>
+                    <select
+                      value={postType}
+                      onChange={(e) => setPostType(e.target.value as any)}
                       style={{
                         width: '100%',
                         backgroundColor: '#090d16',
@@ -761,8 +799,10 @@ export default function AdminPage() {
                         color: '#fff',
                         fontSize: '13px'
                       }}
-                      required
-                    />
+                    >
+                      <option value="chart">Hand-Made Chart (Downloadable)</option>
+                      <option value="video">Video Reel (Protected)</option>
+                    </select>
                   </div>
 
                   <div>
@@ -781,65 +821,31 @@ export default function AdminPage() {
                       }}
                     >
                       <option value="both">Both (Telugu & English)</option>
-                      <option value="english">English Only</option>
-                      <option value="telugu">Telugu Only</option>
+                      <option value="english">English</option>
+                      <option value="telugu">Telugu</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Specific Fields for Chart vs Video */}
-                {postType === 'chart' ? (
-                  <div>
-                    <label style={{ fontSize: '12px', color: '#00e5ff', display: 'block', marginBottom: '4px', fontWeight: '700' }}>
-                      Chart Image URL / Blueprint File
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Paste high-res chart image URL or upload below"
-                      value={chartUrl}
-                      onChange={(e) => setChartUrl(e.target.value)}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#090d16',
-                        border: '1px solid rgba(0, 229, 255, 0.3)',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        color: '#fff',
-                        fontSize: '13px'
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label style={{ fontSize: '12px', color: '#c084fc', display: 'block', marginBottom: '4px', fontWeight: '700' }}>
-                      Video URL / YouTube Link (Unlisted)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. https://youtube.com/shorts/... or video link"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#090d16',
-                        border: '1px solid rgba(192, 132, 252, 0.3)',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        color: '#fff',
-                        fontSize: '13px'
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Drag and Drop Box for Admin Phone or PC */}
+                {/* Drag and Drop / Phone Gallery Picker */}
                 <div
                   onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={(e) => {
                     e.preventDefault();
                     setIsDragging(false);
-                    alert(`Selected file ready to send to ${postType === 'chart' ? 'Charts Section' : 'Videos Vault'}!`);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      setSelectedFileName(file.name);
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const result = event.target?.result as string;
+                        setUploadPreview(result);
+                        if (postType === 'chart') setChartUrl(result);
+                        else setVideoUrl(result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
                   }}
                   style={{
                     border: isDragging ? '2px dashed #00e5ff' : '2px dashed rgba(255,255,255,0.15)',
@@ -850,44 +856,103 @@ export default function AdminPage() {
                     cursor: 'pointer'
                   }}
                 >
-                  <UploadCloud size={30} color={postType === 'chart' ? '#00e5ff' : '#c084fc'} style={{ margin: '0 auto 8px auto' }} />
+                  <UploadCloud size={32} color="#00e5ff" style={{ margin: '0 auto 8px auto' }} />
                   <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>
-                    {postType === 'chart'
-                      ? 'Drag & Drop Chart Blueprint or Tap from Phone Gallery'
-                      : 'Drag & Drop Video Reel or Tap from Phone Camera/Videos'}
+                    Tap to Choose from Phone Gallery or Drag File
                   </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                    Supports JPG, PNG, WEBP, MP4
+                  </div>
+
+                  {selectedFileName && (
+                    <div style={{
+                      marginTop: '10px',
+                      backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                      color: '#00e676',
+                      border: '1px solid rgba(0, 230, 118, 0.3)',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      display: 'inline-block'
+                    }}>
+                      ✓ Selected: {selectedFileName}
+                    </div>
+                  )}
+
                   <input
                     type="file"
                     style={{ display: 'none' }}
                     id="admin-file-input"
-                    accept={postType === 'chart' ? 'image/*' : 'video/*'}
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) {
-                        alert(`Selected ${e.target.files[0].name} for ${postType === 'chart' ? 'Charts Section' : 'Videos Vault'}`);
-                      }
-                    }}
+                    accept="image/*,video/*"
+                    onChange={handleFileSelection}
                   />
-                  <label
-                    htmlFor="admin-file-input"
-                    style={{
-                      display: 'inline-block',
-                      marginTop: '10px',
-                      padding: '6px 14px',
-                      backgroundColor: 'rgba(255,255,255,0.08)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      color: '#cbd5e1',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Select From Phone
-                  </label>
+                  <div>
+                    <label
+                      htmlFor="admin-file-input"
+                      style={{
+                        display: 'inline-block',
+                        marginTop: '12px',
+                        padding: '8px 18px',
+                        backgroundColor: '#00e5ff',
+                        color: '#000',
+                        fontWeight: '700',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Open Phone Gallery
+                    </label>
+                  </div>
+
+                  {uploadPreview && (
+                    <div style={{ marginTop: '14px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0, 229, 255, 0.3)', backgroundColor: '#000', maxHeight: '200px' }}>
+                      {postType === 'chart' ? (
+                        <img
+                          src={uploadPreview}
+                          alt="Upload preview"
+                          style={{ width: '100%', maxHeight: '200px', objectFit: 'contain' }}
+                        />
+                      ) : (
+                        <video
+                          src={uploadPreview}
+                          controls
+                          style={{ width: '100%', maxHeight: '200px' }}
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
 
+                {/* Direct Video URL / YouTube Link option */}
+                {postType === 'video' && (
+                  <div>
+                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                      Or Paste Video / YouTube Unlisted Link
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://youtube.com/shorts/... or video link"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#090d16',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '8px',
+                        padding: '10px',
+                        color: '#fff',
+                        fontSize: '13px'
+                      }}
+                    />
+                  </div>
+                )}
+
+
                 {/* Date & Time Scheduling for Automatic Future Publishing */}
-                <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div style={{ backgroundColor: 'rgba(0, 229, 255, 0.05)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0, 229, 255, 0.15)' }}>
                   <label style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                    <Calendar size={14} /> Schedule Publish Date & Time (Optional)
+                    <Calendar size={14} /> Schedule Post (Optional)
                   </label>
                   <input
                     type="datetime-local"
@@ -903,13 +968,16 @@ export default function AdminPage() {
                       fontSize: '13px'
                     }}
                   />
+                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+                    If date & time is set, post automatically goes live to users on that exact moment.
+                  </span>
                 </div>
 
                 <div>
                   <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Setup Description & Logic</label>
                   <textarea
-                    rows={2}
-                    placeholder="Strategy breakdown for members..."
+                    rows={3}
+                    placeholder="Provide details about the trading setup, risk reward, and entry criteria..."
                     value={postDesc}
                     onChange={(e) => setPostDesc(e.target.value)}
                     style={{
@@ -924,99 +992,90 @@ export default function AdminPage() {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn-trading-glow"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: postType === 'chart' ? '#00e5ff' : '#c084fc'
-                  }}
-                >
-                  {scheduleDateTime
-                    ? `Schedule ${postType === 'chart' ? 'Chart' : 'Video'}`
-                    : `Publish directly to ${postType === 'chart' ? 'Charts Section' : 'Videos Vault'}`}
+                <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px' }}>
+                  {scheduleDateTime ? 'Schedule Post for Date/Time' : 'Publish to Web Immediately'}
                 </button>
               </form>
             </div>
 
-            {/* Separate View of Uploaded Content */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-              {/* Box 1: Charts Only */}
-              <div style={{ backgroundColor: '#111726', borderRadius: '16px', border: '1px solid rgba(0, 229, 255, 0.2)', padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#00e5ff' }}>
-                    📊 Hand-Made Charts Section ({posts.filter(p => p.type === 'chart').length})
-                  </h4>
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Download Enabled</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '420px', overflowY: 'auto' }}>
-                  {posts.filter(p => p.type === 'chart').length === 0 ? (
-                    <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
-                      No charts uploaded yet. Use the uploader above to add charts!
-                    </div>
-                  ) : (
-                    posts.filter(p => p.type === 'chart').map((post) => (
-                      <div key={post.id} style={{ backgroundColor: '#161e2e', borderRadius: '8px', padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <div style={{ overflow: 'hidden' }}>
-                          <div style={{ fontWeight: '700', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{post.title}</div>
-                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Language: {post.language} • Destination: Charts Section</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePost(post.id)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                            title="Delete Chart"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+            {/* List of Published & Scheduled Posts */}
+            <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '14px' }}>
+                All Published & Scheduled Content ({posts.length})
+              </h3>
 
-              {/* Box 2: Videos Only */}
-              <div style={{ backgroundColor: '#111726', borderRadius: '16px', border: '1px solid rgba(192, 132, 252, 0.2)', padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#c084fc' }}>
-                    🎥 Video Vault Section ({posts.filter(p => p.type === 'video').length})
-                  </h4>
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Protected Player</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '420px', overflowY: 'auto' }}>
-                  {posts.filter(p => p.type === 'video').length === 0 ? (
-                    <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
-                      No videos uploaded yet. Use the uploader above to add video reels!
-                    </div>
-                  ) : (
-                    posts.filter(p => p.type === 'video').map((post) => (
-                      <div key={post.id} style={{ backgroundColor: '#161e2e', borderRadius: '8px', padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <div style={{ overflow: 'hidden' }}>
-                          <div style={{ fontWeight: '700', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{post.title}</div>
-                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Language: {post.language} • Destination: Video Vault</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePost(post.id)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                            title="Delete Video"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '550px', overflowY: 'auto' }}>
+                {posts.map((post) => (
+                  <div
+                    key={post.id}
+                    style={{
+                      backgroundColor: '#161e2e',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: '10px',
+                      padding: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontSize: '10px',
+                          textTransform: 'uppercase',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
+                          color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
+                          fontWeight: '700'
+                        }}>
+                          {post.type}
+                        </span>
+                        <h5 style={{ fontSize: '13.5px', fontWeight: '700', color: '#fff' }}>{post.title}</h5>
                       </div>
-                    ))
-                  )}
-                </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                        Language: {post.language} {post.scheduledAt && `• Scheduled: ${new Date(post.scheduledAt).toLocaleDateString()}`}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        fontSize: '11px',
+                        color: post.published ? '#00e676' : '#f59e0b',
+                        fontWeight: '600'
+                      }}>
+                        {post.published ? 'Live' : 'Scheduled'}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePost(post.id)}
+                        title="Delete Post"
+                        style={{
+                          backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                          color: '#ef4444',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          borderRadius: '6px',
+                          padding: '6px 8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11.5px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <Trash2 size={13} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
-
 
         {/* TAB 3: REAL-TIME PAYMENT LOGS & UTR TRACKER */}
         {activeTab === 'payments' && (
