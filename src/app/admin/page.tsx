@@ -41,7 +41,8 @@ export default function AdminPage() {
   const [postDesc, setPostDesc] = useState('');
   const [postType, setPostType] = useState<'chart' | 'video'>('chart');
   const [postLanguage, setPostLanguage] = useState<'both' | 'english' | 'telugu'>('both');
-  const [scheduleDateTime, setScheduleDateTime] = useState('');
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
   const [chartUrl, setChartUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
 
@@ -280,7 +281,15 @@ export default function AdminPage() {
     const effectiveChartUrl = chartUrl || (postType === 'chart' ? uploadPreview : undefined);
     const effectiveVideoUrl = videoUrl || (postType === 'video' ? uploadPreview : undefined);
     const isChart = postType === 'chart';
-    const isScheduled = scheduleDateTime && new Date(scheduleDateTime) > new Date();
+
+    // Combine Date and Time pickers into ISO string
+    let effectiveScheduleDateTime: string | undefined = undefined;
+    if (scheduleDate) {
+      const timePart = scheduleTime || '09:00';
+      effectiveScheduleDateTime = `${scheduleDate}T${timePart}:00`;
+    }
+
+    const isScheduled = effectiveScheduleDateTime && new Date(effectiveScheduleDateTime) > new Date();
 
     const newPostPayload: PostItem = {
       id: `post_${Date.now()}`,
@@ -291,7 +300,7 @@ export default function AdminPage() {
       chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       videoUrl: !isChart ? (effectiveVideoUrl || 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0') : undefined,
       downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
-      scheduledAt: scheduleDateTime || undefined,
+      scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()
     };
@@ -318,7 +327,7 @@ export default function AdminPage() {
         language: postLanguage,
         chartUrl: isHugePayload && isChart ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : effectiveChartUrl,
         videoUrl: isHugePayload && !isChart ? 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0' : effectiveVideoUrl,
-        scheduledAt: scheduleDateTime || undefined
+        scheduledAt: effectiveScheduleDateTime || undefined
       };
 
       try {
@@ -344,9 +353,10 @@ export default function AdminPage() {
       setVideoUrl('');
       setUploadPreview(null);
       setSelectedFileName('');
-      setScheduleDateTime('');
+      setScheduleDate('');
+      setScheduleTime('');
       loadAdminData();
-      alert('Success! Your post has been published and is now live on the website.');
+      alert(isScheduled ? `Success! Your post has been scheduled for ${new Date(effectiveScheduleDateTime!).toLocaleString()}` : 'Success! Your post has been published and is now live on the website.');
       setTimeout(() => setActionMessage(''), 4000);
     } catch (err) {
       console.error(err);
@@ -1054,27 +1064,139 @@ export default function AdminPage() {
                 )}
 
 
-                {/* Date & Time Scheduling for Automatic Future Publishing */}
-                <div style={{ backgroundColor: 'rgba(0, 229, 255, 0.05)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0, 229, 255, 0.15)' }}>
-                  <label style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                    <Calendar size={14} /> Schedule Post (Optional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={scheduleDateTime}
-                    onChange={(e) => setScheduleDateTime(e.target.value)}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#090d16',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '6px',
-                      padding: '8px',
-                      color: '#fff',
-                      fontSize: '13px'
-                    }}
-                  />
-                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
-                    If date & time is set, post automatically goes live to users on that exact moment.
+                {/* Interactive Date & Time Scheduling with Visual Pickers & Quick Presets */}
+                <div style={{ backgroundColor: 'rgba(0, 229, 255, 0.05)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(0, 229, 255, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '13px', color: '#00e5ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={16} /> Schedule Publish Time (Interactive Calendar)
+                    </label>
+                    {(scheduleDate || scheduleTime) && (
+                      <button
+                        type="button"
+                        onClick={() => { setScheduleDate(''); setScheduleTime(''); }}
+                        style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Clear Schedule (Publish Now)
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Visual Date & Time Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    {/* Date Picker */}
+                    <div>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Select Date</span>
+                      <input
+                        type="date"
+                        value={scheduleDate}
+                        onChange={(e) => setScheduleDate(e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#090d16',
+                          border: '1px solid #00e5ff',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          color: '#fff',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          colorScheme: 'dark'
+                        }}
+                      />
+                    </div>
+
+                    {/* Time Picker */}
+                    <div>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Select Time</span>
+                      <input
+                        type="time"
+                        value={scheduleTime}
+                        onChange={(e) => setScheduleTime(e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#090d16',
+                          border: '1px solid #00e5ff',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          color: '#fff',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          colorScheme: 'dark'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 1-Click Quick Schedule Presets */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>Quick:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + 1);
+                        setScheduleDate(d.toISOString().split('T')[0]);
+                        setScheduleTime('09:15');
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#00e5ff',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Tomorrow 9:15 AM (Market Open)
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setHours(d.getHours() + 1);
+                        setScheduleDate(d.toISOString().split('T')[0]);
+                        setScheduleTime(d.toTimeString().slice(0, 5));
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#cbd5e1',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      In 1 Hour
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + 1);
+                        setScheduleDate(d.toISOString().split('T')[0]);
+                        setScheduleTime('18:00');
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#cbd5e1',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Tomorrow Evening (6:00 PM)
+                    </button>
+                  </div>
+
+                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '8px' }}>
+                    {scheduleDate
+                      ? `🗓️ Scheduled to automatically go live: ${scheduleDate} at ${scheduleTime || '09:00'}`
+                      : '✨ Leave empty to publish immediately upon clicking the button below.'}
                   </span>
                 </div>
 
@@ -1098,7 +1220,7 @@ export default function AdminPage() {
                 </div>
 
                 <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px' }}>
-                  {scheduleDateTime ? 'Schedule Post for Date/Time' : 'Publish to Web Immediately'}
+                  {scheduleDate ? `Schedule for ${scheduleDate} (${scheduleTime || '09:00'})` : 'Publish to Web Immediately'}
                 </button>
               </form>
             </div>
