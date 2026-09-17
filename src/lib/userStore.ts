@@ -40,10 +40,15 @@ export const INITIAL_REGISTERED_USERS: UserAdminType[] = [
 declare global {
   var __TRADINGHATH_USERS__: UserAdminType[] | undefined;
   var __TRADINGHATH_DELETED_USER_IDS__: string[] | undefined;
+  var __TRADINGHATH_PRO_OVERRIDES__: Record<string, boolean> | undefined;
 }
 
 if (!global.__TRADINGHATH_DELETED_USER_IDS__) {
   global.__TRADINGHATH_DELETED_USER_IDS__ = ['user_live_02', 'user_live_03'];
+}
+
+if (!global.__TRADINGHATH_PRO_OVERRIDES__) {
+  global.__TRADINGHATH_PRO_OVERRIDES__ = {};
 }
 
 if (!global.__TRADINGHATH_USERS__) {
@@ -56,27 +61,58 @@ export function getAllUsers(): UserAdminType[] {
   }
   const deleted = new Set(global.__TRADINGHATH_DELETED_USER_IDS__ || []);
   const blocked = new Set(['kiran_trader', 'suresh_kumar', 'kiran.reddy92@gmail.com', 'suresh.kumar88@gmail.com']);
-  return global.__TRADINGHATH_USERS__.filter(u => 
-    !deleted.has(u.id) &&
-    !blocked.has(u.username?.toLowerCase()) &&
-    !blocked.has(u.email?.toLowerCase())
-  );
+  const overrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
+
+  return global.__TRADINGHATH_USERS__
+    .filter(u => 
+      !deleted.has(u.id) &&
+      !blocked.has(u.username?.toLowerCase()) &&
+      !blocked.has(u.email?.toLowerCase())
+    )
+    .map(u => {
+      if (overrides[u.id] !== undefined) {
+        return { ...u, isPro: overrides[u.id] };
+      }
+      if (overrides[u.email?.toLowerCase()] !== undefined) {
+        return { ...u, isPro: overrides[u.email.toLowerCase()] };
+      }
+      return u;
+    });
 }
 
 export function registerNewUser(user: UserAdminType) {
   if (!global.__TRADINGHATH_USERS__) global.__TRADINGHATH_USERS__ = [];
+  const overrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
+  const effectiveIsPro = overrides[user.id] !== undefined ? overrides[user.id] : (overrides[user.email?.toLowerCase()] !== undefined ? overrides[user.email.toLowerCase()] : user.isPro);
+  const userToAdd = { ...user, isPro: effectiveIsPro };
+
   // Remove if already exists with same username/email
   global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.filter(
     u => u.username !== user.username && u.email !== user.email
   );
-  global.__TRADINGHATH_USERS__.unshift(user);
+  global.__TRADINGHATH_USERS__.unshift(userToAdd);
 }
 
 export function updateUserProStatus(userId: string, isPro: boolean) {
-  if (!global.__TRADINGHATH_USERS__) return;
-  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.map(u =>
-    u.id === userId ? { ...u, isPro, proGrantedAt: isPro ? new Date().toISOString() : undefined } : u
-  );
+  if (!global.__TRADINGHATH_PRO_OVERRIDES__) {
+    global.__TRADINGHATH_PRO_OVERRIDES__ = {};
+  }
+  global.__TRADINGHATH_PRO_OVERRIDES__[userId] = isPro;
+
+  if (!global.__TRADINGHATH_USERS__) {
+    global.__TRADINGHATH_USERS__ = [...INITIAL_REGISTERED_USERS];
+  }
+
+  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.map(u => {
+    if (u.id === userId || u.email?.toLowerCase() === userId.toLowerCase() || u.username?.toLowerCase() === userId.toLowerCase()) {
+      // Also register override for email
+      if (u.email) {
+        global.__TRADINGHATH_PRO_OVERRIDES__![u.email.toLowerCase()] = isPro;
+      }
+      return { ...u, isPro, proGrantedAt: isPro ? new Date().toISOString() : undefined };
+    }
+    return u;
+  });
 }
 
 export function deleteUserPermanently(userId: string) {

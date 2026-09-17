@@ -66,7 +66,25 @@ export default function DashboardPage() {
       // Pro only if role is admin OR isPro is strictly 'true'
       const adminRole = role === 'admin' || currentUser?.role === 'admin' || currentUser?.username === 'tradinghath' || currentUser?.email === 'tradinghath@gmail.com';
       setIsAdmin(adminRole);
-      const hasPro = adminRole || proStatus === 'true';
+
+      // Check if this user was explicitly revoked in overrides
+      let hasPro = adminRole || proStatus === 'true';
+      if (!adminRole && currentUser) {
+        try {
+          const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
+          if (storedOverrides) {
+            const overrides = JSON.parse(storedOverrides);
+            if (overrides[currentUser.id] === false || (currentUser.email && overrides[currentUser.email.toLowerCase()] === false) || (currentUser.username && overrides[currentUser.username.toLowerCase()] === false)) {
+              hasPro = false;
+              localStorage.setItem('tradinghath_isPro', 'false');
+            } else if (overrides[currentUser.id] === true || (currentUser.email && overrides[currentUser.email.toLowerCase()] === true)) {
+              hasPro = true;
+              localStorage.setItem('tradinghath_isPro', 'true');
+            }
+          }
+        } catch (e) {}
+      }
+
       setIsPro(hasPro);
       setCheckingAccess(false);
     }
