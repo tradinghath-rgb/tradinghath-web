@@ -91,6 +91,12 @@ export function changeUserPassword(userId: string, newPass: string) {
   );
 }
 
+export function findUserByIdentifier(identifier: string): UserAdminType | null {
+  const cleanId = identifier.trim().toLowerCase();
+  const users = getAllUsers();
+  return users.find(u => u.username.toLowerCase() === cleanId || u.email.toLowerCase() === cleanId) || null;
+}
+
 export function findUserByCredentials(identifier: string, pass: string): UserAdminType | null {
   const cleanId = identifier.trim().toLowerCase();
   const cleanPass = pass.trim();

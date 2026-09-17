@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials } from '@/lib/userStore';
+import { findUserByCredentials, findUserByIdentifier } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     if (!identifier || !password) {
       return NextResponse.json(
-        { success: false, error: 'Please enter both username/email and password.' },
+        { success: false, error: 'Please enter both email and password.' },
         { status: 400 }
       );
     }
@@ -33,14 +33,27 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Strict Check: User MUST have registered first!
+    // 2. Strict Check: Does this email or username exist at all?
+    const userExists = findUserByIdentifier(cleanIdentifier);
+    if (!userExists) {
+      return NextResponse.json(
+        {
+          success: false,
+          notRegistered: true,
+          error: `This email "${cleanIdentifier}" is not registered. Please click "Sign up" below to create your account first!`
+        },
+        { status: 404 }
+      );
+    }
+
+    // 3. User exists: check password
     const existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
 
     if (!existingUser) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Account not found or invalid password! Please create an account first by clicking "Sign up" below.'
+          error: 'Incorrect password! Please enter the correct password or click "Forgot password".'
         },
         { status: 401 }
       );
