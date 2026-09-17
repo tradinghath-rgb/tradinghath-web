@@ -45,6 +45,7 @@ export default function AdminPage() {
   const [scheduleTime, setScheduleTime] = useState('');
   const [chartUrl, setChartUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [postFilter, setPostFilter] = useState<'all' | 'scheduled' | 'live'>('all');
 
   // Drag and drop indicator
   const [isDragging, setIsDragging] = useState(false);
@@ -1324,7 +1325,7 @@ export default function AdminPage() {
               </form>
             </div>
 
-            {/* List of Published & Scheduled Posts with dedicated Scheduled Filter & Control */}
+            {/* List of Published & Scheduled Posts with dedicated Filter Tabs & Control */}
             <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
@@ -1336,154 +1337,223 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                {posts.some(p => !p.published || p.scheduledAt) && (
-                  <span style={{
-                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    color: '#f59e0b',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    fontWeight: '700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <Calendar size={13} /> {posts.filter(p => !p.published || p.scheduledAt).length} Scheduled In Queue
-                  </span>
-                )}
+                {/* Filter Pills: All, Scheduled Queue, Live Published */}
+                <div style={{ display: 'flex', gap: '6px', backgroundColor: '#090d16', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPostFilter('all')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: postFilter === 'all' ? 'rgba(0, 229, 255, 0.2)' : 'transparent',
+                      color: postFilter === 'all' ? '#00e5ff' : '#94a3b8',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    All ({posts.length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPostFilter('scheduled')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: postFilter === 'scheduled' ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                      color: postFilter === 'scheduled' ? '#f59e0b' : '#94a3b8',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ⏳ Scheduled ({posts.filter(p => !p.published || (p.scheduledAt && new Date(p.scheduledAt) > new Date())).length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPostFilter('live')}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: postFilter === 'live' ? 'rgba(0, 230, 118, 0.2)' : 'transparent',
+                      color: postFilter === 'live' ? '#00e676' : '#94a3b8',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ● Live ({posts.filter(p => p.published && (!p.scheduledAt || new Date(p.scheduledAt) <= new Date())).length})
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '550px', overflowY: 'auto' }}>
-                {posts.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '13px' }}>
-                    No posts or scheduled items found. Use the form on the left to publish or schedule setups!
+                {posts
+                  .filter(post => {
+                    const isUpcomingSchedule = !post.published || (post.scheduledAt && new Date(post.scheduledAt) > new Date());
+                    if (postFilter === 'scheduled') return isUpcomingSchedule;
+                    if (postFilter === 'live') return !isUpcomingSchedule;
+                    return true;
+                  })
+                  .length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '40px 20px',
+                    backgroundColor: 'rgba(9, 13, 22, 0.6)',
+                    borderRadius: '10px',
+                    border: '1px dashed rgba(255, 255, 255, 0.1)'
+                  }}>
+                    <Calendar size={28} color="#64748b" style={{ margin: '0 auto 10px auto' }} />
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>
+                      {postFilter === 'scheduled'
+                        ? 'No Scheduled Items In Queue'
+                        : postFilter === 'live'
+                        ? 'No Live Published Posts Found'
+                        : 'No Content Found'}
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', maxWidth: '340px', margin: '6px auto 0 auto' }}>
+                      {postFilter === 'scheduled'
+                        ? 'All scheduled setups have either gone live or been canceled. Pick a date & time in the form on the left to schedule new content.'
+                        : 'Use the "Upload & Schedule New Post" form to upload charts or video lessons to the website.'}
+                    </p>
                   </div>
                 ) : (
-                  posts.map((post) => {
-                    const isUpcomingSchedule = !post.published || (post.scheduledAt && new Date(post.scheduledAt) > new Date());
+                  posts
+                    .filter(post => {
+                      const isUpcomingSchedule = !post.published || (post.scheduledAt && new Date(post.scheduledAt) > new Date());
+                      if (postFilter === 'scheduled') return isUpcomingSchedule;
+                      if (postFilter === 'live') return !isUpcomingSchedule;
+                      return true;
+                    })
+                    .map((post) => {
+                      const isUpcomingSchedule = !post.published || (post.scheduledAt && new Date(post.scheduledAt) > new Date());
 
-                    return (
-                      <div
-                        key={post.id}
-                        style={{
-                          backgroundColor: isUpcomingSchedule ? 'rgba(245, 158, 11, 0.04)' : '#161e2e',
-                          border: isUpcomingSchedule ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.06)',
-                          borderRadius: '10px',
-                          padding: '14px',
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '12px'
-                        }}
-                      >
-                        <div style={{ flex: '1 1 240px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{
-                              fontSize: '10.5px',
-                              textTransform: 'uppercase',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
-                              color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
-                              fontWeight: '700'
-                            }}>
-                              {post.type}
-                            </span>
-
-                            {isUpcomingSchedule ? (
+                      return (
+                        <div
+                          key={post.id}
+                          style={{
+                            backgroundColor: isUpcomingSchedule ? 'rgba(245, 158, 11, 0.04)' : '#161e2e',
+                            border: isUpcomingSchedule ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: '10px',
+                            padding: '14px',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{ flex: '1 1 240px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <span style={{
                                 fontSize: '10.5px',
                                 textTransform: 'uppercase',
                                 padding: '2px 8px',
                                 borderRadius: '4px',
-                                backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                                color: '#f59e0b',
-                                fontWeight: '800',
-                                border: '1px solid rgba(245, 158, 11, 0.3)'
-                              }}>
-                                ⏳ Scheduled
-                              </span>
-                            ) : (
-                              <span style={{
-                                fontSize: '10.5px',
-                                textTransform: 'uppercase',
-                                padding: '2px 8px',
-                                borderRadius: '4px',
-                                backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                                color: '#00e676',
+                                backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
+                                color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
                                 fontWeight: '700'
                               }}>
-                                ● Live on Web
+                                {post.type}
                               </span>
-                            )}
 
-                            <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: 0 }}>
-                              {post.title}
-                            </h5>
+                              {isUpcomingSchedule ? (
+                                <span style={{
+                                  fontSize: '10.5px',
+                                  textTransform: 'uppercase',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                  color: '#f59e0b',
+                                  fontWeight: '800',
+                                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                                }}>
+                                  ⏳ Scheduled
+                                </span>
+                              ) : (
+                                <span style={{
+                                  fontSize: '10.5px',
+                                  textTransform: 'uppercase',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                                  color: '#00e676',
+                                  fontWeight: '700'
+                                }}>
+                                  ● Live on Web
+                                </span>
+                              )}
+
+                              <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: 0 }}>
+                                {post.title}
+                              </h5>
+                            </div>
+
+                            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                              <span><b>Language:</b> <span style={{ color: '#00e5ff', textTransform: 'capitalize' }}>{post.language}</span></span>
+                              {post.scheduledAt && (
+                                <span style={{ color: '#f59e0b', fontWeight: '600' }}>
+                                  🗓️ Scheduled Time: {new Date(post.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                            <span><b>Language:</b> <span style={{ color: '#00e5ff', textTransform: 'capitalize' }}>{post.language}</span></span>
-                            {post.scheduledAt && (
-                              <span style={{ color: '#f59e0b', fontWeight: '600' }}>
-                                🗓️ Scheduled Time: {new Date(post.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                              </span>
+                          {/* Schedule Control Actions: Publish Now, Cancel Schedule, Delete */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            {isUpcomingSchedule && (
+                              <button
+                                type="button"
+                                onClick={() => handlePublishNowPost(post.id)}
+                                title="Publish this scheduled post live immediately"
+                                style={{
+                                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                                  color: '#00e676',
+                                  border: '1px solid rgba(0, 230, 118, 0.4)',
+                                  borderRadius: '6px',
+                                  padding: '6px 12px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  fontSize: '12px',
+                                  fontWeight: '700'
+                                }}
+                              >
+                                ⚡ Publish Now
+                              </button>
                             )}
-                          </div>
-                        </div>
 
-                        {/* Schedule Control Actions: Publish Now, Cancel Schedule, Delete */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          {isUpcomingSchedule && (
                             <button
                               type="button"
-                              onClick={() => handlePublishNowPost(post.id)}
-                              title="Publish this scheduled post live immediately"
+                              onClick={() => handleDeletePost(post.id)}
+                              title={isUpcomingSchedule ? "Cancel this scheduled post" : "Delete from website"}
                               style={{
-                                backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                                color: '#00e676',
-                                border: '1px solid rgba(0, 230, 118, 0.4)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                                color: '#ef4444',
+                                border: '1px solid rgba(239, 68, 68, 0.3)',
                                 borderRadius: '6px',
-                                padding: '6px 12px',
+                                padding: '6px 10px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                gap: '4px',
                                 fontSize: '12px',
-                                fontWeight: '700'
+                                fontWeight: '600'
                               }}
                             >
-                              ⚡ Publish Now
+                              <Trash2 size={13} />
+                              {isUpcomingSchedule ? 'Cancel Schedule' : 'Delete'}
                             </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePost(post.id)}
-                            title={isUpcomingSchedule ? "Cancel this scheduled post" : "Delete from website"}
-                            style={{
-                              backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                              color: '#ef4444',
-                              border: '1px solid rgba(239, 68, 68, 0.3)',
-                              borderRadius: '6px',
-                              padding: '6px 10px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            <Trash2 size={13} />
-                            {isUpcomingSchedule ? 'Cancel Schedule' : 'Delete'}
-                          </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })
                 )}
               </div>
             </div>
