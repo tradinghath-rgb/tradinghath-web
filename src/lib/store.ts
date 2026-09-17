@@ -67,11 +67,12 @@ export const INITIAL_POSTS: PostItem[] = [
     type: 'chart',
     language: 'both',
     chartUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
-    videoUrl: '/videos/telugu/REEL-15(WHY FVG FAIL).mp4',
+    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1&rel=0&modestbranding=1',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
     createdAt: new Date().toISOString()
   },
+
   {
     id: 'p3',
     title: 'Stop Loss Trap Identification (Reel 16)',

@@ -443,19 +443,34 @@ export default function DashboardPage() {
                       </span>
                     </div>
 
-                    {/* Protected HTML5 Video Player */}
+                    {/* Responsive Video Player Supporting YouTube Embeds & Direct Video */}
                     <div style={{ position: 'relative', height: '360px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <video
-                        src={selectedChart.videoUrl}
-                        controls
-                        controlsList="nodownload"
-                        disablePictureInPicture
-                        onContextMenu={(e) => e.preventDefault()}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '360px' }}
-                      >
-                        Your browser does not support HTML5 video.
-                      </video>
+                      {selectedChart.videoUrl?.includes('youtube.com') || selectedChart.videoUrl?.includes('youtu.be') ? (
+                        <iframe
+                          src={
+                            selectedChart.videoUrl.includes('/embed/')
+                              ? selectedChart.videoUrl
+                              : selectedChart.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/')
+                          }
+                          title={selectedChart.title}
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video
+                          src={selectedChart.videoUrl}
+                          controls
+                          controlsList="nodownload"
+                          disablePictureInPicture
+                          onContextMenu={(e) => e.preventDefault()}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '360px' }}
+                        >
+                          Your browser does not support HTML5 video.
+                        </video>
+                      )}
                     </div>
+
                   </div>
                 </div>
 
