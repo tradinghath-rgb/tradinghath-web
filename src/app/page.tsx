@@ -18,7 +18,10 @@ import {
   Star,
   Sparkles,
   Zap,
-  AlertCircle
+  AlertCircle,
+  User,
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
 
@@ -37,6 +40,12 @@ export default function HomePage() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentSuccess, setCommentSuccess] = useState('');
 
+  // Auth & Profile states
+  const [user, setUser] = useState<any>(null);
+  const [isPro, setIsPro] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
   // Payment states
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showUtrModal, setShowUtrModal] = useState(false);
@@ -46,6 +55,35 @@ export default function HomePage() {
   const [termsModal, setTermsModal] = useState(false);
 
   useEffect(() => {
+    // Check if user is logged in
+    if (typeof window !== 'undefined') {
+      try {
+        const storedUser = localStorage.getItem('tradinghath_user');
+        const role = localStorage.getItem('tradinghath_role');
+        const proStatus = localStorage.getItem('tradinghath_isPro');
+        
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          setUser(parsed);
+          const adminCheck = role === 'admin' || parsed?.role === 'admin' || parsed?.username === 'tradinghath' || parsed?.email === 'tradinghath@gmail.com';
+          setIsAdmin(adminCheck);
+
+          // Check pro status
+          let pro = adminCheck || proStatus === 'true';
+          const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
+          if (storedOverrides && !adminCheck) {
+            const overrides = JSON.parse(storedOverrides);
+            if (overrides[parsed.id] === false || (parsed.email && overrides[parsed.email.toLowerCase()] === false)) {
+              pro = false;
+            } else if (overrides[parsed.id] === true || (parsed.email && overrides[parsed.email.toLowerCase()] === true)) {
+              pro = true;
+            }
+          }
+          setIsPro(pro);
+        }
+      } catch (e) {}
+    }
+
     fetch('/api/comments')
       .then(res => res.json())
       .then(data => {
@@ -53,6 +91,18 @@ export default function HomePage() {
       })
       .catch(console.error);
   }, []);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('tradinghath_user');
+      localStorage.removeItem('tradinghath_role');
+      localStorage.removeItem('tradinghath_isPro');
+      setUser(null);
+      setIsPro(false);
+      setIsAdmin(false);
+      window.location.reload();
+    }
+  };
 
   // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
   const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
@@ -188,29 +238,211 @@ export default function HomePage() {
             </div>
           </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link
-              href="/login"
-              style={{
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#cbd5e1',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-              }}
-            >
-              Sign In
-            </Link>
+          {/* Header Action: User Profile if logged in, or Sign In / Get Access if guest */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {user ? (
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Direct Vault Access Button */}
+                <Link
+                  href="/dashboard"
+                  style={{
+                    backgroundColor: 'rgba(0, 229, 255, 0.15)',
+                    border: '1px solid #00e5ff',
+                    color: '#00e5ff',
+                    padding: '7px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Sparkles size={14} /> Open Vault
+                </Link>
 
-            <button
-              onClick={scrollToPricing}
-              className="btn-trading-glow"
-              style={{ fontSize: '13px', padding: '8px 16px' }}
-            >
-              Get Access ₹399
-            </button>
+                {/* Profile Pill & Dropdown Toggle */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    style={{
+                      backgroundColor: '#111726',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '24px',
+                      padding: '6px 12px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px'
+                    }}
+                  >
+                    <div style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      backgroundColor: '#00e5ff',
+                      color: '#000',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {(user?.username || 'U')[0].toUpperCase()}
+                    </div>
+                    <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.username || 'Profile'}
+                    </span>
+                    <ChevronDown size={14} color="#94a3b8" />
+                  </button>
+
+                  {/* Profile Dropdown Menu */}
+                  {showProfileDropdown && (
+                    <div style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '115%',
+                      width: '240px',
+                      backgroundColor: '#111726',
+                      border: '1px solid rgba(0, 229, 255, 0.3)',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+                      padding: '12px',
+                      zIndex: 100
+                    }}>
+                      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '10px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{user.username}</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all' }}>{user.email}</div>
+                        <div style={{ marginTop: '6px' }}>
+                          {isPro ? (
+                            <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
+                              ✓ PRO LIFETIME
+                            </span>
+                          ) : (
+                            <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
+                              FREE / UNPAID
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setShowProfileDropdown(false)}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(0, 229, 255, 0.08)',
+                            color: '#00e5ff',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Sparkles size={14} /> Go to Dashboard Vault
+                        </Link>
+
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setShowProfileDropdown(false)}
+                            style={{
+                              padding: '8px 10px',
+                              borderRadius: '6px',
+                              backgroundColor: 'rgba(225, 29, 72, 0.15)',
+                              color: '#fb7185',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              textDecoration: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <ShieldCheck size={14} /> Admin Console
+                          </Link>
+                        )}
+
+                        <button
+                          onClick={handleLogout}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                            color: '#ef4444',
+                            border: 'none',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            textAlign: 'left'
+                          }}
+                        >
+                          <LogOut size={14} /> Log Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Direct Logout Icon Button */}
+                <button
+                  onClick={handleLogout}
+                  title="Log Out"
+                  style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    borderRadius: '8px',
+                    padding: '7px 9px',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <LogOut size={15} />
+                  <span style={{ display: 'inline-block' }}>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#cbd5e1',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  Sign In
+                </Link>
+
+                <button
+                  onClick={scrollToPricing}
+                  className="btn-trading-glow"
+                  style={{ fontSize: '13px', padding: '8px 16px' }}
+                >
+                  Get Access ₹399
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
