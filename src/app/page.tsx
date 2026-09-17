@@ -565,22 +565,25 @@ export default function HomePage() {
               onClick={() => {
                 setAlreadyPaidNotice(true);
               }}
-              className="btn-trading-glow"
               style={{
                 width: '100%',
                 padding: '14px',
                 fontSize: '15px',
-                backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                border: '1px solid #00e676',
-                color: '#00e676',
+                fontWeight: '700',
+                backgroundColor: '#06281e',
+                border: '2px solid #00e676',
+                borderRadius: '12px',
+                color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0, 230, 118, 0.25)'
               }}
             >
               <CheckCircle2 size={18} color="#00e676" />
-              Payment Already Done • Access Lifetime Vault
+              <span>Payment Already Done • Access Vault</span>
             </button>
           ) : !user ? (
             <button
@@ -710,17 +713,19 @@ export default function HomePage() {
             {isPro || isAdmin ? (
               <Link
                 href="/dashboard"
-                className="btn-trading-glow"
                 style={{
                   fontSize: '13px',
                   padding: '10px 20px',
                   textDecoration: 'none',
-                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                  border: '1px solid #00e676',
-                  color: '#00e676',
+                  backgroundColor: '#06281e',
+                  border: '1.5px solid #00e676',
+                  borderRadius: '30px',
+                  color: '#ffffff',
+                  fontWeight: '700',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  boxShadow: '0 4px 15px rgba(0, 230, 118, 0.2)'
                 }}
               >
                 <CheckCircle2 size={15} color="#00e676" /> Payment Already Done • Open Vault
