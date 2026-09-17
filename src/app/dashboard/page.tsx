@@ -609,26 +609,41 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Language Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '13px', color: '#64748b' }}>Language:</span>
-            {(['all', 'english', 'telugu'] as const).map(lang => (
+          {/* Language Selector with Real-time Count Badges */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>Filter Language:</span>
+            {[
+              { id: 'all', label: 'All Reels', count: posts.filter(p => p.type === 'video').length },
+              { id: 'telugu', label: 'Telugu', count: posts.filter(p => p.type === 'video' && (p.language === 'telugu' || p.language === 'both')).length },
+              { id: 'english', label: 'English', count: posts.filter(p => p.type === 'video' && (p.language === 'english' || p.language === 'both')).length }
+            ].map(item => (
               <button
-                key={lang}
-                onClick={() => setLanguageFilter(lang)}
+                key={item.id}
+                onClick={() => setLanguageFilter(item.id as any)}
                 style={{
                   fontSize: '12.5px',
-                  fontWeight: '600',
-                  padding: '5px 12px',
-                  borderRadius: '6px',
-                  border: 'none',
+                  fontWeight: '700',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: languageFilter === item.id ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.1)',
                   cursor: 'pointer',
-                  backgroundColor: languageFilter === lang ? '#3875f6' : '#1e293b',
-                  color: languageFilter === lang ? '#ffffff' : '#94a3b8',
-                  textTransform: 'capitalize'
+                  backgroundColor: languageFilter === item.id ? 'rgba(0, 229, 255, 0.15)' : '#111726',
+                  color: languageFilter === item.id ? '#00e5ff' : '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                {lang}
+                <span>{item.label}</span>
+                <span style={{
+                  fontSize: '11px',
+                  backgroundColor: languageFilter === item.id ? '#00e5ff' : 'rgba(255, 255, 255, 0.1)',
+                  color: languageFilter === item.id ? '#000' : '#cbd5e1',
+                  padding: '1px 6px',
+                  borderRadius: '10px'
+                }}>
+                  {item.count}
+                </span>
               </button>
             ))}
           </div>
