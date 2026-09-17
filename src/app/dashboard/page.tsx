@@ -17,7 +17,11 @@ import {
   Info,
   CheckCircle2,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  User,
+  HelpCircle,
+  Compass,
+  X
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 
@@ -30,6 +34,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [isPro, setIsPro] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
 
   useEffect(() => {
     // Load auth status strictly
@@ -282,7 +288,50 @@ export default function DashboardPage() {
           </Link>
 
           {/* User Status / Action Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Directions / How to Use Button */}
+            <button
+              onClick={() => setShowGuideModal(true)}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#cbd5e1',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Compass size={14} color="#00e5ff" />
+              <span className="hidden sm:inline">Directions</span>
+            </button>
+
+            {/* Profile Button */}
+            <button
+              onClick={() => setShowProfileModal(true)}
+              style={{
+                backgroundColor: 'rgba(0, 229, 255, 0.12)',
+                border: '1px solid rgba(0, 229, 255, 0.35)',
+                color: '#00e5ff',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <User size={14} />
+              <span>{user?.username ? `@${user.username}` : 'Profile'}</span>
+            </button>
+
+            {/* Logout */}
             <button
               onClick={handleLogout}
               style={{
@@ -294,7 +343,8 @@ export default function DashboardPage() {
                 alignItems: 'center',
                 gap: '4px',
                 fontSize: '13px',
-                fontWeight: '600'
+                fontWeight: '600',
+                padding: '6px 8px'
               }}
             >
               <LogOut size={16} /> Logout
@@ -745,6 +795,247 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+        {/* MODAL 1: USER PROFILE MODAL */}
+        {showProfileModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 100
+          }}>
+            <div style={{
+              backgroundColor: '#111726',
+              border: '1px solid rgba(0, 229, 255, 0.3)',
+              borderRadius: '20px',
+              maxWidth: '420px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
+                <div style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #00e5ff 0%, #3b82f6 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#000',
+                  fontWeight: '800',
+                  fontSize: '22px'
+                }}>
+                  {(user?.username || 'U')[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>
+                    {user?.username || 'Verified Trader'}
+                  </h3>
+                  <span style={{
+                    fontSize: '11px',
+                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                    color: '#00e676',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontWeight: '700',
+                    display: 'inline-block',
+                    marginTop: '2px'
+                  }}>
+                    PRO LIFETIME MEMBER
+                  </span>
+                </div>
+              </div>
+
+              <div style={{
+                backgroundColor: '#090d16',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                marginBottom: '20px'
+              }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Username</span>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginTop: '2px' }}>
+                    {user?.username || 'Not Provided'}
+                  </div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Registered Email</span>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#00e5ff', marginTop: '2px' }}>
+                    {user?.email || 'tradinghath@gmail.com'}
+                  </div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Account Access Status</span>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#00e676', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                    <ShieldCheck size={16} /> 24/7 Unlimited Vault Access
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    setShowProfileModal(false);
+                    setShowGuideModal(true);
+                  }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View Directions
+                </button>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 2: DIRECTIONS & HOW TO USE THE VAULT */}
+        {showGuideModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 100
+          }}>
+            <div style={{
+              backgroundColor: '#111726',
+              border: '1px solid rgba(0, 229, 255, 0.3)',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '24px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <Compass size={22} color="#00e5ff" />
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>
+                  Member Vault Directions & Rules
+                </h3>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6' }}>
+                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #00e5ff' }}>
+                  <b style={{ color: '#fff' }}>1. Hand-Made Charts & Blueprints:</b>
+                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
+                    Click any chart card in the grid to view it in high resolution alongside its synchronized video reel explanation. Tap <b>"Save Chart to Gallery"</b> to download blueprints directly to your device's photo gallery.
+                  </p>
+                </div>
+
+                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #c084fc' }}>
+                  <b style={{ color: '#fff' }}>2. Side-by-Side Video Reels:</b>
+                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
+                    Watch institutional price action setups, liquidity sweeps, and order block strategies. Videos are protected with anti-piracy nodownload controls for member-only access.
+                  </p>
+                </div>
+
+                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #00e676' }}>
+                  <b style={{ color: '#fff' }}>3. Language Filtering:</b>
+                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
+                    Use the filter tabs at the top to toggle between <b>English</b> and <b>Telugu</b> explanations anytime.
+                  </p>
+                </div>
+
+                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #f59e0b' }}>
+                  <b style={{ color: '#fff' }}>4. Community Support:</b>
+                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
+                    For any setup clarification, contact <b>tradinghath@gmail.com</b>.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="btn-trading-glow"
+                style={{ width: '100%', padding: '11px', marginTop: '20px', fontSize: '13.5px' }}
+              >
+                Got It, Let's Trade!
+              </button>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
