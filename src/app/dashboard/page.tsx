@@ -283,7 +283,7 @@ export default function DashboardPage() {
                 color: activeTab === 'charts' ? '#00e5ff' : '#94a3b8'
               }}
             >
-              <BookOpen size={16} /> Hand-Made Charts
+              <BookOpen size={16} /> Hand-Made Charts ({posts.filter(p => p.type === 'chart').length})
             </button>
             <button
               onClick={() => setActiveTab('videos')}
@@ -296,12 +296,12 @@ export default function DashboardPage() {
                 fontSize: '14px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                border: activeTab === 'videos' ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.1)',
-                backgroundColor: activeTab === 'videos' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                color: activeTab === 'videos' ? '#00e5ff' : '#94a3b8'
+                border: activeTab === 'videos' ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: activeTab === 'videos' ? 'rgba(192, 132, 252, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                color: activeTab === 'videos' ? '#c084fc' : '#94a3b8'
               }}
             >
-              <Film size={16} /> Video Library (English & Telugu)
+              <Film size={16} /> Video Library Vault ({posts.filter(p => p.type === 'video').length})
             </button>
           </div>
 
@@ -587,25 +587,9 @@ export default function DashboardPage() {
               gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
               gap: '20px'
             }}>
-              {[
-                { title: 'Reel 24: High Probability LQT Setup', file: '/videos/telugu/REEL-24(LQT SETUP).mp4', lang: 'Telugu & English' },
-                { title: 'Reel 15: Why FVG Fails in Retail Traps', file: '/videos/telugu/REEL-15(WHY FVG FAIL).mp4', lang: 'Telugu' },
-                { title: 'Reel 16: Stop Loss Trap (SL Trap)', file: '/videos/telugu/REEL-16(SL TRAP).mp4', lang: 'Telugu' },
-                { title: 'Reel 17: Support & Resistance Truth', file: '/videos/telugu/REEL-17(SUPPORT AND RESISTANCE).mp4', lang: 'Telugu' },
-                { title: 'Reel 18: Head & Shoulder True Pattern', file: '/videos/telugu/REEL-18(HEAD AND SHOULDE).mp4', lang: 'Telugu' },
-                { title: 'Reel 19: Liquidity Grab & Sweep Mechanics', file: '/videos/telugu/REEL-19(LQT GRAB AND SWEEP).mp4', lang: 'Telugu' },
-                { title: 'Reel 20: Fake Breakout Anatomy', file: '/videos/telugu/REEL-20(FAKE BREAKOUT).mp4', lang: 'Telugu' },
-                { title: 'Reel 21: Perfect Sniper Entry Strategy', file: '/videos/telugu/REEL-21(PERFECT ENTRY).mp4', lang: 'Telugu' },
-                { title: 'Reel 22: Double Top Institutional Rules', file: '/videos/telugu/REEL-22(DOUBLE TOP).mp4', lang: 'Telugu' },
-                { title: 'Reel 23: Double Bottom Trap Avoidance', file: '/videos/telugu/REEL-23(DOUBLE BOTTOM).mp4', lang: 'Telugu' },
-                { title: 'Reel 1: Volume Secret Formula', file: '/videos/english/reel-1(volume secret).mp4', lang: 'English' },
-                { title: 'Reel 11: BOS & CHOCH Trend Shifts', file: '/videos/english/reel-11(BOS&CHOCH).mp4', lang: 'English' },
-                { title: 'Reel 5: Institutional Liquidity Concepts', file: '/videos/english/reel-5(liquiduty).mp4', lang: 'English' },
-                { title: 'Reel 6: High Win-Rate Order Block Strategy', file: '/videos/english/reel-6(order block).mp4', lang: 'English' },
-                { title: 'Reel 4: Professional Trading Psychology', file: '/videos/english/reel-4(trading psychology).mp4', lang: 'English' }
-              ].map((item, idx) => (
+              {filteredPosts.map((item) => (
                 <div
-                  key={idx}
+                  key={item.id}
                   style={{
                     backgroundColor: '#121826',
                     borderRadius: '14px',
@@ -617,14 +601,28 @@ export default function DashboardPage() {
                 >
                   {/* Protected Video Element */}
                   <div style={{ position: 'relative', height: '220px', backgroundColor: '#000000' }}>
-                    <video
-                      src={item.file}
-                      controls
-                      controlsList="nodownload"
-                      disablePictureInPicture
-                      onContextMenu={(e) => e.preventDefault()}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    />
+                    {item.videoUrl && (item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be')) ? (
+                      <iframe
+                        src={
+                          item.videoUrl.includes('/embed/')
+                            ? item.videoUrl
+                            : item.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/')
+                        }
+                        title={item.title}
+                        style={{ width: '100%', height: '100%', border: 'none' }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video
+                        src={item.videoUrl}
+                        controls
+                        controlsList="nodownload"
+                        disablePictureInPicture
+                        onContextMenu={(e) => e.preventDefault()}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    )}
                     <div style={{
                       position: 'absolute',
                       top: '8px',
@@ -634,9 +632,10 @@ export default function DashboardPage() {
                       padding: '2px 6px',
                       fontSize: '10.5px',
                       color: '#00e5ff',
-                      fontWeight: '700'
+                      fontWeight: '700',
+                      textTransform: 'capitalize'
                     }}>
-                      {item.lang}
+                      {item.language}
                     </div>
                   </div>
 
@@ -646,7 +645,7 @@ export default function DashboardPage() {
                         {item.title}
                       </h4>
                       <p style={{ fontSize: '12px', color: '#94a3b8' }}>
-                        Master level price action setup and trade management rules.
+                        {item.description || 'Master level price action setup and trade management rules.'}
                       </p>
                     </div>
 

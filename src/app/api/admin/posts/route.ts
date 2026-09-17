@@ -1,28 +1,28 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_POSTS, PostItem } from '@/lib/store';
-
-let postsDatabase: PostItem[] = [...INITIAL_POSTS];
+import { PostItem } from '@/lib/store';
+import { getAllPosts, addPost, deletePost } from '@/lib/postsStore';
 
 export async function GET() {
-  const now = new Date().toISOString();
-  
-  // Return all posts for admin, including scheduled ones
+  const posts = getAllPosts();
   return NextResponse.json({
     success: true,
-    posts: postsDatabase.map(p => {
-      // Auto-publish if scheduled time has passed
-      if (p.scheduledAt && p.scheduledAt <= now && !p.published) {
-        return { ...p, published: true };
-      }
-      return p;
-    })
+    posts
   });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, description, type, language, chartUrl, videoUrl, scheduledAt } = body;
+    const { action, postId, title, description, type, language, chartUrl, videoUrl, scheduledAt } = body;
+
+    // Handle delete action
+    if (action === 'delete' && postId) {
+      const deleted = deletePost(postId);
+      return NextResponse.json({
+        success: deleted,
+        message: deleted ? 'Post deleted successfully!' : 'Post not found'
+      });
+    }
 
     const newPost: PostItem = {
       id: `post_${Date.now()}`,
@@ -31,21 +31,22 @@ export async function POST(req: Request) {
       type: type || 'chart',
       language: language || 'both',
       chartUrl: chartUrl || (type === 'chart' ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : undefined),
-      videoUrl: videoUrl || '/videos/telugu/REEL-24(LQT SETUP).mp4',
+      videoUrl: videoUrl || (type === 'video' ? '/videos/telugu/REEL-24(LQT SETUP).mp4' : undefined),
       downloadUrl: type === 'chart' ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: scheduledAt || undefined,
       published: !scheduledAt || new Date(scheduledAt) <= new Date(),
       createdAt: new Date().toISOString()
     };
 
-    postsDatabase.unshift(newPost);
+    addPost(newPost);
 
     return NextResponse.json({
       success: true,
-      message: scheduledAt ? 'Post scheduled successfully!' : 'Post published immediately!',
+      message: scheduledAt ? 'Post scheduled successfully!' : `Published directly to ${type === 'chart' ? 'Charts Section' : 'Videos Vault'}!`,
       post: newPost
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+

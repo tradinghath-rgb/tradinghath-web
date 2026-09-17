@@ -46,10 +46,10 @@ export interface ReviewItem {
   verified: boolean;
 }
 
-// Initial default posts matching the existing reels
-export const INITIAL_POSTS: PostItem[] = [
+// 1. DEDICATED CHARTS (Only Hand-Made Charts with downloadable blueprints)
+export const DEFAULT_CHARTS: PostItem[] = [
   {
-    id: 'p1',
+    id: 'chart_1',
     title: 'LQT Setup Strategy (Reel 24)',
     description: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
     type: 'chart',
@@ -61,7 +61,7 @@ export const INITIAL_POSTS: PostItem[] = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'p2',
+    id: 'chart_2',
     title: 'Why FVG Fails (Reel 15)',
     description: 'Avoid retail trap fair value gaps that get violated instantly.',
     type: 'chart',
@@ -72,9 +72,8 @@ export const INITIAL_POSTS: PostItem[] = [
     published: true,
     createdAt: new Date().toISOString()
   },
-
   {
-    id: 'p3',
+    id: 'chart_3',
     title: 'Stop Loss Trap Identification (Reel 16)',
     description: 'How institutional market makers trigger retail stop loss clusters before moving.',
     type: 'chart',
@@ -86,7 +85,7 @@ export const INITIAL_POSTS: PostItem[] = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'p4',
+    id: 'chart_4',
     title: 'Head & Shoulders Anatomy (Reel 18)',
     description: 'True breakout confirmation vs false neckline breaches.',
     type: 'chart',
@@ -98,7 +97,7 @@ export const INITIAL_POSTS: PostItem[] = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'p5',
+    id: 'chart_5',
     title: 'Break of Structure (BOS) & CHOCH (Reel 11)',
     description: 'Market trend shift detection rule book with volume footprint.',
     type: 'chart',
@@ -108,20 +107,166 @@ export const INITIAL_POSTS: PostItem[] = [
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
     createdAt: new Date().toISOString()
-  },
+  }
+];
+
+// 2. DEDICATED VIDEOS (Standalone Protected Video Reels)
+export const DEFAULT_VIDEOS: PostItem[] = [
   {
-    id: 'p6',
-    title: 'Volume Secret & Fake Breakout Strategy (Reel 1 & 2)',
-    description: 'Master institutional volume anomalies to capture explosive moves.',
+    id: 'vid_1',
+    title: 'Reel 24: High Probability LQT Setup',
+    description: 'Master institutional liquidity sweep & trade execution rules.',
     type: 'video',
     language: 'both',
+    videoUrl: '/videos/telugu/REEL-24(LQT SETUP).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_2',
+    title: 'Reel 15: Why FVG Fails in Retail Traps',
+    description: 'Learn why retail fair value gaps fail and how smart money enters.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1&rel=0&modestbranding=1',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_3',
+    title: 'Reel 16: Stop Loss Trap (SL Trap)',
+    description: 'How retail stop losses are hunted before massive directional moves.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-16(SL TRAP).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_4',
+    title: 'Reel 17: Support & Resistance Truth',
+    description: 'The real mechanics behind support & resistance levels in smart money trading.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-17(SUPPORT AND RESISTANCE).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_5',
+    title: 'Reel 18: Head & Shoulder True Pattern',
+    description: 'Identify institutional traps in traditional head & shoulder patterns.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-18(HEAD AND SHOULDE).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_6',
+    title: 'Reel 19: Liquidity Grab & Sweep Mechanics',
+    description: 'Understanding price sweeps and liquidity pool grabs by large institutions.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-19(LQT GRAB AND SWEEP).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_7',
+    title: 'Reel 20: Fake Breakout Anatomy',
+    description: 'How to avoid entering false breakouts and trade the true reversal.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-20(FAKE BREAKOUT).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_8',
+    title: 'Reel 21: Perfect Sniper Entry Strategy',
+    description: 'Precision entry criteria with tight stop loss and max risk-to-reward.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-21(PERFECT ENTRY).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_9',
+    title: 'Reel 22: Double Top Institutional Rules',
+    description: 'Why standard retail double tops get liquidated and when to actually trade them.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-22(DOUBLE TOP).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_10',
+    title: 'Reel 23: Double Bottom Trap Avoidance',
+    description: 'How institutional market makers create fake double bottoms to accumulate orders.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-23(DOUBLE BOTTOM).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_11',
+    title: 'Reel 1: Volume Secret Formula',
+    description: 'Master institutional volume anomalies to capture explosive moves.',
+    type: 'video',
+    language: 'english',
     videoUrl: '/videos/english/reel-1(volume secret).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_12',
+    title: 'Reel 11: BOS & CHOCH Trend Shifts',
+    description: 'Market trend shift detection rule book with volume footprint in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/reel-11(BOS&CHOCH).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_13',
+    title: 'Reel 5: Institutional Liquidity Concepts',
+    description: 'Core concepts of how banks and financial institutions source liquidity.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/reel-5(liquiduty).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_14',
+    title: 'Reel 6: High Win-Rate Order Block Strategy',
+    description: 'High probability order block selection and risk mitigation guidelines.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/reel-6(order block).mp4',
+    published: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'vid_15',
+    title: 'Reel 4: Professional Trading Psychology',
+    description: 'Mental discipline and execution frameworks for high-frequency trading.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/reel-4(trading psychology).mp4',
     published: true,
     createdAt: new Date().toISOString()
   }
 ];
 
-// Helper to mask emails for privacy (e.g. tradinghath@gmail.com -> tr******th@gmail.com)
+// Combine all initial posts into INITIAL_POSTS
+export const INITIAL_POSTS: PostItem[] = [...DEFAULT_CHARTS, ...DEFAULT_VIDEOS];
+
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return 'tr***@gmail.com';
   const [user, domain] = email.split('@');
