@@ -72,7 +72,14 @@ export default function DashboardPage() {
         }
 
         // Pro only if role is admin OR isPro is strictly 'true'
-        const adminRole = role === 'admin' || currentUser?.role === 'admin' || currentUser?.username === 'tradinghath' || currentUser?.email === 'tradinghath@gmail.com';
+        const emailLower = (currentUser?.email || '').toLowerCase();
+        const userLower = (currentUser?.username || '').toLowerCase();
+        const adminRole = role === 'admin' || 
+                          currentUser?.role === 'admin' || 
+                          userLower === 'tradinghath' || 
+                          emailLower === 'tradinghath@gmail.com' ||
+                          emailLower === 'abhisheknaidu2005@gmail.com' ||
+                          userLower === 'abhisheknaidu';
         setIsAdmin(adminRole);
 
         // Check if this user was explicitly revoked in overrides

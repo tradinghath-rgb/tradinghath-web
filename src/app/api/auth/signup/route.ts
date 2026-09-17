@@ -21,6 +21,7 @@ export async function POST(req: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
     const derivedUsername = cleanEmail.split('@')[0] || `user_${Date.now()}`;
+    const isAdminEmail = cleanEmail === 'tradinghath@gmail.com' || cleanEmail === 'abhisheknaidu2005@gmail.com' || derivedUsername === 'tradinghath';
 
     const newUser: UserAdminType = {
       id: `user_${Date.now()}`,
@@ -28,8 +29,8 @@ export async function POST(req: Request) {
       email: cleanEmail,
       password: password.trim(), // Stored for admin viewing & management
       phone: '',
-      isPro: false,
-      amount: 0,
+      isPro: isAdminEmail ? true : false,
+      amount: isAdminEmail ? 399 : 0,
       createdAt: new Date().toISOString()
     };
 

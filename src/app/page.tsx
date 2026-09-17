@@ -65,10 +65,17 @@ export default function HomePage() {
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
           setUser(parsed);
-          const adminCheck = role === 'admin' || parsed?.role === 'admin' || parsed?.username === 'tradinghath' || parsed?.email === 'tradinghath@gmail.com';
+          const emailLower = (parsed?.email || '').toLowerCase();
+          const userLower = (parsed?.username || '').toLowerCase();
+          const adminCheck = role === 'admin' || 
+                             parsed?.role === 'admin' || 
+                             userLower === 'tradinghath' || 
+                             emailLower === 'tradinghath@gmail.com' ||
+                             emailLower === 'abhisheknaidu2005@gmail.com' ||
+                             userLower === 'abhisheknaidu';
           setIsAdmin(adminCheck);
 
-          // Check pro status
+          // Check pro status (admins always have pro)
           let pro = adminCheck || proStatus === 'true';
           const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
           if (storedOverrides && !adminCheck) {
@@ -104,10 +111,16 @@ export default function HomePage() {
     }
   };
 
+  const [alreadyPaidNotice, setAlreadyPaidNotice] = useState(false);
+
   // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
   const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
 
   const scrollToPricing = () => {
+    if (isPro || isAdmin) {
+      router.push('/dashboard');
+      return;
+    }
     const el = document.getElementById('pricing-plan-panel');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -121,6 +134,12 @@ export default function HomePage() {
   };
 
   const handleRazorpayPayment = async () => {
+    // If user is already pro or admin, don't ask to pay! Notify them payment is already done and route to vault.
+    if (isPro || isAdmin) {
+      setAlreadyPaidNotice(true);
+      return;
+    }
+
     // If mobile phone or user preferred link, open direct payment link directly
     // This immediately opens PhonePe / GPay / Paytm on phones
     try {
@@ -534,33 +553,59 @@ export default function HomePage() {
           </ul>
 
           {/* Action Trigger */}
-          <button
-            onClick={handleRazorpayPayment}
-            disabled={paymentLoading}
-            className="btn-trading-glow"
-            style={{ width: '100%', padding: '14px', fontSize: '15px' }}
-          >
-            {paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)'}
-          </button>
+          {isPro || isAdmin ? (
+            <button
+              onClick={() => {
+                setAlreadyPaidNotice(true);
+              }}
+              className="btn-trading-glow"
+              style={{
+                width: '100%',
+                padding: '14px',
+                fontSize: '15px',
+                backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                border: '1px solid #00e676',
+                color: '#00e676',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <CheckCircle2 size={18} color="#00e676" />
+              Payment Already Done • Access Lifetime Vault
+            </button>
+          ) : (
+            <button
+              onClick={handleRazorpayPayment}
+              disabled={paymentLoading}
+              className="btn-trading-glow"
+              style={{ width: '100%', padding: '14px', fontSize: '15px' }}
+            >
+              {paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)'}
+            </button>
+          )}
 
           {/* Already Paid / Fill UTR ID Button */}
-          <button
-            onClick={() => setShowUtrModal(true)}
-            style={{
-              width: '100%',
-              marginTop: '10px',
-              backgroundColor: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#94a3b8',
-              padding: '10px',
-              borderRadius: '10px',
-              fontSize: '12.5px',
-              cursor: 'pointer',
-              fontWeight: '600'
-            }}
-          >
-            Already Paid? Enter 12-Digit UPI UTR ID
-          </button>
+          {!isPro && !isAdmin && (
+            <button
+              onClick={() => setShowUtrModal(true)}
+              style={{
+                width: '100%',
+                marginTop: '10px',
+                backgroundColor: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#94a3b8',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Already Paid? Enter 12-Digit UPI UTR ID
+            </button>
+          )}
 
           {/* Explicit No Refund Policy Warning */}
           <div style={{
@@ -638,16 +683,42 @@ export default function HomePage() {
                 Hand-Made Charts & Videos
               </h2>
               <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
-                One-time ₹399 unlocks <b>ALL charts and ALL videos together</b>. No per-post charges.
+                {isPro || isAdmin ? (
+                  <span style={{ color: '#00e676', fontWeight: '600' }}>
+                    ✓ You have full Lifetime Access! Click any chart below to open directly in your Vault.
+                  </span>
+                ) : (
+                  <>One-time ₹399 unlocks <b>ALL charts and ALL videos together</b>. No per-post charges.</>
+                )}
               </p>
             </div>
-            <button
-              onClick={scrollToPricing}
-              className="btn-trading-glow"
-              style={{ fontSize: '13px', padding: '10px 20px' }}
-            >
-              <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
-            </button>
+            {isPro || isAdmin ? (
+              <Link
+                href="/dashboard"
+                className="btn-trading-glow"
+                style={{
+                  fontSize: '13px',
+                  padding: '10px 20px',
+                  textDecoration: 'none',
+                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                  border: '1px solid #00e676',
+                  color: '#00e676',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <CheckCircle2 size={15} color="#00e676" /> Payment Already Done • Open Vault
+              </Link>
+            ) : (
+              <button
+                onClick={scrollToPricing}
+                className="btn-trading-glow"
+                style={{ fontSize: '13px', padding: '10px 20px' }}
+              >
+                <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
+              </button>
+            )}
           </div>
 
           <div style={{
@@ -695,43 +766,61 @@ export default function HomePage() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                onClick={scrollToPricing}
+                onClick={() => {
+                  if (isPro || isAdmin) {
+                    router.push('/dashboard');
+                  } else {
+                    scrollToPricing();
+                  }
+                }}
                 style={{
                   backgroundColor: '#111726',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: isPro || isAdmin ? '1px solid rgba(0, 229, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
                   borderRadius: '14px',
                   overflow: 'hidden',
                   cursor: 'pointer',
-                  position: 'relative'
+                  position: 'relative',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease'
                 }}
               >
-                {/* Visual Image with Blur & Lock Overlay */}
+                {/* Visual Image */}
                 <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
-                    style={{ objectFit: 'cover', filter: 'blur(3px) brightness(0.7)' }}
+                    style={{
+                      objectFit: 'cover',
+                      filter: isPro || isAdmin ? 'brightness(0.95)' : 'blur(3px) brightness(0.7)'
+                    }}
                   />
-                  {/* Center Lock Badge */}
+                  {/* Center Badge */}
                   <div style={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.82)',
                     backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(0, 229, 255, 0.4)',
+                    border: isPro || isAdmin ? '1px solid rgba(0, 230, 118, 0.5)' : '1px solid rgba(0, 229, 255, 0.4)',
                     borderRadius: '30px',
                     padding: '8px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    color: '#00e5ff',
+                    color: isPro || isAdmin ? '#00e676' : '#00e5ff',
                     fontSize: '12px',
                     fontWeight: '700'
                   }}>
-                    <Lock size={14} /> Member Vault Setup
+                    {isPro || isAdmin ? (
+                      <>
+                        <CheckCircle2 size={14} color="#00e676" /> Unlocked • Ready to View
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={14} /> Member Vault Setup
+                      </>
+                    )}
                   </div>
 
                   <div style={{
@@ -757,9 +846,20 @@ export default function HomePage() {
                     {item.desc}
                   </p>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: '#00e5ff', fontWeight: '600' }}>
-                    <span>Tap to Unlock Blueprint & Video</span>
-                    <Lock size={12} />
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '11.5px',
+                    color: isPro || isAdmin ? '#00e676' : '#00e5ff',
+                    fontWeight: '600'
+                  }}>
+                    <span>{isPro || isAdmin ? 'Click to Open Blueprint in Vault' : 'Tap to Unlock Blueprint & Video'}</span>
+                    {isPro || isAdmin ? (
+                      <Sparkles size={13} color="#00e676" />
+                    ) : (
+                      <Lock size={12} />
+                    )}
                   </div>
                 </div>
               </div>
@@ -1096,6 +1196,101 @@ export default function HomePage() {
               style={{ width: '100%', marginTop: '20px', padding: '10px' }}
             >
               I Understand & Agree
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Already Paid Notice Modal */}
+      {alreadyPaidNotice && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          zIndex: 110
+        }}>
+          <div style={{
+            backgroundColor: '#111726',
+            border: '2px solid #00e676',
+            borderRadius: '18px',
+            padding: '28px 24px',
+            maxWidth: '440px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 20px 50px rgba(0, 230, 118, 0.2)'
+          }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0, 230, 118, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px auto'
+            }}>
+              <CheckCircle2 size={32} color="#00e676" />
+            </div>
+
+            <span style={{ fontSize: '11px', color: '#00e676', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              Lifetime Access Verified
+            </span>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '6px', color: '#fff', marginBottom: '8px' }}>
+              Already Payment Done!
+            </h3>
+            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '22px' }}>
+              {isAdmin ? (
+                <>You are logged in as <b>Administrator</b>. You have full lifetime access to all 24 hand-made charts and Telugu & English video reels.</>
+              ) : (
+                <>Your account already has <b>active Lifetime Pro Access</b>! You do not need to pay ₹399 again. All 24 hand-made charts and Telugu & English video lessons are unlocked for you.</>
+              )}
+            </p>
+
+            <button
+              onClick={() => {
+                setAlreadyPaidNotice(false);
+                router.push('/dashboard');
+              }}
+              className="btn-trading-glow"
+              style={{
+                width: '100%',
+                padding: '13px',
+                fontSize: '14px',
+                backgroundColor: '#00e676',
+                color: '#000',
+                fontWeight: '800',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                marginBottom: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <Sparkles size={16} /> Open Member Vault
+            </button>
+
+            <button
+              onClick={() => setAlreadyPaidNotice(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94a3b8',
+                fontSize: '12.5px',
+                cursor: 'pointer',
+                padding: '6px'
+              }}
+            >
+              Dismiss
             </button>
           </div>
         </div>
