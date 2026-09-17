@@ -47,7 +47,18 @@ export default function UnifiedVideoPlayer({
           }
         });
     } else {
-      setResolvedSrc(src);
+      // Safely encode URI for spaces and parenthesis in filenames (e.g. reel-1(volume secret).mp4)
+      try {
+        if (src.startsWith('/') || src.startsWith('http')) {
+          // If already encoded or unencoded, decode then encodeURI to prevent double-encoding
+          const clean = encodeURI(decodeURI(src));
+          setResolvedSrc(clean);
+        } else {
+          setResolvedSrc(src);
+        }
+      } catch (e) {
+        setResolvedSrc(src);
+      }
     }
 
     return () => {
@@ -155,9 +166,27 @@ export default function UnifiedVideoPlayer({
       >
         <AlertCircle size={28} style={{ marginBottom: '8px' }} />
         <span style={{ fontWeight: '600' }}>Video playback could not be loaded</span>
-        <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-          Format may be unsupported or file expired.
-        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setHasError(false);
+          }}
+          style={{
+            marginTop: '10px',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#ffffff',
+            borderRadius: '6px',
+            padding: '4px 12px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <RefreshCw size={12} /> Retry Playback
+        </button>
       </div>
     );
   }
@@ -165,14 +194,13 @@ export default function UnifiedVideoPlayer({
   return (
     <video
       key={resolvedSrc}
-      src={resolvedSrc}
       controls
+      playsInline
       preload="metadata"
       autoPlay={false}
       controlsList="nodownload"
       disablePictureInPicture
       onContextMenu={(e) => e.preventDefault()}
-      onError={() => setHasError(true)}
       style={{
         width: '100%',
         height: '100%',
@@ -182,8 +210,14 @@ export default function UnifiedVideoPlayer({
         ...style
       }}
     >
-      <source src={resolvedSrc} type="video/mp4" />
-      <source src={resolvedSrc} type="video/webm" />
+      <source
+        src={resolvedSrc}
+        type="video/mp4"
+        onError={(e) => {
+          // Only flag error if there's a real failure loading
+          console.warn('Video source error on:', resolvedSrc, e);
+        }}
+      />
       Your browser does not support the video tag.
     </video>
   );
