@@ -134,14 +134,21 @@ export default function HomePage() {
   };
 
   const handleRazorpayPayment = async () => {
-    // If user is already pro or admin, don't ask to pay! Notify them payment is already done and route to vault.
+    // 1. If not logged in, require user to create account or log in first!
+    if (!user) {
+      alert('Please log in or create an account first so your lifetime access can be linked to your email.');
+      router.push('/login');
+      return;
+    }
+
+    // 2. If user is already pro or admin, don't ask to pay! Notify them payment is already done and route to vault.
     if (isPro || isAdmin) {
       setAlreadyPaidNotice(true);
       return;
     }
 
-    // If mobile phone or user preferred link, open direct payment link directly
-    // This immediately opens PhonePe / GPay / Paytm on phones
+    // 3. Logged in user proceeding to payment
+    // Opens PhonePe / GPay / Paytm on phones or Razorpay gateway
     try {
       window.open(DIRECT_PAYMENT_LINK, '_blank');
     } catch (e) {
@@ -574,6 +581,14 @@ export default function HomePage() {
             >
               <CheckCircle2 size={18} color="#00e676" />
               Payment Already Done • Access Lifetime Vault
+            </button>
+          ) : !user ? (
+            <button
+              onClick={handleRazorpayPayment}
+              className="btn-trading-glow"
+              style={{ width: '100%', padding: '14px', fontSize: '15px' }}
+            >
+              Sign In to Unlock Access (₹399)
             </button>
           ) : (
             <button
