@@ -108,12 +108,18 @@ export default function AdminPage() {
       let serverUsers = usersData.users || [];
       if (typeof window !== 'undefined') {
         try {
+          const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
+          const deletedIds = new Set(storedDeleted ? JSON.parse(storedDeleted) : ['user_live_02', 'user_live_03']);
+
+          // Remove any deleted IDs from server list
+          serverUsers = serverUsers.filter((u: any) => !deletedIds.has(u.id));
+
           const storedUsers = localStorage.getItem('tradinghath_client_users');
           if (storedUsers) {
             const localUsers = JSON.parse(storedUsers);
             const existingIds = new Set(serverUsers.map((u: any) => u.id));
             const existingEmails = new Set(serverUsers.map((u: any) => u.email.toLowerCase()));
-            const toAdd = localUsers.filter((u: any) => !existingIds.has(u.id) && !existingEmails.has(u.email.toLowerCase()));
+            const toAdd = localUsers.filter((u: any) => !existingIds.has(u.id) && !existingEmails.has(u.email.toLowerCase()) && !deletedIds.has(u.id));
             serverUsers = [...serverUsers, ...toAdd];
           }
         } catch (e) {}
@@ -182,6 +188,24 @@ export default function AdminPage() {
     if (action === 'delete' && !confirm('Are you sure you want to permanently delete this user?')) return;
 
     try {
+      if (action === 'delete' && typeof window !== 'undefined') {
+        try {
+          const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
+          const deletedList = storedDeleted ? JSON.parse(storedDeleted) : [];
+          if (!deletedList.includes(userId)) {
+            deletedList.push(userId);
+            localStorage.setItem('tradinghath_deleted_user_ids', JSON.stringify(deletedList));
+          }
+
+          const storedClientUsers = localStorage.getItem('tradinghath_client_users');
+          if (storedClientUsers) {
+            const list = JSON.parse(storedClientUsers);
+            const filtered = list.filter((u: any) => u.id !== userId);
+            localStorage.setItem('tradinghath_client_users', JSON.stringify(filtered));
+          }
+        } catch (e) {}
+      }
+
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
