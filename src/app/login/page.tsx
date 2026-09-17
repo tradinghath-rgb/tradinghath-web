@@ -59,65 +59,75 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        // Save to client localStorage backup to guarantee persistence
-        if (typeof window !== 'undefined') {
-          try {
-            const stored = localStorage.getItem('tradinghath_client_users');
-            const list = stored ? JSON.parse(stored) : [];
-            const userObj = {
-              id: data.user?.id || `user_${Date.now()}`,
-              username: generatedUsername,
-              email: signupEmail.trim(),
-              password: signupPassword.trim(),
-              isPro: false,
-              amount: 0,
-              createdAt: new Date().toISOString()
-            };
-            const filtered = list.filter((u: any) => u.email?.toLowerCase() !== userObj.email.toLowerCase());
-            localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
-          } catch (e) {}
-        }
+      const userObj = {
+        id: data.user?.id || `user_${Date.now()}`,
+        username: generatedUsername,
+        email: signupEmail.trim(),
+        password: signupPassword.trim(),
+        isPro: false,
+        amount: 0,
+        createdAt: new Date().toISOString()
+      };
 
-        setSignupSuccess('Account created successfully! Switching to login...');
-        setIdentifier(signupEmail.trim());
-        setPassword(signupPassword);
-        setTimeout(() => {
-          setIsSignUp(false);
-          setSignupSuccess('');
-        }, 1200);
-      } else {
-        setError(data.error || 'Failed to create account.');
-      }
-    } catch (err) {
-      // Offline / network fallback: save locally so user can immediately log in
+      // Save to client localStorage backup immediately
       if (typeof window !== 'undefined') {
         try {
           const stored = localStorage.getItem('tradinghath_client_users');
           const list = stored ? JSON.parse(stored) : [];
-          const userObj = {
-            id: `user_${Date.now()}`,
-            username: generatedUsername,
-            email: signupEmail.trim(),
-            password: signupPassword.trim(),
-            isPro: false,
-            amount: 0,
-            createdAt: new Date().toISOString()
-          };
           const filtered = list.filter((u: any) => u.email?.toLowerCase() !== userObj.email.toLowerCase());
           localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
 
-          setSignupSuccess('Account created successfully! Switching to login...');
-          setIdentifier(signupEmail.trim());
-          setPassword(signupPassword);
-          setTimeout(() => {
-            setIsSignUp(false);
-            setSignupSuccess('');
-          }, 1200);
-          return;
+          // Auto-login newly registered user directly without asking to sign in again!
+          localStorage.setItem('tradinghath_user', JSON.stringify({
+            id: userObj.id,
+            username: userObj.username,
+            email: userObj.email,
+            role: 'user'
+          }));
+          localStorage.setItem('tradinghath_role', 'user');
+          localStorage.setItem('tradinghath_isPro', 'false');
         } catch (e) {}
       }
-      setError('Connection error. Please try again.');
+
+      setSignupSuccess('Account created successfully! Welcome to TradingHath...');
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+      return;
+    } catch (err) {
+      // Offline / network fallback: save locally and auto-login
+      const userObj = {
+        id: `user_${Date.now()}`,
+        username: generatedUsername,
+        email: signupEmail.trim(),
+        password: signupPassword.trim(),
+        isPro: false,
+        amount: 0,
+        createdAt: new Date().toISOString()
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_client_users');
+          const list = stored ? JSON.parse(stored) : [];
+          const filtered = list.filter((u: any) => u.email?.toLowerCase() !== userObj.email.toLowerCase());
+          localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
+
+          localStorage.setItem('tradinghath_user', JSON.stringify({
+            id: userObj.id,
+            username: userObj.username,
+            email: userObj.email,
+            role: 'user'
+          }));
+          localStorage.setItem('tradinghath_role', 'user');
+          localStorage.setItem('tradinghath_isPro', 'false');
+        } catch (e) {}
+      }
+
+      setSignupSuccess('Account created successfully! Welcome to TradingHath...');
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+      return;
     } finally {
       setLoading(false);
     }
@@ -139,7 +149,7 @@ export default function LoginPage() {
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // Direct Admin Login bypass
+    // 1. Direct Admin Login bypass
     if (
       (cleanIdentifier === 'tradinghath' || cleanIdentifier === 'tradinghath@gmail.com') &&
       cleanPassword === '22NE1A04E1@093'
@@ -153,6 +163,44 @@ export default function LoginPage() {
       return;
     }
 
+    // 2. Check client localStorage first for immediate responsiveness
+    let clientFoundUser: any = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('tradinghath_client_users');
+        if (stored) {
+          const list = JSON.parse(stored);
+          clientFoundUser = list.find((u: any) =>
+            u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier
+          );
+        }
+      } catch (e) {}
+    }
+
+    if (clientFoundUser) {
+      if (clientFoundUser.password === cleanPassword) {
+        // Authenticated successfully via client storage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('tradinghath_user', JSON.stringify({
+            id: clientFoundUser.id,
+            username: clientFoundUser.username,
+            email: clientFoundUser.email,
+            role: 'user'
+          }));
+          localStorage.setItem('tradinghath_role', 'user');
+          localStorage.setItem('tradinghath_isPro', clientFoundUser.isPro ? 'true' : 'false');
+        }
+        router.push('/');
+        return;
+      } else {
+        // Registered user gave wrong password!
+        setError('Wrong password! Please check your password or click "Forgot password" below.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 3. If not found in client storage, query backend API
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -176,72 +224,15 @@ export default function LoginPage() {
         return;
       }
 
-      // Check client storage backup if server returned not registered
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_client_users');
-          if (stored) {
-            const list = JSON.parse(stored);
-            const foundUser = list.find((u: any) =>
-              (u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier)
-            );
-
-            if (foundUser) {
-              if (foundUser.password === cleanPassword) {
-                // Verified from client local storage!
-                localStorage.setItem('tradinghath_user', JSON.stringify({
-                  id: foundUser.id,
-                  username: foundUser.username,
-                  email: foundUser.email,
-                  role: 'user'
-                }));
-                localStorage.setItem('tradinghath_role', 'user');
-                localStorage.setItem('tradinghath_isPro', foundUser.isPro ? 'true' : 'false');
-                router.push('/');
-                return;
-              } else {
-                setError('Incorrect password! Please enter the correct password or click "Forgot password".');
-                setLoading(false);
-                return;
-              }
-            }
-          }
-        } catch (storageErr) {}
-      }
-
-      // If user really doesn't exist anywhere
+      // Check specific error message from server
       if (data.notRegistered) {
-        setError(`This Gmail "${identifier.trim()}" is not registered yet! Please click "Sign up" below to create your account first.`);
+        setError(`This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create an account first!`);
       } else {
-        setError(data.error || `This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create your account.`);
+        // Server returned wrong password or error
+        setError(data.error || 'Wrong password! Please check your password or click "Forgot password".');
       }
     } catch (err: any) {
-      // Offline / connection fallback: check local storage
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_client_users');
-          if (stored) {
-            const list = JSON.parse(stored);
-            const foundUser = list.find((u: any) =>
-              (u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier)
-            );
-            if (foundUser) {
-              if (foundUser.password === cleanPassword) {
-                localStorage.setItem('tradinghath_user', JSON.stringify(foundUser));
-                localStorage.setItem('tradinghath_role', 'user');
-                localStorage.setItem('tradinghath_isPro', foundUser.isPro ? 'true' : 'false');
-                router.push('/');
-                return;
-              } else {
-                setError('Incorrect password! Please try again.');
-                setLoading(false);
-                return;
-              }
-            }
-          }
-        } catch (e) {}
-      }
-      setError(`This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create your account.`);
+      setError(`This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create an account.`);
     } finally {
       setLoading(false);
     }

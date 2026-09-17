@@ -20,7 +20,9 @@ import {
   AlertCircle,
   UploadCloud,
   ImageIcon,
-  Check
+  Check,
+  User,
+  LogOut
 } from 'lucide-react';
 import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
 
@@ -51,6 +53,10 @@ export default function HomePage() {
   const [screenshotName, setScreenshotName] = useState('');
   const [isScreenshotDragging, setIsScreenshotDragging] = useState(false);
 
+  // Current authenticated user state
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isProMember, setIsProMember] = useState(false);
+
   useEffect(() => {
     fetch('/api/comments')
       .then(res => res.json())
@@ -58,14 +64,55 @@ export default function HomePage() {
         if (data.reviews) setReviews(data.reviews);
       })
       .catch(console.error);
+
+    // Sync logged in user from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('tradinghath_user');
+        const role = localStorage.getItem('tradinghath_role');
+        const pro = localStorage.getItem('tradinghath_isPro');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setCurrentUser(parsed);
+          if (parsed.email) setUtrEmail(parsed.email);
+        }
+        if (role === 'admin' || pro === 'true') {
+          setIsProMember(true);
+        }
+      } catch (e) {}
+    }
   }, []);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('tradinghath_user');
+      localStorage.removeItem('tradinghath_role');
+      localStorage.removeItem('tradinghath_isPro');
+      localStorage.removeItem('tradinghath_utrId');
+    }
+    setCurrentUser(null);
+    setIsProMember(false);
+    router.push('/login');
+  };
 
   // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
   const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
 
   const handleRazorpayPayment = async () => {
-    // If mobile phone or user preferred link, open direct payment link directly
-    // This immediately opens PhonePe / GPay / Paytm on phones
+    // 1. Enforce: User MUST be logged in to pay or access vault
+    if (!currentUser) {
+      alert('Please sign in or create an account first to continue!');
+      router.push('/login');
+      return;
+    }
+
+    // 2. If user already paid / has Pro access, no need to pay again
+    if (isProMember) {
+      router.push('/dashboard');
+      return;
+    }
+
+    // 3. User is logged in and not pro: proceed to payment
     try {
       window.open(DIRECT_PAYMENT_LINK, '_blank');
     } catch (e) {
@@ -181,30 +228,92 @@ export default function HomePage() {
             </div>
           </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link
-              href="/login"
-              style={{
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#cbd5e1',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-              }}
-            >
-              Sign In
-            </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {currentUser ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  fontSize: '12.5px',
+                  color: '#e2e8f0'
+                }}>
+                  <User size={14} color="#00e5ff" />
+                  <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {currentUser.email || currentUser.username}
+                  </span>
+                </div>
 
-            <button
-              onClick={handleRazorpayPayment}
-              disabled={paymentLoading}
-              className="btn-trading-glow"
-              style={{ fontSize: '13px', padding: '8px 16px' }}
-            >
-              Get Access ₹399
-            </button>
+                {isProMember ? (
+                  <Link
+                    href="/dashboard"
+                    className="btn-trading-glow"
+                    style={{ fontSize: '12.5px', padding: '7px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Sparkles size={14} /> Open Vault
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={paymentLoading}
+                    className="btn-trading-glow"
+                    style={{ fontSize: '12.5px', padding: '7px 14px' }}
+                  >
+                    Unlock ₹399
+                  </button>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  title="Log out"
+                  style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#f87171',
+                    borderRadius: '8px',
+                    padding: '7px 10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px'
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#cbd5e1',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  Sign In
+                </Link>
+
+                <button
+                  onClick={handleRazorpayPayment}
+                  disabled={paymentLoading}
+                  className="btn-trading-glow"
+                  style={{ fontSize: '13px', padding: '8px 16px' }}
+                >
+                  Get Access ₹399
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -299,7 +408,7 @@ export default function HomePage() {
             className="btn-trading-glow"
             style={{ width: '100%', padding: '14px', fontSize: '15px' }}
           >
-            {paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)'}
+            {isProMember ? 'Open Member Vault (Access Unlocked)' : (paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)')}
           </button>
 
           {/* Already Paid / Fill UTR ID Button */}
@@ -405,7 +514,7 @@ export default function HomePage() {
               className="btn-trading-glow"
               style={{ fontSize: '13px', padding: '10px 20px' }}
             >
-              <Lock size={14} /> Unlock All 47 Setups (₹399)
+              {isProMember ? <><Sparkles size={14} /> Open Member Vault</> : <><Lock size={14} /> Unlock All 47 Setups (₹399)</>}
             </button>
           </div>
 
