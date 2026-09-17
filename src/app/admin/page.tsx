@@ -22,13 +22,17 @@ import {
   Smartphone,
   Eye,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Play
 } from 'lucide-react';
 import { PostItem } from '@/lib/store';
+import { saveMediaFile, deleteMediaFile } from '@/lib/videoStorage';
+import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 
 export default function AdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'users' | 'posts' | 'payments' | 'comments'>('users');
+  const [previewPostModal, setPreviewPostModal] = useState<PostItem | null>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -346,9 +350,9 @@ export default function AdminPage() {
       return;
     }
 
-    const effectiveChartUrl = chartUrl || (postType === 'chart' ? uploadPreview : undefined);
-    const effectiveVideoUrl = videoUrl || (postType === 'video' ? uploadPreview : undefined);
     const isChart = postType === 'chart';
+    const effectiveChartUrl = chartUrl || (isChart ? uploadPreview : undefined);
+    const effectiveVideoUrl = videoUrl || (!isChart ? uploadPreview : undefined);
 
     // Combine Date and Time pickers into ISO string
     let effectiveScheduleDateTime: string | undefined = undefined;
@@ -358,23 +362,41 @@ export default function AdminPage() {
     }
 
     const isScheduled = effectiveScheduleDateTime && new Date(effectiveScheduleDateTime) > new Date();
+    const newPostId = `post_${Date.now()}`;
+
+    // Handle large base64 media by storing directly in browser IndexedDB
+    let clientVideoUrl = effectiveVideoUrl;
+    let clientChartUrl = effectiveChartUrl;
+
+    if (uploadPreview && uploadPreview.startsWith('data:')) {
+      try {
+        await saveMediaFile(newPostId, uploadPreview);
+        if (!isChart) {
+          clientVideoUrl = `indexeddb://${newPostId}`;
+        } else {
+          clientChartUrl = `indexeddb://${newPostId}`;
+        }
+      } catch (err) {
+        console.warn('Could not store in IndexedDB:', err);
+      }
+    }
 
     const newPostPayload: PostItem = {
-      id: `post_${Date.now()}`,
+      id: newPostId,
       title: postTitle.trim(),
       description: postDesc ? postDesc.trim() : '',
       type: postType,
       language: postLanguage,
-      chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
-      videoUrl: !isChart ? (effectiveVideoUrl || 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0') : undefined,
-      downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      chartUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      videoUrl: !isChart ? (clientVideoUrl || '/videos/telugu/reel-1(volume secret).mp4') : undefined,
+      downloadUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()
     };
 
     try {
-      // 1. Instantly save to local storage cache so it's immediately available on client
+      // 1. Instantly save to local storage cache with indexeddb reference or lightweight URL
       if (typeof window !== 'undefined') {
         try {
           const stored = localStorage.getItem('tradinghath_dynamic_posts');
@@ -385,16 +407,17 @@ export default function AdminPage() {
         }
       }
 
-      // 2. Publish to backend server API (If file payload is too large, send metadata with fallback URL to avoid Vercel 413 Payload Too Large error)
-      const isHugePayload = (effectiveChartUrl && effectiveChartUrl.length > 3000000) || (effectiveVideoUrl && effectiveVideoUrl.length > 3000000);
-      
+      // Optimistically update post list in admin immediately
+      setPosts(prev => [newPostPayload, ...prev.filter(p => p.id !== newPostId)]);
+
+      // 2. Publish to backend server API (Send clean URL or indexeddb reference)
       const serverPayload = {
         title: postTitle,
         description: postDesc,
         type: postType,
         language: postLanguage,
-        chartUrl: isHugePayload && isChart ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : effectiveChartUrl,
-        videoUrl: isHugePayload && !isChart ? 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0' : effectiveVideoUrl,
+        chartUrl: isChart ? (clientChartUrl?.startsWith('data:') ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : clientChartUrl) : undefined,
+        videoUrl: !isChart ? (clientVideoUrl?.startsWith('data:') ? '/videos/telugu/reel-1(volume secret).mp4' : clientVideoUrl) : undefined,
         scheduledAt: effectiveScheduleDateTime || undefined
       };
 
@@ -411,7 +434,7 @@ export default function AdminPage() {
           setActionMessage('Post published successfully to website!');
         }
       } catch (apiErr) {
-        // Even if server fetch fails due to size, local cache has it live
+        // Even if server fetch fails due to size or offline, local cache and IndexedDB has it live
         setActionMessage('Post published successfully to website!');
       }
       
@@ -446,6 +469,8 @@ export default function AdminPage() {
             const filtered = parsed.filter((p: any) => p.id !== postId);
             localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(filtered));
           }
+          // Clean up any large media file stored in IndexedDB
+          await deleteMediaFile(postId);
         } catch (e) {}
       }
 
@@ -1504,8 +1529,29 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          {/* Schedule Control Actions: Publish Now, Cancel Schedule, Delete */}
+                          {/* Schedule Control Actions: Preview, Publish Now, Cancel Schedule, Delete */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewPostModal(post)}
+                              title="Preview this video/chart"
+                              style={{
+                                backgroundColor: 'rgba(0, 229, 255, 0.12)',
+                                color: '#00e5ff',
+                                border: '1px solid rgba(0, 229, 255, 0.3)',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '12px',
+                                fontWeight: '700'
+                              }}
+                            >
+                              <Play size={13} /> {post.type === 'video' ? 'Play Video' : 'View Chart'}
+                            </button>
+
                             {isUpcomingSchedule && (
                               <button
                                 type="button"
@@ -1556,6 +1602,87 @@ export default function AdminPage() {
                     })
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADMIN PREVIEW MODAL */}
+        {previewPostModal && (
+          <div
+            onClick={() => setPreviewPostModal(null)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              zIndex: 99999
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#121826',
+                border: '1px solid #00e5ff',
+                borderRadius: '16px',
+                padding: '20px',
+                width: '100%',
+                maxWidth: '650px',
+                boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#00e5ff', textTransform: 'uppercase', fontWeight: '700' }}>
+                    {previewPostModal.type} Preview • {previewPostModal.language}
+                  </span>
+                  <h3 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '2px 0 0 0' }}>
+                    {previewPostModal.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewPostModal(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    fontSize: '22px',
+                    cursor: 'pointer',
+                    padding: '4px 8px'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ borderRadius: '10px', overflow: 'hidden', backgroundColor: '#000', marginBottom: '14px' }}>
+                {previewPostModal.type === 'chart' ? (
+                  <img
+                    src={previewPostModal.chartUrl}
+                    alt={previewPostModal.title}
+                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <UnifiedVideoPlayer
+                    src={previewPostModal.videoUrl}
+                    title={previewPostModal.title}
+                    maxHeight="420px"
+                  />
+                )}
+              </div>
+
+              {previewPostModal.description && (
+                <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', margin: 0 }}>
+                  {previewPostModal.description}
+                </p>
+              )}
             </div>
           </div>
         )}

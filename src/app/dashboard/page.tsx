@@ -28,6 +28,7 @@ import {
   Settings
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
+import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
@@ -761,41 +762,13 @@ export default function DashboardPage() {
                       </span>
                     </div>
 
-                    {/* Responsive Video Player Supporting YouTube Embeds & Direct Video */}
+                    {/* Responsive Video Player Supporting YouTube Embeds, IndexedDB & Direct Video */}
                     <div style={{ position: 'relative', height: '360px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {selectedChart.videoUrl?.includes('youtube.com') || selectedChart.videoUrl?.includes('youtu.be') ? (
-                        <iframe
-                          src={
-                            (() => {
-                              let cleanUrl = selectedChart.videoUrl.includes('/embed/')
-                                ? selectedChart.videoUrl
-                                : selectedChart.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/');
-                              // Force remove autoplay=1 so video only plays when user explicitly taps play
-                              cleanUrl = cleanUrl.replace(/([?&])autoplay=1(&|$)/g, '$1autoplay=0$2');
-                              if (!cleanUrl.includes('autoplay=')) {
-                                cleanUrl += (cleanUrl.includes('?') ? '&' : '?') + 'autoplay=0';
-                              }
-                              return cleanUrl;
-                            })()
-                          }
-                          title={selectedChart.title}
-                          style={{ width: '100%', height: '100%', border: 'none' }}
-                          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <video
-                          src={selectedChart.videoUrl}
-                          controls
-                          autoPlay={false}
-                          controlsList="nodownload"
-                          disablePictureInPicture
-                          onContextMenu={(e) => e.preventDefault()}
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '360px' }}
-                        >
-                          Your browser does not support HTML5 video.
-                        </video>
-                      )}
+                      <UnifiedVideoPlayer
+                        src={selectedChart.videoUrl}
+                        title={selectedChart.title}
+                        maxHeight="360px"
+                      />
                     </div>
 
                   </div>
@@ -927,38 +900,13 @@ export default function DashboardPage() {
                     flexDirection: 'column'
                   }}
                 >
-                  {/* Protected Video Element */}
+                  {/* Protected Video Element Supporting IndexedDB & Local Uploads */}
                   <div style={{ position: 'relative', height: '220px', backgroundColor: '#000000' }}>
-                    {item.videoUrl && (item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be')) ? (
-                      <iframe
-                        src={
-                          (() => {
-                            let cleanUrl = item.videoUrl.includes('/embed/')
-                              ? item.videoUrl
-                              : item.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/');
-                            cleanUrl = cleanUrl.replace(/([?&])autoplay=1(&|$)/g, '$1autoplay=0$2');
-                            if (!cleanUrl.includes('autoplay=')) {
-                              cleanUrl += (cleanUrl.includes('?') ? '&' : '?') + 'autoplay=0';
-                            }
-                            return cleanUrl;
-                          })()
-                        }
-                        title={item.title}
-                        style={{ width: '100%', height: '100%', border: 'none' }}
-                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <video
-                        src={item.videoUrl}
-                        controls
-                        autoPlay={false}
-                        controlsList="nodownload"
-                        disablePictureInPicture
-                        onContextMenu={(e) => e.preventDefault()}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                      />
-                    )}
+                    <UnifiedVideoPlayer
+                      src={item.videoUrl}
+                      title={item.title}
+                      maxHeight="220px"
+                    />
                     <div style={{
                       position: 'absolute',
                       top: '8px',
@@ -969,7 +917,8 @@ export default function DashboardPage() {
                       fontSize: '10.5px',
                       color: '#00e5ff',
                       fontWeight: '700',
-                      textTransform: 'capitalize'
+                      textTransform: 'capitalize',
+                      zIndex: 5
                     }}>
                       {item.language}
                     </div>
