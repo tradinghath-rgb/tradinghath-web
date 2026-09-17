@@ -117,6 +117,49 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDownloadChart = async (e: React.MouseEvent, url: string, title: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const cleanTitle = (title || 'TradingHath_Chart').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${cleanTitle}.jpg`;
+
+    try {
+      // If it is already a base64 data url from gallery upload:
+      if (url.startsWith('data:')) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+
+      // If remote image (Unsplash or CDN), fetch as blob to force file download dialog instead of browser tab view
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      // Fallback: create download anchor
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
+
   if (checkingAccess) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#090d16', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00e5ff' }}>
@@ -398,16 +441,14 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart Download Action */}
-                  <a
-                    href={selectedChart.downloadUrl || selectedChart.chartUrl}
-                    download={`${selectedChart.title.replace(/\s+/g, '_')}_Chart.jpg`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={(e) => handleDownloadChart(e, selectedChart.downloadUrl || selectedChart.chartUrl || '', selectedChart.title)}
                     className="btn-trading-glow"
-                    style={{ fontSize: '13px', padding: '9px 18px' }}
+                    style={{ fontSize: '13px', padding: '9px 18px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <Download size={16} /> Download High-Res Chart
-                  </a>
+                    <Download size={16} /> Save Chart to Gallery
+                  </button>
                 </div>
 
                 {/* Side-by-Side Flex Layout (Responsive Grid) */}
@@ -577,24 +618,24 @@ export default function DashboardPage() {
                         <PlayCircle size={13} /> View Explanation Side-by-Side
                       </span>
 
-                      <a
-                        href={post.downloadUrl || post.chartUrl}
-                        download
-                        onClick={(e) => e.stopPropagation()}
+                      <button
+                        type="button"
+                        onClick={(e) => handleDownloadChart(e, post.downloadUrl || post.chartUrl || '', post.title)}
                         style={{
                           backgroundColor: 'rgba(255, 255, 255, 0.08)',
                           color: '#fff',
-                          padding: '4px 8px',
+                          border: 'none',
+                          padding: '5px 9px',
                           borderRadius: '6px',
                           fontSize: '11px',
-                          textDecoration: 'none',
+                          cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px'
                         }}
                       >
-                        <Download size={12} /> Chart
-                      </a>
+                        <Download size={12} /> Save to Gallery
+                      </button>
                     </div>
                   </div>
                 </div>
