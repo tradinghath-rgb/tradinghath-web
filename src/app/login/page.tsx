@@ -17,7 +17,9 @@ export default function LoginPage() {
 
 
   const [isSignUp, setIsSignUp] = useState(false);
+  const [signupUsername, setSignupUsername] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupSuccess, setSignupSuccess] = useState('');
 
@@ -25,26 +27,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setSignupSuccess('');
-
-    const cleanMail = signupEmail.trim().toLowerCase();
-    // Default username derived cleanly from Gmail address before '@'
-    const generatedUsername = cleanMail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
-
-    // Check client storage directly for instant duplicate email alert
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('tradinghath_client_users');
-        if (stored) {
-          const list = JSON.parse(stored);
-          const foundMail = list.find((u: any) => u.email?.toLowerCase() === cleanMail);
-          if (foundMail || cleanMail === 'tradinghath@gmail.com') {
-            setError(`Gmail "${signupEmail.trim()}" is already registered! Please log in instead.`);
-            return;
-          }
-        }
-      } catch (e) {}
-    }
-
     setLoading(true);
 
     try {
@@ -52,82 +34,47 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: generatedUsername,
-          email: signupEmail.trim(),
-          password: signupPassword.trim()
+          username: signupUsername,
+          email: signupEmail,
+          phone: signupPhone,
+          password: signupPassword
         })
       });
 
       const data = await res.json();
-      const userObj = {
-        id: data.user?.id || `user_${Date.now()}`,
-        username: generatedUsername,
-        email: signupEmail.trim(),
-        password: signupPassword.trim(),
-        isPro: false,
-        amount: 0,
-        createdAt: new Date().toISOString()
-      };
+      if (data.success) {
+        // Save to client localStorage backup to guarantee persistence
+        if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('tradinghath_client_users');
+            const list = stored ? JSON.parse(stored) : [];
+            const userObj = {
+              id: data.user?.id || `user_${Date.now()}`,
+              username: signupUsername.trim(),
+              email: signupEmail.trim(),
+              password: signupPassword.trim(),
+              phone: signupPhone ? signupPhone.trim() : '',
+              isPro: false,
+              amount: 0,
+              createdAt: new Date().toISOString()
+            };
+            const filtered = list.filter((u: any) => u.username !== userObj.username && u.email !== userObj.email);
+            localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
+          } catch (e) {}
+        }
 
-      // Save to client localStorage backup immediately
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_client_users');
-          const list = stored ? JSON.parse(stored) : [];
-          const filtered = list.filter((u: any) => u.email?.toLowerCase() !== userObj.email.toLowerCase());
-          localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
-
-          // Auto-login newly registered user directly without asking to sign in again!
-          localStorage.setItem('tradinghath_user', JSON.stringify({
-            id: userObj.id,
-            username: userObj.username,
-            email: userObj.email,
-            role: 'user'
-          }));
-          localStorage.setItem('tradinghath_role', 'user');
-          localStorage.setItem('tradinghath_isPro', 'false');
-        } catch (e) {}
+        setSignupSuccess('Account created successfully! Switching to login...');
+        setIdentifier(signupEmail || signupUsername);
+        setPassword(signupPassword);
+        setTimeout(() => {
+          setIsSignUp(false);
+          setSignupSuccess('');
+        }, 1500);
+      } else {
+        setError(data.error || 'Failed to create account.');
       }
-
-      setSignupSuccess('Account created successfully! Welcome to TradingHath...');
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
-      return;
     } catch (err) {
-      // Offline / network fallback: save locally and auto-login
-      const userObj = {
-        id: `user_${Date.now()}`,
-        username: generatedUsername,
-        email: signupEmail.trim(),
-        password: signupPassword.trim(),
-        isPro: false,
-        amount: 0,
-        createdAt: new Date().toISOString()
-      };
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_client_users');
-          const list = stored ? JSON.parse(stored) : [];
-          const filtered = list.filter((u: any) => u.email?.toLowerCase() !== userObj.email.toLowerCase());
-          localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
-
-          localStorage.setItem('tradinghath_user', JSON.stringify({
-            id: userObj.id,
-            username: userObj.username,
-            email: userObj.email,
-            role: 'user'
-          }));
-          localStorage.setItem('tradinghath_role', 'user');
-          localStorage.setItem('tradinghath_isPro', 'false');
-        } catch (e) {}
-      }
-
-      setSignupSuccess('Account created successfully! Welcome to TradingHath...');
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
-      return;
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -146,66 +93,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const cleanIdentifier = identifier.trim().toLowerCase();
-    const cleanPassword = password.trim();
-
-    // 1. Direct Admin Login bypass
-    if (
-      (cleanIdentifier === 'tradinghath' || cleanIdentifier === 'tradinghath@gmail.com') &&
-      cleanPassword === '22NE1A04E1@093'
-    ) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('tradinghath_user', JSON.stringify({ username: 'tradinghath', email: 'tradinghath@gmail.com', role: 'admin' }));
-        localStorage.setItem('tradinghath_role', 'admin');
-        localStorage.setItem('tradinghath_isPro', 'true');
-      }
-      router.push('/admin');
-      return;
-    }
-
-    // 2. Check client localStorage first for immediate responsiveness
-    let clientFoundUser: any = null;
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('tradinghath_client_users');
-        if (stored) {
-          const list = JSON.parse(stored);
-          clientFoundUser = list.find((u: any) =>
-            u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier
-          );
-        }
-      } catch (e) {}
-    }
-
-    if (clientFoundUser) {
-      if (clientFoundUser.password === cleanPassword) {
-        // Authenticated successfully via client storage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('tradinghath_user', JSON.stringify({
-            id: clientFoundUser.id,
-            username: clientFoundUser.username,
-            email: clientFoundUser.email,
-            role: 'user'
-          }));
-          localStorage.setItem('tradinghath_role', 'user');
-          localStorage.setItem('tradinghath_isPro', clientFoundUser.isPro ? 'true' : 'false');
-        }
-        router.push('/');
-        return;
-      } else {
-        // Registered user gave wrong password!
-        setError('Wrong password! Please check your password or click "Forgot password" below.');
-        setLoading(false);
-        return;
-      }
-    }
-
-    // 3. If not found in client storage, query backend API
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: cleanIdentifier, password: cleanPassword, saveLogin })
+        body: JSON.stringify({ identifier, password, saveLogin })
       });
       const data = await res.json();
 
@@ -219,20 +111,15 @@ export default function LoginPage() {
         if (data.isAdmin) {
           router.push('/admin');
         } else {
+          // Regular user goes to homepage first to explore website!
           router.push('/');
         }
-        return;
-      }
 
-      // Check specific error message from server
-      if (data.notRegistered) {
-        setError(`This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create an account first!`);
       } else {
-        // Server returned wrong password or error
-        setError(data.error || 'Wrong password! Please check your password or click "Forgot password".');
+        setError(data.error || 'Invalid username or password.');
       }
     } catch (err: any) {
-      setError(`This Gmail "${identifier.trim()}" is not registered. Please click "Sign up" below to create an account.`);
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -379,7 +266,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 className="ig-input"
-                placeholder="Gmail address (e.g. name@gmail.com)"
+                placeholder="Phone number, username, or email"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
@@ -475,12 +362,33 @@ export default function LoginPage() {
           <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div className="ig-input-container">
               <input
+                type="text"
+                className="ig-input"
+                placeholder="Username (e.g. rohit_nifty)"
+                value={signupUsername}
+                onChange={(e) => setSignupUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="ig-input-container">
+              <input
                 type="email"
                 className="ig-input"
-                placeholder="Gmail address (e.g. name@gmail.com)"
+                placeholder="Email address"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 required
+              />
+            </div>
+
+            <div className="ig-input-container">
+              <input
+                type="tel"
+                className="ig-input"
+                placeholder="Mobile number (optional)"
+                value={signupPhone}
+                onChange={(e) => setSignupPhone(e.target.value)}
               />
             </div>
 

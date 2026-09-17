@@ -15,14 +15,10 @@ import {
   HelpCircle,
   Mail,
   Smartphone,
+  Star,
   Sparkles,
   Zap,
-  AlertCircle,
-  UploadCloud,
-  ImageIcon,
-  Check,
-  User,
-  LogOut
+  AlertCircle
 } from 'lucide-react';
 import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
 
@@ -48,14 +44,6 @@ export default function HomePage() {
   const [utrEmail, setUtrEmail] = useState('');
   const [utrStatus, setUtrStatus] = useState('');
   const [termsModal, setTermsModal] = useState(false);
-  const [previewTab, setPreviewTab] = useState<'charts' | 'videos'>('charts');
-  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
-  const [screenshotName, setScreenshotName] = useState('');
-  const [isScreenshotDragging, setIsScreenshotDragging] = useState(false);
-
-  // Current authenticated user state
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isProMember, setIsProMember] = useState(false);
 
   useEffect(() => {
     fetch('/api/comments')
@@ -64,55 +52,14 @@ export default function HomePage() {
         if (data.reviews) setReviews(data.reviews);
       })
       .catch(console.error);
-
-    // Sync logged in user from localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('tradinghath_user');
-        const role = localStorage.getItem('tradinghath_role');
-        const pro = localStorage.getItem('tradinghath_isPro');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          setCurrentUser(parsed);
-          if (parsed.email) setUtrEmail(parsed.email);
-        }
-        if (role === 'admin' || pro === 'true') {
-          setIsProMember(true);
-        }
-      } catch (e) {}
-    }
   }, []);
-
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('tradinghath_user');
-      localStorage.removeItem('tradinghath_role');
-      localStorage.removeItem('tradinghath_isPro');
-      localStorage.removeItem('tradinghath_utrId');
-    }
-    setCurrentUser(null);
-    setIsProMember(false);
-    router.push('/login');
-  };
 
   // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
   const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
 
   const handleRazorpayPayment = async () => {
-    // 1. Enforce: User MUST be logged in to pay or access vault
-    if (!currentUser) {
-      alert('Please sign in or create an account first to continue!');
-      router.push('/login');
-      return;
-    }
-
-    // 2. If user already paid / has Pro access, no need to pay again
-    if (isProMember) {
-      router.push('/dashboard');
-      return;
-    }
-
-    // 3. User is logged in and not pro: proceed to payment
+    // If mobile phone or user preferred link, open direct payment link directly
+    // This immediately opens PhonePe / GPay / Paytm on phones
     try {
       window.open(DIRECT_PAYMENT_LINK, '_blank');
     } catch (e) {
@@ -228,92 +175,30 @@ export default function HomePage() {
             </div>
           </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {currentUser ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  padding: '6px 12px',
-                  fontSize: '12.5px',
-                  color: '#e2e8f0'
-                }}>
-                  <User size={14} color="#00e5ff" />
-                  <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {currentUser.email || currentUser.username}
-                  </span>
-                </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link
+              href="/login"
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#cbd5e1',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              Sign In
+            </Link>
 
-                {isProMember ? (
-                  <Link
-                    href="/dashboard"
-                    className="btn-trading-glow"
-                    style={{ fontSize: '12.5px', padding: '7px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Sparkles size={14} /> Open Vault
-                  </Link>
-                ) : (
-                  <button
-                    onClick={handleRazorpayPayment}
-                    disabled={paymentLoading}
-                    className="btn-trading-glow"
-                    style={{ fontSize: '12.5px', padding: '7px 14px' }}
-                  >
-                    Unlock ₹399
-                  </button>
-                )}
-
-                <button
-                  onClick={handleLogout}
-                  title="Log out"
-                  style={{
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.25)',
-                    color: '#f87171',
-                    borderRadius: '8px',
-                    padding: '7px 10px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px'
-                  }}
-                >
-                  <LogOut size={14} />
-                  <span>Logout</span>
-                </button>
-              </div>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    color: '#cbd5e1',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    textDecoration: 'none',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}
-                >
-                  Sign In
-                </Link>
-
-                <button
-                  onClick={handleRazorpayPayment}
-                  disabled={paymentLoading}
-                  className="btn-trading-glow"
-                  style={{ fontSize: '13px', padding: '8px 16px' }}
-                >
-                  Get Access ₹399
-                </button>
-              </>
-            )}
+            <button
+              onClick={handleRazorpayPayment}
+              disabled={paymentLoading}
+              className="btn-trading-glow"
+              style={{ fontSize: '13px', padding: '8px 16px' }}
+            >
+              Get Access ₹399
+            </button>
           </div>
         </div>
       </header>
@@ -408,7 +293,7 @@ export default function HomePage() {
             className="btn-trading-glow"
             style={{ width: '100%', padding: '14px', fontSize: '15px' }}
           >
-            {isProMember ? 'Open Member Vault (Access Unlocked)' : (paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)')}
+            {paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)'}
           </button>
 
           {/* Already Paid / Fill UTR ID Button */}
@@ -495,18 +380,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* LOCKED VAULT PREVIEW SECTION (Separated Cleanly into Charts and Videos) */}
+        {/* LOCKED VAULT PREVIEW SECTION (Visible to visitors with Lock Badges) */}
         <div style={{ marginTop: '50px', textAlign: 'left' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
-              <span style={{ fontSize: '11px', color: '#00e5ff', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Separated Member Vault Previews
+              <span style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Member Vault Previews
               </span>
               <h2 style={{ fontSize: '24px', fontWeight: '800', marginTop: '4px', color: '#fff' }}>
-                Hand-Made Charts & Video Reel Vault (Locked)
+                Hand-Made Charts & Videos
               </h2>
-              <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
-                Dedicated sections for downloadable blueprints and high-definition video walkthroughs.
+              <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                One-time ₹399 unlocks <b>ALL charts and ALL videos together</b>. No per-post charges.
               </p>
             </div>
             <button
@@ -514,285 +399,125 @@ export default function HomePage() {
               className="btn-trading-glow"
               style={{ fontSize: '13px', padding: '10px 20px' }}
             >
-              {isProMember ? <><Sparkles size={14} /> Open Member Vault</> : <><Lock size={14} /> Unlock All 47 Setups (₹399)</>}
+              <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
             </button>
           </div>
 
-          {/* Section Separation Tabs */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '22px' }}>
-            <button
-              type="button"
-              onClick={() => setPreviewTab('charts')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '9px 18px',
-                borderRadius: '10px',
-                fontSize: '13.5px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: previewTab === 'charts' ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.1)',
-                backgroundColor: previewTab === 'charts' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                color: previewTab === 'charts' ? '#00e5ff' : '#94a3b8'
-              }}
-            >
-              Hand-Made Charts (Downloadable)
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreviewTab('videos')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '9px 18px',
-                borderRadius: '10px',
-                fontSize: '13.5px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: previewTab === 'videos' ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.1)',
-                backgroundColor: previewTab === 'videos' ? 'rgba(192, 132, 252, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                color: previewTab === 'videos' ? '#c084fc' : '#94a3b8'
-              }}
-            >
-              Video Library (English & Telugu)
-            </button>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '18px'
+          }}>
+            {[
+              {
+                title: 'Why FVG Fails (Reel 15)',
+                desc: 'Avoid retail trap fair value gaps that get violated instantly.',
+                image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'Stop Loss Trap (Reel 16)',
+                desc: 'How institutional market makers trigger retail stop loss clusters before explosive moves.',
+                image: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'LQT Setup Strategy (Reel 24)',
+                desc: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
+                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'Head & Shoulders Anatomy (Reel 18)',
+                desc: 'True breakout confirmation vs false neckline breaches.',
+                image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'Break of Structure BOS & CHOCH (Reel 11)',
+                desc: 'Market trend shift detection rule book with volume footprint.',
+                image: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              },
+              {
+                title: 'Volume Secret Formula (Reel 1)',
+                desc: 'Institutional volume anomalies & fake breakout strategy.',
+                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
+                type: 'Hand-Made Chart + Video'
+              }
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                onClick={handleRazorpayPayment}
+                style={{
+                  backgroundColor: '#111726',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  position: 'relative'
+                }}
+              >
+                {/* Visual Image with Blur & Lock Overlay */}
+                <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    style={{ objectFit: 'cover', filter: 'blur(3px) brightness(0.7)' }}
+                  />
+                  {/* Center Lock Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(0, 229, 255, 0.4)',
+                    borderRadius: '30px',
+                    padding: '8px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#00e5ff',
+                    fontSize: '12px',
+                    fontWeight: '700'
+                  }}>
+                    <Lock size={14} /> Member Vault Setup
+                  </div>
+
+                  <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10.5px',
+                    color: '#fff',
+                    fontWeight: '600'
+                  }}>
+                    {item.type}
+                  </div>
+                </div>
+
+                <div style={{ padding: '14px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                    {item.title}
+                  </h4>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
+                    {item.desc}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: '#00e5ff', fontWeight: '600' }}>
+                    <span>Tap to Unlock Blueprint & Video</span>
+                    <Lock size={12} />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* Grid Render for Hand-Made Charts */}
-          {previewTab === 'charts' && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '18px'
-            }}>
-              {[
-                {
-                  title: 'LQT Setup Strategy (Reel 24)',
-                  desc: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
-                  image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Hand-Made Chart',
-                  badgeColor: '#00e5ff'
-                },
-                {
-                  title: 'Why FVG Fails (Reel 15)',
-                  desc: 'Avoid retail trap fair value gaps that get violated instantly.',
-                  image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Hand-Made Chart',
-                  badgeColor: '#00e5ff'
-                },
-                {
-                  title: 'Stop Loss Trap Identification (Reel 16)',
-                  desc: 'How institutional market makers trigger retail stop loss clusters before explosive moves.',
-                  image: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Hand-Made Chart',
-                  badgeColor: '#00e5ff'
-                },
-                {
-                  title: 'Head & Shoulders Anatomy (Reel 18)',
-                  desc: 'True breakout confirmation vs false neckline breaches.',
-                  image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Hand-Made Chart',
-                  badgeColor: '#00e5ff'
-                },
-                {
-                  title: 'Break of Structure (BOS) & CHOCH (Reel 11)',
-                  desc: 'Market trend shift detection rule book with volume footprint.',
-                  image: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Hand-Made Chart',
-                  badgeColor: '#00e5ff'
-                }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={handleRazorpayPayment}
-                  style={{
-                    backgroundColor: '#111726',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '14px',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      style={{ objectFit: 'cover', filter: 'blur(3px) brightness(0.7)' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      backdropFilter: 'blur(8px)',
-                      border: '1px solid #00e5ff',
-                      borderRadius: '30px',
-                      padding: '8px 16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: '#00e5ff',
-                      fontSize: '12px',
-                      fontWeight: '700'
-                    }}>
-                      <Lock size={14} /> Locked (₹399)
-                    </div>
-
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      backgroundColor: 'rgba(0, 229, 255, 0.2)',
-                      border: '1px solid rgba(0, 229, 255, 0.4)',
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                      fontSize: '10.5px',
-                      color: '#00e5ff',
-                      fontWeight: '700'
-                    }}>
-                      {item.badge}
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '14px' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
-                      {item.title}
-                    </h4>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
-                      {item.desc}
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: '#00e5ff', fontWeight: '600' }}>
-                      <span>Tap to Unlock Blueprint & Video</span>
-                      <Lock size={12} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Grid Render for Video Reels */}
-          {previewTab === 'videos' && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '18px'
-            }}>
-              {[
-                {
-                  title: 'Reel 24: High Probability LQT Setup',
-                  desc: 'Master institutional liquidity sweep & trade execution rules.',
-                  image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Telugu & English Video',
-                  badgeColor: '#c084fc'
-                },
-                {
-                  title: 'Reel 15: Why FVG Fails in Retail Traps',
-                  desc: 'Learn why retail fair value gaps fail and how smart money enters.',
-                  image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Telugu Reel',
-                  badgeColor: '#c084fc'
-                },
-                {
-                  title: 'Reel 16: Stop Loss Trap (SL Trap)',
-                  desc: 'How retail stop losses are hunted before massive directional moves.',
-                  image: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=800&auto=format&fit=crop&q=80',
-                  badge: 'Telugu Reel',
-                  badgeColor: '#c084fc'
-                },
-                {
-                  title: 'Reel 1: Volume Secret Formula',
-                  desc: 'Master institutional volume anomalies to capture explosive moves.',
-                  image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
-                  badge: 'English Reel',
-                  badgeColor: '#c084fc'
-                },
-                {
-                  title: 'Reel 11: BOS & CHOCH Trend Shifts',
-                  desc: 'Market trend shift detection rule book with volume footprint in English.',
-                  image: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=800&auto=format&fit=crop&q=80',
-                  badge: 'English Reel',
-                  badgeColor: '#c084fc'
-                }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={handleRazorpayPayment}
-                  style={{
-                    backgroundColor: '#111726',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '14px',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      style={{ objectFit: 'cover', filter: 'blur(3px) brightness(0.7)' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      backdropFilter: 'blur(8px)',
-                      border: '1px solid #c084fc',
-                      borderRadius: '30px',
-                      padding: '8px 16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: '#c084fc',
-                      fontSize: '12px',
-                      fontWeight: '700'
-                    }}>
-                      <Lock size={14} /> Locked Video (₹399)
-                    </div>
-
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      backgroundColor: 'rgba(192, 132, 252, 0.2)',
-                      border: '1px solid rgba(192, 132, 252, 0.4)',
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                      fontSize: '10.5px',
-                      color: '#c084fc',
-                      fontWeight: '700'
-                    }}>
-                      {item.badge}
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '14px' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
-                      {item.title}
-                    </h4>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
-                      {item.desc}
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', color: '#c084fc', fontWeight: '600' }}>
-                      <span>Tap to Unlock Complete Video Reel</span>
-                      <Lock size={12} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
       </section>
@@ -1062,96 +787,6 @@ export default function HomePage() {
                 }}
                 required
               />
-
-              {/* Professional Drag-and-Drop / Gallery Upload for Payment Screenshot */}
-              <div
-                onDragOver={(e) => { e.preventDefault(); setIsScreenshotDragging(true); }}
-                onDragLeave={() => setIsScreenshotDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsScreenshotDragging(false);
-                  const file = e.dataTransfer.files?.[0];
-                  if (file) {
-                    setScreenshotName(file.name);
-                    const reader = new FileReader();
-                    reader.onload = (event) => setScreenshotPreview(event.target?.result as string);
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                style={{
-                  border: isScreenshotDragging ? '2px dashed #00e5ff' : '2px dashed rgba(255, 255, 255, 0.15)',
-                  borderRadius: '10px',
-                  padding: '16px',
-                  textAlign: 'center',
-                  backgroundColor: isScreenshotDragging ? 'rgba(0, 229, 255, 0.05)' : '#090d16',
-                  cursor: 'pointer'
-                }}
-              >
-                <UploadCloud size={24} color="#00e5ff" style={{ margin: '0 auto 6px auto' }} />
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}>
-                  Upload Payment Screenshot (Optional)
-                </div>
-                <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px' }}>
-                  Drag and drop or tap to choose from gallery (JPG, PNG)
-                </div>
-
-                {screenshotName && (
-                  <div style={{
-                    marginTop: '8px',
-                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                    color: '#00e676',
-                    border: '1px solid rgba(0, 230, 118, 0.3)',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    display: 'inline-block'
-                  }}>
-                    ✓ Attached: {screenshotName}
-                  </div>
-                )}
-
-                <input
-                  type="file"
-                  id="utr-screenshot-input"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setScreenshotName(file.name);
-                      const reader = new FileReader();
-                      reader.onload = (event) => setScreenshotPreview(event.target?.result as string);
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-
-                <div>
-                  <label
-                    htmlFor="utr-screenshot-input"
-                    style={{
-                      display: 'inline-block',
-                      marginTop: '8px',
-                      padding: '6px 14px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#00e5ff',
-                      fontWeight: '600',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Select Screenshot
-                  </label>
-                </div>
-
-                {screenshotPreview && (
-                  <div style={{ marginTop: '10px', maxHeight: '120px', overflow: 'hidden', borderRadius: '6px', border: '1px solid #333' }}>
-                    <img src={screenshotPreview} alt="Payment proof" style={{ width: '100%', maxHeight: '120px', objectFit: 'contain' }} />
-                  </div>
-                )}
-              </div>
 
               <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px' }}>
                 Verify & Activate Access
