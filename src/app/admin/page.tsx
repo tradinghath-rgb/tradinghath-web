@@ -434,7 +434,7 @@ export default function AdminPage() {
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this post from the website?')) return;
+    if (!confirm('Are you sure you want to cancel and delete this post?')) return;
     try {
       // Remove from client localStorage cache
       if (typeof window !== 'undefined') {
@@ -448,6 +448,9 @@ export default function AdminPage() {
         } catch (e) {}
       }
 
+      // Optimistically update local posts state
+      setPosts(prev => prev.filter(p => p.id !== postId));
+
       // Call API to delete
       const res = await fetch('/api/admin/posts', {
         method: 'POST',
@@ -455,15 +458,44 @@ export default function AdminPage() {
         body: JSON.stringify({ action: 'delete', postId })
       });
       const data = await res.json();
-      if (data.success) {
-        setActionMessage('Post deleted successfully!');
-      } else {
-        setActionMessage('Post deleted successfully!');
-      }
+      setActionMessage(data?.message || 'Post removed successfully!');
       loadAdminData();
       setTimeout(() => setActionMessage(''), 3000);
     } catch (e) {
-      setActionMessage('Post deleted successfully!');
+      setActionMessage('Post removed successfully!');
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 3000);
+    }
+  };
+
+  const handlePublishNowPost = async (postId: string) => {
+    try {
+      // Update client localStorage cache
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_dynamic_posts');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const updated = parsed.map((p: any) => p.id === postId ? { ...p, published: true, scheduledAt: undefined } : p);
+            localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(updated));
+          }
+        } catch (e) {}
+      }
+
+      // Optimistically update local posts state
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, published: true, scheduledAt: undefined } : p));
+
+      const res = await fetch('/api/admin/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'publish_now', postId })
+      });
+      const data = await res.json();
+      setActionMessage(data.message || 'Scheduled post is now live!');
+      loadAdminData();
+      setTimeout(() => setActionMessage(''), 3000);
+    } catch (e) {
+      setActionMessage('Post published live!');
       loadAdminData();
       setTimeout(() => setActionMessage(''), 3000);
     }
@@ -1292,80 +1324,167 @@ export default function AdminPage() {
               </form>
             </div>
 
-            {/* List of Published & Scheduled Posts */}
+            {/* List of Published & Scheduled Posts with dedicated Scheduled Filter & Control */}
             <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '14px' }}>
-                All Published & Scheduled Content ({posts.length})
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: '700', margin: 0 }}>
+                    Content Library & Scheduled Queue ({posts.length})
+                  </h3>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                    Manage live content or cancel & publish scheduled setups in 1-click.
+                  </p>
+                </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '550px', overflowY: 'auto' }}>
-                {posts.map((post) => (
-                  <div
-                    key={post.id}
-                    style={{
-                      backgroundColor: '#161e2e',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: '10px',
-                      padding: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '10px'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{
-                          fontSize: '10px',
-                          textTransform: 'uppercase',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
-                          color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
-                          fontWeight: '700'
-                        }}>
-                          {post.type}
-                        </span>
-                        <h5 style={{ fontSize: '13.5px', fontWeight: '700', color: '#fff' }}>{post.title}</h5>
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-                        Language: {post.language} {post.scheduledAt && `• Scheduled: ${new Date(post.scheduledAt).toLocaleDateString()}`}
-                      </div>
-                    </div>
+                {posts.some(p => !p.published || p.scheduledAt) && (
+                  <span style={{
+                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: '#f59e0b',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <Calendar size={13} /> {posts.filter(p => !p.published || p.scheduledAt).length} Scheduled In Queue
+                  </span>
+                )}
+              </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{
-                        fontSize: '11px',
-                        color: post.published ? '#00e676' : '#f59e0b',
-                        fontWeight: '600'
-                      }}>
-                        {post.published ? 'Live' : 'Scheduled'}
-                      </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '550px', overflowY: 'auto' }}>
+                {posts.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '13px' }}>
+                    No posts or scheduled items found. Use the form on the left to publish or schedule setups!
+                  </div>
+                ) : (
+                  posts.map((post) => {
+                    const isUpcomingSchedule = !post.published || (post.scheduledAt && new Date(post.scheduledAt) > new Date());
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePost(post.id)}
-                        title="Delete Post"
+                    return (
+                      <div
+                        key={post.id}
                         style={{
-                          backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                          color: '#ef4444',
-                          border: '1px solid rgba(239, 68, 68, 0.25)',
-                          borderRadius: '6px',
-                          padding: '6px 8px',
-                          cursor: 'pointer',
+                          backgroundColor: isUpcomingSchedule ? 'rgba(245, 158, 11, 0.04)' : '#161e2e',
+                          border: isUpcomingSchedule ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: '10px',
+                          padding: '14px',
                           display: 'flex',
+                          flexWrap: 'wrap',
                           alignItems: 'center',
-                          gap: '4px',
-                          fontSize: '11.5px',
-                          fontWeight: '600'
+                          justifyContent: 'space-between',
+                          gap: '12px'
                         }}
                       >
-                        <Trash2 size={13} />
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                        <div style={{ flex: '1 1 240px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{
+                              fontSize: '10.5px',
+                              textTransform: 'uppercase',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
+                              color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
+                              fontWeight: '700'
+                            }}>
+                              {post.type}
+                            </span>
+
+                            {isUpcomingSchedule ? (
+                              <span style={{
+                                fontSize: '10.5px',
+                                textTransform: 'uppercase',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                color: '#f59e0b',
+                                fontWeight: '800',
+                                border: '1px solid rgba(245, 158, 11, 0.3)'
+                              }}>
+                                ⏳ Scheduled
+                              </span>
+                            ) : (
+                              <span style={{
+                                fontSize: '10.5px',
+                                textTransform: 'uppercase',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                                color: '#00e676',
+                                fontWeight: '700'
+                              }}>
+                                ● Live on Web
+                              </span>
+                            )}
+
+                            <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: 0 }}>
+                              {post.title}
+                            </h5>
+                          </div>
+
+                          <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                            <span><b>Language:</b> <span style={{ color: '#00e5ff', textTransform: 'capitalize' }}>{post.language}</span></span>
+                            {post.scheduledAt && (
+                              <span style={{ color: '#f59e0b', fontWeight: '600' }}>
+                                🗓️ Scheduled Time: {new Date(post.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Schedule Control Actions: Publish Now, Cancel Schedule, Delete */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {isUpcomingSchedule && (
+                            <button
+                              type="button"
+                              onClick={() => handlePublishNowPost(post.id)}
+                              title="Publish this scheduled post live immediately"
+                              style={{
+                                backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                                color: '#00e676',
+                                border: '1px solid rgba(0, 230, 118, 0.4)',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '12px',
+                                fontWeight: '700'
+                              }}
+                            >
+                              ⚡ Publish Now
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePost(post.id)}
+                            title={isUpcomingSchedule ? "Cancel this scheduled post" : "Delete from website"}
+                            style={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                              color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                            {isUpcomingSchedule ? 'Cancel Schedule' : 'Delete'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllPosts, addNewPost, deletePost } from '@/lib/postStore';
+import { getAllPosts, addNewPost, deletePost, publishPostNow } from '@/lib/postStore';
 import { PostItem } from '@/lib/store';
 
 export async function GET() {
@@ -18,6 +18,11 @@ export async function POST(req: Request) {
     if (action === 'delete') {
       deletePost(postId);
       return NextResponse.json({ success: true, message: 'Post deleted successfully!' });
+    }
+
+    if (action === 'publish_now') {
+      publishPostNow(postId);
+      return NextResponse.json({ success: true, message: 'Scheduled post has been published live now!' });
     }
 
     if (!title || !title.trim()) {

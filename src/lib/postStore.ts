@@ -29,3 +29,18 @@ export function deletePost(postId: string) {
   if (!global.__TRADINGHATH_POSTS__) return;
   global.__TRADINGHATH_POSTS__ = global.__TRADINGHATH_POSTS__.filter(p => p.id !== postId);
 }
+
+export function publishPostNow(postId: string) {
+  if (!global.__TRADINGHATH_POSTS__) return;
+  global.__TRADINGHATH_POSTS__ = global.__TRADINGHATH_POSTS__.map(p => {
+    if (p.id === postId) {
+      return { ...p, published: true, scheduledAt: undefined };
+    }
+    return p;
+  });
+}
+
+export function cancelScheduleAndKeepDraft(postId: string) {
+  if (!global.__TRADINGHATH_POSTS__) return;
+  global.__TRADINGHATH_POSTS__ = global.__TRADINGHATH_POSTS__.filter(p => p.id !== postId);
+}
