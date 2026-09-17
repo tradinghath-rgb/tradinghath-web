@@ -23,7 +23,8 @@ import {
   Eye,
   FileText,
   AlertCircle,
-  Play
+  Play,
+  RefreshCw
 } from 'lucide-react';
 import { PostItem } from '@/lib/store';
 import { saveMediaFile, deleteMediaFile } from '@/lib/videoStorage';
@@ -38,6 +39,9 @@ export default function AdminPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
   const [actionMessage, setActionMessage] = useState('');
 
   // New Post Form State
@@ -98,8 +102,9 @@ export default function AdminPage() {
   };
 
 
-  const loadAdminData = async () => {
+  const loadAdminData = async (showToast = false) => {
     setLoading(true);
+    setIsRefreshing(true);
     try {
       const [usersRes, postsRes, commentsRes] = await Promise.all([
         fetch('/api/admin/users'),
@@ -199,6 +204,12 @@ export default function AdminPage() {
       console.error(e);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+      setPullDistance(0);
+      if (showToast) {
+        setActionMessage('Admin Control Center refreshed & synced in real time!');
+        setTimeout(() => setActionMessage(''), 3000);
+      }
     }
   };
 
@@ -574,8 +585,72 @@ export default function AdminPage() {
     );
   }
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (typeof window !== 'undefined' && window.scrollY === 0) {
+      setTouchStartY(e.touches[0].clientY);
+    } else {
+      setTouchStartY(0);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY > 0 && typeof window !== 'undefined' && window.scrollY === 0) {
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - touchStartY;
+      if (diff > 0) {
+        // Apply dampening resistance
+        setPullDistance(Math.min(Math.round(diff * 0.45), 75));
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 45) {
+      loadAdminData(true);
+    }
+    setPullDistance(0);
+    setTouchStartY(0);
+  };
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc' }}>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#090d16',
+        color: '#f8fafc',
+        overscrollBehaviorY: 'auto',
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
+      {/* Swipe-to-refresh visual pull indicator */}
+      {pullDistance > 0 && (
+        <div style={{
+          height: `${pullDistance}px`,
+          backgroundColor: 'rgba(0, 229, 255, 0.12)',
+          borderBottom: '1px solid rgba(0, 229, 255, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          transition: 'height 0.1s ease',
+          color: '#00e5ff',
+          fontSize: '12px',
+          fontWeight: '700',
+          gap: '8px'
+        }}>
+          <RefreshCw
+            size={14}
+            style={{
+              transform: `rotate(${pullDistance * 4}deg)`,
+              transition: 'transform 0.1s ease'
+            }}
+          />
+          <span>{pullDistance > 45 ? 'Release to refresh admin console' : 'Pull down to refresh'}</span>
+        </div>
+      )}
 
       {/* Admin Mobile-Optimized Sticky Bar */}
       <header style={{
@@ -584,6 +659,9 @@ export default function AdminPage() {
         zIndex: 50,
         backgroundColor: 'rgba(9, 13, 22, 0.95)',
         backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        transform: 'translateZ(0)',
+        willChange: 'transform',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         padding: '12px 16px'
       }}>
@@ -611,6 +689,34 @@ export default function AdminPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => loadAdminData(true)}
+              disabled={isRefreshing}
+              title="Refresh and sync all admin data"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                backgroundColor: isRefreshing ? 'rgba(0, 229, 255, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                color: '#00e5ff',
+                border: '1px solid rgba(0, 229, 255, 0.3)',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <RefreshCw
+                size={14}
+                style={{
+                  animation: isRefreshing ? 'spin 0.8s linear infinite' : 'none'
+                }}
+              />
+              <span>{isRefreshing ? 'Syncing...' : 'Sync'}</span>
+            </button>
+
             <Link
               href="/dashboard"
               style={{
@@ -685,6 +791,8 @@ export default function AdminPage() {
           display: 'flex',
           gap: '8px',
           overflowX: 'auto',
+          touchAction: 'pan-x pan-y',
+          WebkitOverflowScrolling: 'touch',
           paddingBottom: '12px',
           marginBottom: '20px',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
