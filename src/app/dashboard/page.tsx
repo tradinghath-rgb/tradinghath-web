@@ -23,7 +23,9 @@ import {
   Compass,
   ChevronDown,
   Mail,
-  Phone
+  Phone,
+  ShieldAlert,
+  Settings
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isPro, setIsPro] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
@@ -52,12 +55,18 @@ export default function DashboardPage() {
         return;
       }
 
+      let currentUser: any = null;
       if (stored) {
-        setUser(JSON.parse(stored));
+        try {
+          currentUser = JSON.parse(stored);
+          setUser(currentUser);
+        } catch (e) {}
       }
 
       // Pro only if role is admin OR isPro is strictly 'true'
-      const hasPro = role === 'admin' || proStatus === 'true';
+      const adminRole = role === 'admin' || currentUser?.role === 'admin' || currentUser?.username === 'tradinghath' || currentUser?.email === 'tradinghath@gmail.com';
+      setIsAdmin(adminRole);
+      const hasPro = adminRole || proStatus === 'true';
       setIsPro(hasPro);
       setCheckingAccess(false);
     }
@@ -349,6 +358,29 @@ export default function DashboardPage() {
               <span style={{ display: 'inline' }}>Guide</span>
             </button>
 
+            {/* Admin Panel Direct Button (Visible to admin) */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                style={{
+                  background: 'linear-gradient(135deg, #e11d48, #be123c)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  boxShadow: '0 0 12px rgba(225, 29, 72, 0.4)'
+                }}
+              >
+                <ShieldAlert size={14} /> Admin Panel
+              </Link>
+            )}
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
@@ -425,24 +457,48 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowProfileModal(true)}
-              style={{
-                backgroundColor: '#111726',
-                border: '1px solid rgba(0, 229, 255, 0.4)',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                color: '#00e5ff',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <User size={13} /> View Full Profile
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  style={{
+                    background: 'linear-gradient(135deg, #e11d48, #be123c)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 0 14px rgba(225, 29, 72, 0.4)'
+                  }}
+                >
+                  <ShieldAlert size={14} /> Go to Admin Panel
+                </Link>
+              )}
+
+              <button
+                onClick={() => setShowProfileModal(true)}
+                style={{
+                  backgroundColor: '#111726',
+                  border: '1px solid rgba(0, 229, 255, 0.4)',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  color: '#00e5ff',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <User size={13} /> View Full Profile
+              </button>
+            </div>
           </div>
 
           {/* Quick Step-by-Step Platform Directions */}
@@ -1012,6 +1068,26 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    style={{
+                      padding: '11px 16px',
+                      borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #e11d48, #be123c)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <ShieldAlert size={15} /> Admin
+                  </Link>
+                )}
                 <button
                   onClick={() => setShowProfileModal(false)}
                   className="btn-trading-glow"
