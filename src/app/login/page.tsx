@@ -27,6 +27,30 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setSignupSuccess('');
+
+    const cleanUser = signupUsername.trim().toLowerCase();
+    const cleanMail = signupEmail.trim().toLowerCase();
+
+    // Check client storage directly for instant duplicate username alert
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('tradinghath_client_users');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const foundName = list.find((u: any) => u.username?.toLowerCase() === cleanUser);
+          if (foundName || cleanUser === 'tradinghath') {
+            setError(`Username "${signupUsername.trim()}" is already taken! Please create with a new username.`);
+            return;
+          }
+          const foundMail = list.find((u: any) => u.email?.toLowerCase() === cleanMail);
+          if (foundMail || cleanMail === 'tradinghath@gmail.com') {
+            setError(`Email "${signupEmail.trim()}" is already registered! Please log in instead.`);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+
     setLoading(true);
 
     try {

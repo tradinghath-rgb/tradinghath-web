@@ -104,3 +104,15 @@ export function findUserByCredentials(identifier: string, pass: string): UserAdm
   return found || null;
 }
 
+export function isUsernameTaken(username: string): boolean {
+  const clean = username.trim().toLowerCase();
+  const users = getAllUsers();
+  return users.some(u => u.username.toLowerCase() === clean);
+}
+
+export function isEmailTaken(email: string): boolean {
+  const clean = email.trim().toLowerCase();
+  const users = getAllUsers();
+  return users.some(u => u.email.toLowerCase() === clean);
+}
+

@@ -15,10 +15,12 @@ import {
   HelpCircle,
   Mail,
   Smartphone,
-  Star,
   Sparkles,
   Zap,
-  AlertCircle
+  AlertCircle,
+  UploadCloud,
+  ImageIcon,
+  Check
 } from 'lucide-react';
 import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
 
@@ -45,6 +47,9 @@ export default function HomePage() {
   const [utrStatus, setUtrStatus] = useState('');
   const [termsModal, setTermsModal] = useState(false);
   const [previewTab, setPreviewTab] = useState<'charts' | 'videos'>('charts');
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [screenshotName, setScreenshotName] = useState('');
+  const [isScreenshotDragging, setIsScreenshotDragging] = useState(false);
 
   useEffect(() => {
     fetch('/api/comments')
@@ -948,6 +953,96 @@ export default function HomePage() {
                 }}
                 required
               />
+
+              {/* Professional Drag-and-Drop / Gallery Upload for Payment Screenshot */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setIsScreenshotDragging(true); }}
+                onDragLeave={() => setIsScreenshotDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsScreenshotDragging(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                    setScreenshotName(file.name);
+                    const reader = new FileReader();
+                    reader.onload = (event) => setScreenshotPreview(event.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                style={{
+                  border: isScreenshotDragging ? '2px dashed #00e5ff' : '2px dashed rgba(255, 255, 255, 0.15)',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  textAlign: 'center',
+                  backgroundColor: isScreenshotDragging ? 'rgba(0, 229, 255, 0.05)' : '#090d16',
+                  cursor: 'pointer'
+                }}
+              >
+                <UploadCloud size={24} color="#00e5ff" style={{ margin: '0 auto 6px auto' }} />
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}>
+                  Upload Payment Screenshot (Optional)
+                </div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px' }}>
+                  Drag and drop or tap to choose from gallery (JPG, PNG)
+                </div>
+
+                {screenshotName && (
+                  <div style={{
+                    marginTop: '8px',
+                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                    color: '#00e676',
+                    border: '1px solid rgba(0, 230, 118, 0.3)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    display: 'inline-block'
+                  }}>
+                    ✓ Attached: {screenshotName}
+                  </div>
+                )}
+
+                <input
+                  type="file"
+                  id="utr-screenshot-input"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setScreenshotName(file.name);
+                      const reader = new FileReader();
+                      reader.onload = (event) => setScreenshotPreview(event.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+
+                <div>
+                  <label
+                    htmlFor="utr-screenshot-input"
+                    style={{
+                      display: 'inline-block',
+                      marginTop: '8px',
+                      padding: '6px 14px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#00e5ff',
+                      fontWeight: '600',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Select Screenshot
+                  </label>
+                </div>
+
+                {screenshotPreview && (
+                  <div style={{ marginTop: '10px', maxHeight: '120px', overflow: 'hidden', borderRadius: '6px', border: '1px solid #333' }}>
+                    <img src={screenshotPreview} alt="Payment proof" style={{ width: '100%', maxHeight: '120px', objectFit: 'contain' }} />
+                  </div>
+                )}
+              </div>
 
               <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px' }}>
                 Verify & Activate Access

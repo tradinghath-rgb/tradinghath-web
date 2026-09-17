@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { registerNewUser, UserAdminType } from '@/lib/userStore';
+import { registerNewUser, isUsernameTaken, isEmailTaken, UserAdminType } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +8,25 @@ export async function POST(req: Request) {
     if (!username || !email || !password) {
       return NextResponse.json(
         { success: false, error: 'Please fill in username, email, and password.' },
+        { status: 400 }
+      );
+    }
+
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim();
+
+    // Check if username is already taken
+    if (isUsernameTaken(cleanUsername) || cleanUsername.toLowerCase() === 'tradinghath') {
+      return NextResponse.json(
+        { success: false, error: `This username "${cleanUsername}" is already taken. Please choose a different username.` },
+        { status: 400 }
+      );
+    }
+
+    // Check if email is already registered
+    if (isEmailTaken(cleanEmail) || cleanEmail.toLowerCase() === 'tradinghath@gmail.com') {
+      return NextResponse.json(
+        { success: false, error: `This email "${cleanEmail}" is already registered. Please log in or use a different email.` },
         { status: 400 }
       );
     }
