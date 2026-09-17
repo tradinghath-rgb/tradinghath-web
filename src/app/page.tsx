@@ -57,6 +57,19 @@ export default function HomePage() {
   // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
   const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
 
+  const scrollToPricing = () => {
+    const el = document.getElementById('pricing-plan-panel');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a subtle highlight flash effect
+      el.style.transition = 'box-shadow 0.3s ease';
+      el.style.boxShadow = '0 0 30px rgba(0, 229, 255, 0.8), 0 20px 50px -10px rgba(0, 229, 255, 0.4)';
+      setTimeout(() => {
+        el.style.boxShadow = '0 20px 50px -10px rgba(0, 229, 255, 0.2)';
+      }, 1500);
+    }
+  };
+
   const handleRazorpayPayment = async () => {
     // If mobile phone or user preferred link, open direct payment link directly
     // This immediately opens PhonePe / GPay / Paytm on phones
@@ -192,8 +205,7 @@ export default function HomePage() {
             </Link>
 
             <button
-              onClick={handleRazorpayPayment}
-              disabled={paymentLoading}
+              onClick={scrollToPricing}
               className="btn-trading-glow"
               style={{ fontSize: '13px', padding: '8px 16px' }}
             >
@@ -244,16 +256,19 @@ export default function HomePage() {
         </p>
 
         {/* Pricing Card Section */}
-        <div style={{
-          maxWidth: '480px',
-          margin: '0 auto 40px auto',
-          backgroundColor: '#111726',
-          border: '2px solid #00e5ff',
-          borderRadius: '20px',
-          padding: '30px 24px',
-          textAlign: 'left',
-          boxShadow: '0 20px 50px -10px rgba(0, 229, 255, 0.2)'
-        }}>
+        <div
+          id="pricing-plan-panel"
+          style={{
+            maxWidth: '480px',
+            margin: '0 auto 40px auto',
+            backgroundColor: '#111726',
+            border: '2px solid #00e5ff',
+            borderRadius: '20px',
+            padding: '30px 24px',
+            textAlign: 'left',
+            boxShadow: '0 20px 50px -10px rgba(0, 229, 255, 0.2)'
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '12px', fontWeight: '700', color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '1px' }}>
               Special Lifetime Deal
@@ -395,7 +410,7 @@ export default function HomePage() {
               </p>
             </div>
             <button
-              onClick={handleRazorpayPayment}
+              onClick={scrollToPricing}
               className="btn-trading-glow"
               style={{ fontSize: '13px', padding: '10px 20px' }}
             >
@@ -448,7 +463,7 @@ export default function HomePage() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                onClick={handleRazorpayPayment}
+                onClick={scrollToPricing}
                 style={{
                   backgroundColor: '#111726',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
