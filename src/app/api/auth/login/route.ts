@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials, registerNewUser, isUserDeleted } from '@/lib/userStore';
+import { findUserByCredentials, registerNewUser, isUserDeleted, getEffectivePassword } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     }
 
     // Sync any registered client users into server memory if provided (skip any that were deleted)
+    // Note: registerNewUser now preserves any admin password overrides and pro overrides!
     if (Array.isArray(clientUsers) && clientUsers.length > 0) {
       for (const cu of clientUsers) {
         if (cu && cu.email && cu.username) {
@@ -55,23 +56,37 @@ export async function POST(req: Request) {
       });
     }
 
-    // 3. Strict Check: User MUST have an active registered account!
+    // 3. Strict Check: User MUST authenticate against their active password!
+    // Check if the user exists but provided an invalid/old password
+    const effectivePass = getEffectivePassword(cleanIdentifier);
+    if (effectivePass && effectivePass !== cleanPassword) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid password! If your password was recently changed by Admin, please enter your new password.'
+        },
+        { status: 401 }
+      );
+    }
+
     let existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
 
-    // If not found in global memory, check clientUsers fallback (only non-deleted users)
+    // If not found in memory, check clientUsers fallback ONLY if no password override exists
     if (!existingUser && Array.isArray(clientUsers)) {
       const match = clientUsers.find(
         (u: any) =>
           (u.username?.toLowerCase() === cleanIdentifier.toLowerCase() ||
             u.email?.toLowerCase() === cleanIdentifier.toLowerCase()) &&
-          u.password === cleanPassword &&
           !isUserDeleted(u.id) &&
           !isUserDeleted(u.email) &&
           !isUserDeleted(u.username)
       );
       if (match) {
-        registerNewUser(match);
-        existingUser = match;
+        const expectedPass = getEffectivePassword(cleanIdentifier) || match.password;
+        if (cleanPassword === expectedPass) {
+          registerNewUser({ ...match, password: expectedPass });
+          existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
+        }
       }
     }
 

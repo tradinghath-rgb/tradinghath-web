@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       if (!newPassword || newPassword.length < 4) {
         return NextResponse.json({ success: false, error: 'Password too short' }, { status: 400 });
       }
-      changeUserPassword(userId, newPassword.trim());
+      changeUserPassword(userId, newPassword.trim(), email, username);
       return NextResponse.json({ success: true, message: 'User password updated successfully!' });
     }
 

@@ -228,15 +228,64 @@ export default function AdminPage() {
     e.preventDefault();
     if (!selectedUserForPassword || !newPasswordInput.trim()) return;
 
+    const trimmedPassword = newPasswordInput.trim();
+    const targetUserId = selectedUserForPassword.id;
+    const targetEmail = selectedUserForPassword.email?.toLowerCase();
+    const targetUsername = selectedUserForPassword.username?.toLowerCase();
+
     setPasswordChangeLoading(true);
     try {
+      // 1. Immediately update localStorage for client users and saved creds
+      if (typeof window !== 'undefined') {
+        try {
+          const storedClientUsers = localStorage.getItem('tradinghath_client_users');
+          if (storedClientUsers) {
+            const list = JSON.parse(storedClientUsers);
+            const updatedList = list.map((u: any) => {
+              if (
+                u.id === targetUserId ||
+                (targetEmail && u.email?.toLowerCase() === targetEmail) ||
+                (targetUsername && u.username?.toLowerCase() === targetUsername)
+              ) {
+                return { ...u, password: trimmedPassword };
+              }
+              return u;
+            });
+            localStorage.setItem('tradinghath_client_users', JSON.stringify(updatedList));
+          }
+
+          // Invalidate saved credentials if they belonged to this target user so old password is removed
+          const savedCredsStr = localStorage.getItem('tradinghath_saved_creds');
+          if (savedCredsStr) {
+            const parsedCreds = JSON.parse(savedCredsStr);
+            const credId = parsedCreds.identifier?.toLowerCase();
+            if (
+              credId === targetUserId ||
+              credId === targetEmail ||
+              credId === targetUsername
+            ) {
+              localStorage.removeItem('tradinghath_saved_creds');
+            }
+          }
+
+          // Optimistically update local users state immediately
+          setUsers(prev => prev.map(u => 
+            (u.id === targetUserId || (targetEmail && u.email?.toLowerCase() === targetEmail))
+              ? { ...u, password: trimmedPassword }
+              : u
+          ));
+        } catch (e) {}
+      }
+
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'change_password',
-          userId: selectedUserForPassword.id,
-          newPassword: newPasswordInput.trim()
+          userId: targetUserId,
+          newPassword: trimmedPassword,
+          email: targetEmail,
+          username: targetUsername
         })
       });
       const data = await res.json();

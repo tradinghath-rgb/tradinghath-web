@@ -41,6 +41,7 @@ declare global {
   var __TRADINGHATH_USERS__: UserAdminType[] | undefined;
   var __TRADINGHATH_DELETED_USER_IDS__: string[] | undefined;
   var __TRADINGHATH_PRO_OVERRIDES__: Record<string, boolean> | undefined;
+  var __TRADINGHATH_PASSWORD_OVERRIDES__: Record<string, string> | undefined;
 }
 
 if (!global.__TRADINGHATH_DELETED_USER_IDS__) {
@@ -49,6 +50,10 @@ if (!global.__TRADINGHATH_DELETED_USER_IDS__) {
 
 if (!global.__TRADINGHATH_PRO_OVERRIDES__) {
   global.__TRADINGHATH_PRO_OVERRIDES__ = {};
+}
+
+if (!global.__TRADINGHATH_PASSWORD_OVERRIDES__) {
+  global.__TRADINGHATH_PASSWORD_OVERRIDES__ = {};
 }
 
 if (!global.__TRADINGHATH_USERS__) {
@@ -67,7 +72,8 @@ export function getAllUsers(): UserAdminType[] {
   }
   const deleted = new Set(global.__TRADINGHATH_DELETED_USER_IDS__ || []);
   const blocked = new Set(['kiran_trader', 'suresh_kumar', 'kiran.reddy92@gmail.com', 'suresh.kumar88@gmail.com']);
-  const overrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
+  const proOverrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
+  const passOverrides = global.__TRADINGHATH_PASSWORD_OVERRIDES__ || {};
 
   return global.__TRADINGHATH_USERS__
     .filter(u => 
@@ -76,13 +82,24 @@ export function getAllUsers(): UserAdminType[] {
       !blocked.has(u.email?.toLowerCase())
     )
     .map(u => {
-      if (overrides[u.id] !== undefined) {
-        return { ...u, isPro: overrides[u.id] };
+      let updatedUser = { ...u };
+      // Apply pro status override
+      if (proOverrides[u.id] !== undefined) {
+        updatedUser.isPro = proOverrides[u.id];
+      } else if (proOverrides[u.email?.toLowerCase()] !== undefined) {
+        updatedUser.isPro = proOverrides[u.email.toLowerCase()];
       }
-      if (overrides[u.email?.toLowerCase()] !== undefined) {
-        return { ...u, isPro: overrides[u.email.toLowerCase()] };
+
+      // Apply password override if changed by admin
+      if (passOverrides[u.id]) {
+        updatedUser.password = passOverrides[u.id];
+      } else if (u.email && passOverrides[u.email.toLowerCase()]) {
+        updatedUser.password = passOverrides[u.email.toLowerCase()];
+      } else if (u.username && passOverrides[u.username.toLowerCase()]) {
+        updatedUser.password = passOverrides[u.username.toLowerCase()];
       }
-      return u;
+
+      return updatedUser;
     });
 }
 
@@ -98,9 +115,24 @@ export function registerNewUser(user: UserAdminType) {
     );
   }
 
-  const overrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
-  const effectiveIsPro = overrides[user.id] !== undefined ? overrides[user.id] : (overrides[user.email?.toLowerCase()] !== undefined ? overrides[user.email.toLowerCase()] : user.isPro);
-  const userToAdd = { ...user, isPro: effectiveIsPro };
+  const proOverrides = global.__TRADINGHATH_PRO_OVERRIDES__ || {};
+  const passOverrides = global.__TRADINGHATH_PASSWORD_OVERRIDES__ || {};
+
+  const effectiveIsPro = proOverrides[user.id] !== undefined 
+    ? proOverrides[user.id] 
+    : (proOverrides[user.email?.toLowerCase()] !== undefined ? proOverrides[user.email.toLowerCase()] : user.isPro);
+
+  // Preserve admin-set password override if exists
+  let effectivePassword = user.password;
+  if (passOverrides[user.id]) {
+    effectivePassword = passOverrides[user.id];
+  } else if (user.email && passOverrides[user.email.toLowerCase()]) {
+    effectivePassword = passOverrides[user.email.toLowerCase()];
+  } else if (user.username && passOverrides[user.username.toLowerCase()]) {
+    effectivePassword = passOverrides[user.username.toLowerCase()];
+  }
+
+  const userToAdd = { ...user, isPro: effectiveIsPro, password: effectivePassword };
 
   // Remove if already exists with same username/email
   global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.filter(
@@ -143,6 +175,10 @@ export function deleteUserPermanently(userIdOrEmail: string) {
     delete global.__TRADINGHATH_PRO_OVERRIDES__[cleanKey];
     delete global.__TRADINGHATH_PRO_OVERRIDES__[userIdOrEmail];
   }
+  if (global.__TRADINGHATH_PASSWORD_OVERRIDES__) {
+    delete global.__TRADINGHATH_PASSWORD_OVERRIDES__[cleanKey];
+    delete global.__TRADINGHATH_PASSWORD_OVERRIDES__[userIdOrEmail];
+  }
 
   if (!global.__TRADINGHATH_USERS__) return;
 
@@ -167,11 +203,32 @@ export function deleteUserPermanently(userIdOrEmail: string) {
   );
 }
 
-export function changeUserPassword(userId: string, newPass: string) {
+export function changeUserPassword(userId: string, newPass: string, email?: string, username?: string) {
+  if (!global.__TRADINGHATH_PASSWORD_OVERRIDES__) {
+    global.__TRADINGHATH_PASSWORD_OVERRIDES__ = {};
+  }
+  const trimmedPass = newPass.trim();
+  global.__TRADINGHATH_PASSWORD_OVERRIDES__[userId] = trimmedPass;
+  if (email) {
+    global.__TRADINGHATH_PASSWORD_OVERRIDES__[email.trim().toLowerCase()] = trimmedPass;
+  }
+  if (username) {
+    global.__TRADINGHATH_PASSWORD_OVERRIDES__[username.trim().toLowerCase()] = trimmedPass;
+  }
+
   if (!global.__TRADINGHATH_USERS__) return;
-  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.map(u =>
-    u.id === userId ? { ...u, password: newPass } : u
-  );
+  global.__TRADINGHATH_USERS__ = global.__TRADINGHATH_USERS__.map(u => {
+    const isTarget =
+      u.id === userId ||
+      (email && u.email?.toLowerCase() === email.trim().toLowerCase()) ||
+      (username && u.username?.toLowerCase() === username.trim().toLowerCase());
+    if (isTarget) {
+      if (u.email) global.__TRADINGHATH_PASSWORD_OVERRIDES__![u.email.toLowerCase()] = trimmedPass;
+      if (u.username) global.__TRADINGHATH_PASSWORD_OVERRIDES__![u.username.toLowerCase()] = trimmedPass;
+      return { ...u, password: trimmedPass };
+    }
+    return u;
+  });
 }
 
 export function findUserByCredentials(identifier: string, pass: string): UserAdminType | null {
@@ -183,12 +240,32 @@ export function findUserByCredentials(identifier: string, pass: string): UserAdm
     const matchId = u.username.toLowerCase() === cleanId || u.email.toLowerCase() === cleanId;
     if (!matchId) return false;
     
+    // Strict exact match with currently active password
     if (u.password === cleanPass) return true;
-    // Allow either with or without @093 suffix if credentials match
-    if (u.password && (u.password.replace(/@.*$/, '') === cleanPass.replace(/@.*$/, ''))) return true;
+
+    // Backward-compatibility ONLY for admin default accounts if exact cleanPass matches without @093
+    const isAdminAccount = u.username.toLowerCase() === 'tradinghath' || u.email.toLowerCase() === 'tradinghath@gmail.com';
+    if (isAdminAccount && u.password && (u.password.replace(/@.*$/, '') === cleanPass.replace(/@.*$/, ''))) {
+      return true;
+    }
     return false;
   });
 
   return found || null;
+}
+
+export function getEffectivePassword(idOrEmailOrUsername: string): string | null {
+  const passOverrides = global.__TRADINGHATH_PASSWORD_OVERRIDES__ || {};
+  const key = idOrEmailOrUsername.trim().toLowerCase();
+  if (passOverrides[idOrEmailOrUsername]) return passOverrides[idOrEmailOrUsername];
+  if (passOverrides[key]) return passOverrides[key];
+
+  const users = getAllUsers();
+  const u = users.find(user => 
+    user.id === idOrEmailOrUsername ||
+    user.email?.toLowerCase() === key ||
+    user.username?.toLowerCase() === key
+  );
+  return u?.password || null;
 }
 
