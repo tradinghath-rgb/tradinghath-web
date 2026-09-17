@@ -47,14 +47,23 @@ export default function UnifiedVideoPlayer({
           }
         });
     } else {
-      // Safely encode URI for spaces and parenthesis in filenames (e.g. reel-1(volume secret).mp4)
       try {
-        if (src.startsWith('/') || src.startsWith('http')) {
+        let targetUrl = src;
+        
+        // If relative /videos/ path and running in cloud/production (or not localhost),
+        // stream from GitHub Media LFS CDN directly so Vercel doesn't serve the 134-byte LFS text pointer!
+        if (targetUrl.startsWith('/videos/')) {
+          if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('192.168.')) {
+            targetUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/main/public${targetUrl}`;
+          }
+        }
+
+        if (targetUrl.startsWith('/') || targetUrl.startsWith('http')) {
           // If already encoded or unencoded, decode then encodeURI to prevent double-encoding
-          const clean = encodeURI(decodeURI(src));
+          const clean = encodeURI(decodeURI(targetUrl));
           setResolvedSrc(clean);
         } else {
-          setResolvedSrc(src);
+          setResolvedSrc(targetUrl);
         }
       } catch (e) {
         setResolvedSrc(src);
