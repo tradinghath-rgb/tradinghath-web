@@ -77,12 +77,10 @@ export default function AdminPage() {
       const userLower = (parsedUser?.username || '').toLowerCase();
       const emailLower = (parsedUser?.email || '').toLowerCase();
 
-      const isAdminUser = storedRole === 'admin' ||
-                          parsedUser?.role === 'admin' ||
-                          userLower === 'tradinghath' ||
-                          emailLower === 'tradinghath@gmail.com' ||
-                          emailLower === 'abhisheknaidu2005@gmail.com' ||
-                          userLower === 'abhisheknaidu';
+      const isAdminUser = (
+        userLower === 'tradinghath' ||
+        emailLower === 'tradinghath@gmail.com'
+      ) && (storedRole === 'admin' || parsedUser?.role === 'admin');
 
       if (parsedUser && isAdminUser) {
         setIsAuthorized(true);

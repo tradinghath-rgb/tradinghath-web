@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
     const derivedUsername = cleanEmail.split('@')[0] || `user_${Date.now()}`;
-    const isAdminEmail = cleanEmail === 'tradinghath@gmail.com' || cleanEmail === 'abhisheknaidu2005@gmail.com' || derivedUsername === 'tradinghath';
+    const isAdminEmail = cleanEmail === 'tradinghath@gmail.com' || derivedUsername === 'tradinghath';
 
     const newUser: UserAdminType = {
       id: `user_${Date.now()}`,

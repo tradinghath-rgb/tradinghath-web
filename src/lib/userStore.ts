@@ -30,9 +30,8 @@ export const INITIAL_REGISTERED_USERS: UserAdminType[] = [
     email: 'abhisheknaidu2005@gmail.com',
     password: '22NE1A04E1',
     phone: '+91 9390123456',
-    isPro: true,
-    amount: 399,
-    proGrantedAt: new Date().toISOString(),
+    isPro: false,
+    amount: 0,
     createdAt: new Date().toISOString()
   }
 ];

@@ -69,9 +69,7 @@ export default function HomePage() {
           const userLower = (parsed?.username || '').toLowerCase();
           const isOwnerAdmin = (
             userLower === 'tradinghath' || 
-            emailLower === 'tradinghath@gmail.com' ||
-            emailLower === 'abhisheknaidu2005@gmail.com' ||
-            userLower === 'abhisheknaidu'
+            emailLower === 'tradinghath@gmail.com'
           );
           const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
           setIsAdmin(adminCheck);

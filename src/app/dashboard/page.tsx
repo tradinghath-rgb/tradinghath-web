@@ -71,20 +71,18 @@ export default function DashboardPage() {
           } catch (e) {}
         }
 
-        // Strictly only the actual owner/admin account gets admin privileges!
+        // Strictly only tradinghath is the administrator!
         const emailLower = (currentUser?.email || '').toLowerCase();
         const userLower = (currentUser?.username || '').toLowerCase();
         const isOwnerAdmin = (
           userLower === 'tradinghath' || 
-          emailLower === 'tradinghath@gmail.com' ||
-          emailLower === 'abhisheknaidu2005@gmail.com' ||
-          userLower === 'abhisheknaidu'
+          emailLower === 'tradinghath@gmail.com'
         );
         const adminRole = isOwnerAdmin && (role === 'admin' || currentUser?.role === 'admin');
         setIsAdmin(adminRole);
 
-        // Initial local pro check
-        let hasPro = adminRole || proStatus === 'true';
+        // Initial local pro check (admins always have pro; regular users depend on isPro / server)
+        let hasPro = adminRole || (proStatus === 'true' && currentUser?.isPro !== false);
         if (!adminRole && currentUser) {
           try {
             const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
@@ -103,8 +101,9 @@ export default function DashboardPage() {
         setIsPro(hasPro);
 
         // 2. REAL-TIME SERVER VERIFICATION:
-        // Always confirm live status with the server API so admin revoking or deleting takes effect IMMEDIATELY
-        if (currentUser && !adminRole) {
+        // Query server to immediately sync revoke_pro or user deletion!
+        const verifyWithServer = () => {
+          if (!currentUser || adminRole) return;
           fetch('/api/auth/check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -122,7 +121,7 @@ export default function DashboardPage() {
                   localStorage.removeItem('tradinghath_user');
                   localStorage.removeItem('tradinghath_role');
                   localStorage.removeItem('tradinghath_isPro');
-                  alert('Your account has been deleted by Administrator.');
+                  alert('Your account has been removed by Administrator.');
                   window.location.href = '/login';
                 } else {
                   // Live pro status from server
@@ -133,6 +132,14 @@ export default function DashboardPage() {
               }
             })
             .catch(console.error);
+        };
+
+        verifyWithServer();
+
+        // Heartbeat every 4 seconds to instantly lock/revoke if admin changes status in admin panel
+        if (!adminRole) {
+          const intervalId = setInterval(verifyWithServer, 4000);
+          return () => clearInterval(intervalId);
         }
       } catch (err) {
         console.error('Auth check error:', err);
@@ -373,13 +380,13 @@ export default function DashboardPage() {
                   fontSize: '10px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  backgroundColor: 'rgba(0, 229, 255, 0.15)',
-                  color: '#00e5ff',
+                  backgroundColor: isPro ? 'rgba(0, 229, 255, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  color: isPro ? '#00e5ff' : '#ef4444',
                   padding: '2px 6px',
                   borderRadius: '4px',
                   fontWeight: '700'
                 }}>
-                  Lifetime Pro
+                  {isPro ? 'Lifetime Pro' : 'Free Account'}
                 </span>
               </div>
             </div>
@@ -528,14 +535,14 @@ export default function DashboardPage() {
                   </h2>
                   <span style={{
                     fontSize: '10px',
-                    backgroundColor: 'rgba(0, 230, 118, 0.2)',
-                    color: '#00e676',
-                    border: '1px solid rgba(0, 230, 118, 0.4)',
+                    backgroundColor: isPro ? 'rgba(0, 230, 118, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    color: isPro ? '#00e676' : '#ef4444',
+                    border: isPro ? '1px solid rgba(0, 230, 118, 0.4)' : '1px solid rgba(239, 68, 68, 0.4)',
                     padding: '2px 7px',
                     borderRadius: '4px',
                     fontWeight: '700'
                   }}>
-                    LIFETIME PRO ACTIVE
+                    {isPro ? 'LIFETIME PRO ACTIVE' : 'FREE / REVOKED'}
                   </span>
                 </div>
                 <div style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '3px' }}>

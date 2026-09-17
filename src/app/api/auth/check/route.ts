@@ -21,8 +21,8 @@ export async function POST(req: Request) {
       });
     }
 
-    // Admins always have pro
-    const isAdmin = cleanUser === 'tradinghath' || cleanEmail === 'tradinghath@gmail.com' || cleanEmail === 'abhisheknaidu2005@gmail.com';
+    // Admin is strictly tradinghath only
+    const isAdmin = cleanUser === 'tradinghath' || cleanEmail === 'tradinghath@gmail.com';
     if (isAdmin) {
       return NextResponse.json({
         success: true,
