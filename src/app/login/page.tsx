@@ -87,10 +87,24 @@ export default function LoginPage() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [resetMessage, setResetMessage] = useState('');
 
-  // Auto-fill saved login credentials from localStorage
+  // Auto-fill saved login credentials from localStorage & sanitize stale admin roles
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
+        // Enforce: only tradinghath / tradinghath@gmail.com can ever retain admin role in localStorage
+        const storedUser = localStorage.getItem('tradinghath_user');
+        const storedRole = localStorage.getItem('tradinghath_role');
+        if (storedRole === 'admin') {
+          let userObj: any = null;
+          try {
+            if (storedUser) userObj = JSON.parse(storedUser);
+          } catch (e) {}
+          const idLower = (userObj?.username || userObj?.email || '').toLowerCase();
+          if (idLower !== 'tradinghath' && idLower !== 'tradinghath@gmail.com') {
+            localStorage.setItem('tradinghath_role', 'user');
+          }
+        }
+
         const savedCreds = localStorage.getItem('tradinghath_saved_creds');
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
@@ -136,9 +150,17 @@ export default function LoginPage() {
 
       if (data.success) {
         if (typeof window !== 'undefined') {
+          const userIdentifier = (data.user?.email || data.user?.username || identifier).toLowerCase();
+          const isRealAdmin = data.isAdmin === true && (userIdentifier === 'tradinghath' || userIdentifier === 'tradinghath@gmail.com');
+
           localStorage.setItem('tradinghath_user', JSON.stringify(data.user));
-          localStorage.setItem('tradinghath_role', data.isAdmin ? 'admin' : 'user');
-          localStorage.setItem('tradinghath_isPro', data.isPro ? 'true' : 'false');
+          if (isRealAdmin) {
+            localStorage.setItem('tradinghath_role', 'admin');
+            localStorage.setItem('tradinghath_isPro', 'true');
+          } else {
+            localStorage.setItem('tradinghath_role', 'user');
+            localStorage.setItem('tradinghath_isPro', data.isPro ? 'true' : 'false');
+          }
 
           // Handle "Save login info" check
           if (saveLogin) {
@@ -148,7 +170,10 @@ export default function LoginPage() {
           }
         }
 
-        if (data.isAdmin) {
+        const userIdentifier = (data.user?.email || data.user?.username || identifier).toLowerCase();
+        const isRealAdmin = data.isAdmin === true && (userIdentifier === 'tradinghath' || userIdentifier === 'tradinghath@gmail.com');
+
+        if (isRealAdmin) {
           router.push('/admin');
         } else {
           // If pro user, go directly to vault dashboard; otherwise go explore homepage

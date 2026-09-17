@@ -71,6 +71,9 @@ export default function HomePage() {
             userLower === 'tradinghath' || 
             emailLower === 'tradinghath@gmail.com'
           );
+          if (!isOwnerAdmin && role === 'admin') {
+            localStorage.setItem('tradinghath_role', 'user');
+          }
           const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
           setIsAdmin(adminCheck);
 

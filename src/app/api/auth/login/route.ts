@@ -38,22 +38,38 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Check Admin Login
-    if (
-      (cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com') &&
-      (cleanPassword === '22NE1A04E1@093' || cleanPassword === '22NE1A04E1' || cleanPassword === '9390')
-    ) {
-      return NextResponse.json({
-        success: true,
-        isAdmin: true,
-        isPro: true,
-        user: {
-          username: 'tradinghath',
-          email: 'tradinghath@gmail.com',
-          role: 'admin'
-        },
-        token: 'admin_token_' + Date.now()
-      });
+    // 2. Check Admin Login (tradinghath / tradinghath@gmail.com)
+    const isAdminAccount = cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com';
+    if (isAdminAccount) {
+      const adminEffectivePass = getEffectivePassword('tradinghath') || getEffectivePassword('tradinghath@gmail.com');
+      const isValidAdminPass = (
+        cleanPassword === '22NE1A04E1@093' ||
+        cleanPassword === '22NE1A04E1' ||
+        cleanPassword === '9390' ||
+        (adminEffectivePass && cleanPassword === adminEffectivePass)
+      );
+
+      if (isValidAdminPass) {
+        return NextResponse.json({
+          success: true,
+          isAdmin: true,
+          isPro: true,
+          user: {
+            username: 'tradinghath',
+            email: 'tradinghath@gmail.com',
+            role: 'admin'
+          },
+          token: 'admin_token_' + Date.now()
+        });
+      } else {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Invalid admin credentials! Please enter the correct password.'
+          },
+          { status: 401 }
+        );
+      }
     }
 
     // 3. Strict Check: User MUST authenticate against their active password!
