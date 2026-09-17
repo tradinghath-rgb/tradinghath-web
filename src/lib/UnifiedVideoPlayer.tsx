@@ -59,9 +59,18 @@ export default function UnifiedVideoPlayer({
         }
 
         if (targetUrl.startsWith('/') || targetUrl.startsWith('http')) {
-          // If already encoded or unencoded, decode then encodeURI to prevent double-encoding
-          const clean = encodeURI(decodeURI(targetUrl));
-          setResolvedSrc(clean);
+          // Robust URI normalization:
+          // Literal '%' characters in filenames (like reel-9(91% accurcy).mp4) crash decodeURI with URIError!
+          // Replace literal % that isn't already a valid hex escape with %25
+          const sanitized = targetUrl.replace(/%(?![0-9A-Fa-f]{2})/g, '%25');
+          try {
+            const clean = encodeURI(decodeURI(sanitized));
+            setResolvedSrc(clean);
+          } catch (uriErr) {
+            // Fallback: encode spaces and parens safely without crashing
+            const safeUrl = sanitized.replace(/ /g, '%20');
+            setResolvedSrc(safeUrl);
+          }
         } else {
           setResolvedSrc(targetUrl);
         }
