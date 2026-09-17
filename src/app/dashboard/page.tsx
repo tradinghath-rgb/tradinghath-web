@@ -21,7 +21,9 @@ import {
   User,
   HelpCircle,
   Compass,
-  X
+  ChevronDown,
+  Mail,
+  Phone
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 
@@ -287,51 +289,67 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* User Status / Action Buttons */}
+          {/* User Status, Profile & Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Directions / How to Use Button */}
-            <button
-              onClick={() => setShowGuideModal(true)}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#cbd5e1',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12.5px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Compass size={14} color="#00e5ff" />
-              <span className="hidden sm:inline">Directions</span>
-            </button>
-
-            {/* Profile Button */}
+            {/* User Profile Pill Button */}
             <button
               onClick={() => setShowProfileModal(true)}
               style={{
                 backgroundColor: 'rgba(0, 229, 255, 0.12)',
                 border: '1px solid rgba(0, 229, 255, 0.35)',
-                color: '#00e5ff',
+                borderRadius: '24px',
                 padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12.5px',
-                fontWeight: '700',
+                color: '#fff',
+                fontSize: '12px',
+                fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '7px'
               }}
             >
-              <User size={14} />
-              <span>{user?.username ? `@${user.username}` : 'Profile'}</span>
+              <div style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                backgroundColor: '#00e5ff',
+                color: '#000',
+                fontSize: '11px',
+                fontWeight: '800',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {(user?.username || 'U')[0].toUpperCase()}
+              </div>
+              <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user?.username || 'My Profile'}
+              </span>
+              <ChevronDown size={14} color="#00e5ff" />
             </button>
 
-            {/* Logout */}
+            {/* Platform Guide / Directions Button */}
+            <button
+              onClick={() => setShowGuideModal(true)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                color: '#cbd5e1',
+                padding: '6px 11px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '12px',
+                fontWeight: '600'
+              }}
+            >
+              <Compass size={14} color="#00e5ff" />
+              <span style={{ display: 'inline' }}>Guide</span>
+            </button>
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
               style={{
@@ -342,12 +360,12 @@ export default function DashboardPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 fontWeight: '600',
-                padding: '6px 8px'
+                padding: '4px 6px'
               }}
             >
-              <LogOut size={16} /> Logout
+              <LogOut size={15} /> Logout
             </button>
           </div>
         </div>
@@ -356,7 +374,7 @@ export default function DashboardPage() {
       {/* Main Container */}
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px 80px 16px' }}>
         
-        {/* Pro Lifetime Welcome Banner */}
+        {/* User Account & Platform Direction Dashboard Banner */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.12) 0%, rgba(56, 117, 246, 0.08) 100%)',
           border: '1px solid rgba(0, 229, 255, 0.25)',
@@ -365,18 +383,97 @@ export default function DashboardPage() {
           marginBottom: '28px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '12px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={20} color="#00e5ff" />
-            <h2 style={{ fontSize: '19px', fontWeight: '700', color: '#ffffff' }}>
-              TradingHath Member Vault (24/7 Access)
-            </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(0, 229, 255, 0.2)',
+                border: '1px solid #00e5ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '800',
+                color: '#00e5ff',
+                fontSize: '15px'
+              }}>
+                {(user?.username || 'T')[0].toUpperCase()}
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff', margin: 0 }}>
+                    Welcome, {user?.username || 'Trader'}!
+                  </h2>
+                  <span style={{
+                    fontSize: '10px',
+                    backgroundColor: 'rgba(0, 230, 118, 0.2)',
+                    color: '#00e676',
+                    border: '1px solid rgba(0, 230, 118, 0.4)',
+                    padding: '2px 7px',
+                    borderRadius: '4px',
+                    fontWeight: '700'
+                  }}>
+                    LIFETIME PRO ACTIVE
+                  </span>
+                </div>
+                <div style={{ fontSize: '12.5px', color: '#94a3b8', marginTop: '3px' }}>
+                  Logged in as: <span style={{ color: '#00e5ff', fontWeight: '600' }}>{user?.email || 'member@tradinghath.com'}</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowProfileModal(true)}
+              style={{
+                backgroundColor: '#111726',
+                border: '1px solid rgba(0, 229, 255, 0.4)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                color: '#00e5ff',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <User size={13} /> View Full Profile
+            </button>
           </div>
-          <p style={{ fontSize: '13.5px', color: '#94a3b8', lineHeight: '1.5' }}>
-            Welcome! Click any hand-made chart below to preview it and watch its exact video breakdown side-by-side. 
-            Charts are freely downloadable for your study. Video downloading is strictly restricted to protect proprietary setup formulas.
-          </p>
+
+          {/* Quick Step-by-Step Platform Directions */}
+          <div style={{
+            backgroundColor: 'rgba(9, 13, 22, 0.7)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'rgba(0, 229, 255, 0.15)', color: '#00e5ff', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>1</span>
+              <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                <b style={{ color: '#fff' }}>Hand-Made Charts:</b> Tap any chart card below to view the setup blueprint and download it to your phone gallery.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>2</span>
+              <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                <b style={{ color: '#fff' }}>Side-by-Side Video:</b> Each chart has its exact explanation reel running side-by-side on phone or PC.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>3</span>
+              <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                <b style={{ color: '#fff' }}>Language Vault:</b> Switch between English and Telugu reels anytime using the language filters.
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Section Tabs & Language Filters */}
@@ -795,7 +892,8 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
-        {/* MODAL 1: USER PROFILE MODAL */}
+
+        {/* MODAL 1: USER PROFILE DETAILS MODAL */}
         {showProfileModal && (
           <div style={{
             position: 'fixed',
@@ -803,148 +901,137 @@ export default function DashboardPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px',
-            zIndex: 100
+            zIndex: 100,
+            padding: '16px'
           }}>
             <div style={{
               backgroundColor: '#111726',
-              border: '1px solid rgba(0, 229, 255, 0.3)',
+              border: '1px solid #00e5ff',
               borderRadius: '20px',
-              maxWidth: '420px',
+              maxWidth: '460px',
               width: '100%',
               padding: '24px',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
-              position: 'relative'
+              boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
             }}>
-              <button
-                onClick={() => setShowProfileModal(false)}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
-              >
-                <X size={20} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <User size={20} color="#00e5ff" />
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', margin: 0 }}>My Account Profile</h3>
+                </div>
+                <button
+                  onClick={() => setShowProfileModal(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
+                >
+                  ✕
+                </button>
+              </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
+              {/* Profile Avatar Card */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                padding: '16px',
+                backgroundColor: 'rgba(0, 229, 255, 0.05)',
+                border: '1px solid rgba(0, 229, 255, 0.15)',
+                borderRadius: '14px',
+                marginBottom: '20px'
+              }}>
                 <div style={{
                   width: '54px',
                   height: '54px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #00e5ff 0%, #3b82f6 100%)',
+                  backgroundColor: '#00e5ff',
+                  color: '#000',
+                  fontSize: '22px',
+                  fontWeight: '900',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#000',
-                  fontWeight: '800',
-                  fontSize: '22px'
+                  justifyContent: 'center'
                 }}>
                   {(user?.username || 'U')[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>
-                    {user?.username || 'Verified Trader'}
-                  </h3>
-                  <span style={{
-                    fontSize: '11px',
-                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                    color: '#00e676',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontWeight: '700',
-                    display: 'inline-block',
-                    marginTop: '2px'
-                  }}>
-                    PRO LIFETIME MEMBER
-                  </span>
+                  <h4 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 4px 0' }}>
+                    {user?.username || 'Trader'}
+                  </h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{
+                      backgroundColor: 'rgba(0, 230, 118, 0.2)',
+                      color: '#00e676',
+                      border: '1px solid rgba(0, 230, 118, 0.4)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700'
+                    }}>
+                      ✓ LIFETIME PRO MEMBER
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div style={{
-                backgroundColor: '#090d16',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                marginBottom: '20px'
-              }}>
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Username</span>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginTop: '2px' }}>
-                    {user?.username || 'Not Provided'}
-                  </div>
+              {/* Credentials & Details Fields */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ padding: '12px', backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Username</div>
+                  <div style={{ fontSize: '14px', color: '#fff', fontWeight: '600' }}>{user?.username || 'Trader'}</div>
                 </div>
 
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Registered Email</span>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#00e5ff', marginTop: '2px' }}>
-                    {user?.email || 'tradinghath@gmail.com'}
-                  </div>
+                <div style={{ padding: '12px', backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Registered Email (Gmail)</div>
+                  <div style={{ fontSize: '14px', color: '#00e5ff', fontWeight: '600' }}>{user?.email || 'member@tradinghath.com'}</div>
                 </div>
 
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>Account Access Status</span>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#00e676', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                    <ShieldCheck size={16} /> 24/7 Unlimited Vault Access
+                {user?.phone && (
+                  <div style={{ padding: '12px', backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '11.5px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Phone Number</div>
+                    <div style={{ fontSize: '14px', color: '#fff', fontWeight: '600' }}>{user?.phone}</div>
+                  </div>
+                )}
+
+                <div style={{ padding: '12px', backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Membership Status</div>
+                  <div style={{ fontSize: '13px', color: '#00e676', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={16} /> ₹399 Lifetime Access Unlocked (All Videos & Charts)
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
-                  onClick={() => {
-                    setShowProfileModal(false);
-                    setShowGuideModal(true);
-                  }}
-                  style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    color: '#fff',
-                    padding: '10px',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
+                  onClick={() => setShowProfileModal(false)}
+                  className="btn-trading-glow"
+                  style={{ flex: 1, padding: '11px', fontSize: '13px', cursor: 'pointer' }}
                 >
-                  View Directions
+                  Close
                 </button>
                 <button
                   onClick={handleLogout}
                   style={{
-                    flex: 1,
+                    padding: '11px 16px',
+                    borderRadius: '10px',
                     backgroundColor: 'rgba(239, 68, 68, 0.15)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
                     color: '#ef4444',
-                    padding: '10px',
-                    borderRadius: '10px',
                     fontSize: '13px',
                     fontWeight: '600',
                     cursor: 'pointer'
                   }}
                 >
-                  Log Out
+                  Logout
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* MODAL 2: DIRECTIONS & HOW TO USE THE VAULT */}
+        {/* MODAL 2: STEP-BY-STEP PLATFORM DIRECTIONS & TUTORIAL */}
         {showGuideModal && (
           <div style={{
             position: 'fixed',
@@ -952,90 +1039,106 @@ export default function DashboardPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px',
-            zIndex: 100
+            zIndex: 100,
+            padding: '16px'
           }}>
             <div style={{
               backgroundColor: '#111726',
-              border: '1px solid rgba(0, 229, 255, 0.3)',
+              border: '1px solid #00e5ff',
               borderRadius: '20px',
-              maxWidth: '480px',
+              maxWidth: '520px',
               width: '100%',
-              padding: '24px',
               maxHeight: '90vh',
               overflowY: 'auto',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
-              position: 'relative'
+              padding: '24px',
+              boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
             }}>
-              <button
-                onClick={() => setShowGuideModal(false)}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
-              >
-                <X size={20} />
-              </button>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <Compass size={22} color="#00e5ff" />
-                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff' }}>
-                  Member Vault Directions & Rules
-                </h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Compass size={22} color="#00e5ff" />
+                  <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#fff', margin: 0 }}>Website Directions & Guide</h3>
+                </div>
+                <button
+                  onClick={() => setShowGuideModal(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
+                >
+                  ✕
+                </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6' }}>
-                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #00e5ff' }}>
-                  <b style={{ color: '#fff' }}>1. Hand-Made Charts & Blueprints:</b>
-                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
-                    Click any chart card in the grid to view it in high resolution alongside its synchronized video reel explanation. Tap <b>"Save Chart to Gallery"</b> to download blueprints directly to your device's photo gallery.
-                  </p>
+              <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '20px' }}>
+                Welcome to TradingHath! Here are simple, step-by-step directions on how to navigate, study setups, and download blueprints directly to your device:
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+                {/* Step 1 */}
+                <div style={{ display: 'flex', gap: '12px', padding: '14px', backgroundColor: '#090d16', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(0, 229, 255, 0.15)', color: '#00e5ff', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    1
+                  </div>
+                  <div>
+                    <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: '0 0 4px 0' }}>Viewing Hand-Made Setup Charts</h5>
+                    <p style={{ fontSize: '12.5px', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>
+                      Tap the <b>"Hand-Made Charts"</b> tab. Click on any setup card in the grid to display its high-resolution blueprint in the top view screen.
+                    </p>
+                  </div>
                 </div>
 
-                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #c084fc' }}>
-                  <b style={{ color: '#fff' }}>2. Side-by-Side Video Reels:</b>
-                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
-                    Watch institutional price action setups, liquidity sweeps, and order block strategies. Videos are protected with anti-piracy nodownload controls for member-only access.
-                  </p>
+                {/* Step 2 */}
+                <div style={{ display: 'flex', gap: '12px', padding: '14px', backgroundColor: '#090d16', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    2
+                  </div>
+                  <div>
+                    <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: '0 0 4px 0' }}>Saving Charts to Phone Gallery</h5>
+                    <p style={{ fontSize: '12.5px', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>
+                      Click <b>"Save Chart to Gallery"</b>. The high-resolution chart will download straight into your phone's Photos or Downloads folder.
+                    </p>
+                  </div>
                 </div>
 
-                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #00e676' }}>
-                  <b style={{ color: '#fff' }}>3. Language Filtering:</b>
-                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
-                    Use the filter tabs at the top to toggle between <b>English</b> and <b>Telugu</b> explanations anytime.
-                  </p>
+                {/* Step 3 */}
+                <div style={{ display: 'flex', gap: '12px', padding: '14px', backgroundColor: '#090d16', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    3
+                  </div>
+                  <div>
+                    <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: '0 0 4px 0' }}>Side-by-Side Video Explanations</h5>
+                    <p style={{ fontSize: '12.5px', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>
+                      Beside each chart blueprint is its video explanation reel. You can watch the full institutional trap formula while referencing the chart simultaneously.
+                    </p>
+                  </div>
                 </div>
 
-                <div style={{ backgroundColor: '#090d16', padding: '12px 14px', borderRadius: '10px', borderLeft: '3px solid #f59e0b' }}>
-                  <b style={{ color: '#fff' }}>4. Community Support:</b>
-                  <p style={{ marginTop: '4px', color: '#94a3b8' }}>
-                    For any setup clarification, contact <b>tradinghath@gmail.com</b>.
-                  </p>
+                {/* Step 4 */}
+                <div style={{ display: 'flex', gap: '12px', padding: '14px', backgroundColor: '#090d16', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    4
+                  </div>
+                  <div>
+                    <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: '0 0 4px 0' }}>Complete Video Library & Language Filter</h5>
+                    <p style={{ fontSize: '12.5px', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>
+                      Click <b>"Video Library"</b> to watch all 23+ institutional reels. Use the <b>All / English / Telugu</b> pills to filter by your preferred language.
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowGuideModal(false)}
                 className="btn-trading-glow"
-                style={{ width: '100%', padding: '11px', marginTop: '20px', fontSize: '13.5px' }}
+                style={{ width: '100%', padding: '12px', fontSize: '13px', cursor: 'pointer' }}
               >
-                Got It, Let's Trade!
+                Got It, Let's Start Trading!
               </button>
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
