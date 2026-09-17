@@ -28,19 +28,30 @@ export default function DashboardPage() {
   const [selectedChart, setSelectedChart] = useState<PostItem | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [isPro, setIsPro] = useState(true);
+  const [isPro, setIsPro] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   useEffect(() => {
-    // Load auth status
+    // Load auth status strictly
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('tradinghath_user');
       const proStatus = localStorage.getItem('tradinghath_isPro');
+      const role = localStorage.getItem('tradinghath_role');
+
+      if (!stored && role !== 'admin') {
+        // Not logged in at all, redirect to login
+        window.location.href = '/login';
+        return;
+      }
+
       if (stored) {
         setUser(JSON.parse(stored));
       }
-      if (proStatus !== null) {
-        setIsPro(proStatus === 'true');
-      }
+
+      // Pro only if role is admin OR isPro is strictly 'true'
+      const hasPro = role === 'admin' || proStatus === 'true';
+      setIsPro(hasPro);
+      setCheckingAccess(false);
     }
 
     // Set initial selected chart if exists
@@ -58,6 +69,7 @@ export default function DashboardPage() {
       .catch(console.error);
   }, []);
 
+
   const filteredPosts = posts.filter(p => {
     if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
     if (languageFilter === 'all') return true;
@@ -73,8 +85,80 @@ export default function DashboardPage() {
     }
   };
 
+  if (checkingAccess) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#090d16', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00e5ff' }}>
+        Verifying Membership Access...
+      </div>
+    );
+  }
+
+  // STRICT PAYWALL: If user is not Pro, block all charts and videos completely!
+  if (!isPro) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ backgroundColor: '#111726', border: '2px solid #00e5ff', borderRadius: '20px', padding: '36px 24px', maxWidth: '440px', width: '100%', textAlign: 'center' }}>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(0, 229, 255, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+            <Lock size={30} color="#00e5ff" />
+          </div>
+          <span style={{ fontSize: '11px', color: '#00e5ff', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Membership Required
+          </span>
+          <h2 style={{ fontSize: '22px', fontWeight: '800', marginTop: '6px', marginBottom: '8px' }}>
+            Vault Access Locked
+          </h2>
+          <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '24px' }}>
+            Hello <b>{user?.username || 'Trader'}</b>! Hand-made charts and side-by-side video explanations require verified <b>₹399 Lifetime Access</b>.
+          </p>
+
+          <a
+            href="https://rzp.io/rzp/2a3h6cU"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-trading-glow"
+            style={{ width: '100%', padding: '14px', fontSize: '14px', textDecoration: 'none', display: 'block', marginBottom: '12px' }}
+          >
+            Pay ₹399 via UPI / Razorpay
+          </a>
+
+          <Link
+            href="/"
+            style={{
+              display: 'block',
+              width: '100%',
+              backgroundColor: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#94a3b8',
+              padding: '10px',
+              borderRadius: '10px',
+              fontSize: '12.5px',
+              textDecoration: 'none'
+            }}
+          >
+            Submit UTR ID on Homepage
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#ef4444',
+              cursor: 'pointer',
+              marginTop: '16px',
+              fontSize: '12px'
+            }}
+          >
+            Log Out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc' }}>
+
       {/* Top Navigation Bar */}
       <header style={{
         position: 'sticky',

@@ -73,7 +73,7 @@ export default function HomePage() {
     e.preventDefault();
     if (!utrInput.trim()) return;
 
-    setUtrStatus('Verifying UTR with backend...');
+    setUtrStatus('Verifying UTR with Razorpay records...');
     try {
       const res = await fetch('/api/razorpay/utr-verify', {
         method: 'POST',
@@ -86,13 +86,20 @@ export default function HomePage() {
 
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('tradinghath_isPro', 'true');
-        localStorage.setItem('tradinghath_utrId', utrInput.trim());
-        setUtrStatus(data.message);
-        setTimeout(() => {
-          setShowUtrModal(false);
-          router.push('/dashboard');
-        }, 1500);
+        if (data.isPro) {
+          // Only if verified strictly by Razorpay
+          localStorage.setItem('tradinghath_isPro', 'true');
+          localStorage.setItem('tradinghath_utrId', utrInput.trim());
+          setUtrStatus('Payment verified via Razorpay! Redirecting to vault...');
+          setTimeout(() => {
+            setShowUtrModal(false);
+            router.push('/dashboard');
+          }, 1500);
+        } else {
+          // Fake / unverified UTR: DO NOT GRANT ACCESS
+          localStorage.setItem('tradinghath_isPro', 'false');
+          setUtrStatus('⚠️ Payment not found in Razorpay records. Your UTR has been sent to admin for manual review. Access will remain locked until verified.');
+        }
       } else {
         setUtrStatus(data.error || 'Failed to verify UTR.');
       }
@@ -100,6 +107,7 @@ export default function HomePage() {
       setUtrStatus('Submission failed. Please try again.');
     }
   };
+
 
   // User Comment Submission
   const handleCommentSubmit = async (e: React.FormEvent) => {
