@@ -88,16 +88,40 @@ export default function LoginPage() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [resetMessage, setResetMessage] = useState('');
 
+  // Auto-fill saved login credentials from localStorage
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedCreds = localStorage.getItem('tradinghath_saved_creds');
+        if (savedCreds) {
+          const parsed = JSON.parse(savedCreds);
+          if (parsed.identifier) setIdentifier(parsed.identifier);
+          if (parsed.password) setPassword(parsed.password);
+          setSaveLogin(true);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      // Gather any client-stored users
+      let clientUsers: any[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('tradinghath_client_users');
+          if (stored) clientUsers = JSON.parse(stored);
+        } catch (e) {}
+      }
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password, saveLogin })
+        body: JSON.stringify({ identifier, password, saveLogin, clientUsers })
       });
       const data = await res.json();
 
@@ -106,13 +130,24 @@ export default function LoginPage() {
           localStorage.setItem('tradinghath_user', JSON.stringify(data.user));
           localStorage.setItem('tradinghath_role', data.isAdmin ? 'admin' : 'user');
           localStorage.setItem('tradinghath_isPro', data.isPro ? 'true' : 'false');
+
+          // Handle "Save login info" check
+          if (saveLogin) {
+            localStorage.setItem('tradinghath_saved_creds', JSON.stringify({ identifier, password }));
+          } else {
+            localStorage.removeItem('tradinghath_saved_creds');
+          }
         }
 
         if (data.isAdmin) {
           router.push('/admin');
         } else {
-          // Regular user goes to homepage first to explore website!
-          router.push('/');
+          // If pro user, go directly to vault dashboard; otherwise go explore homepage
+          if (data.isPro) {
+            router.push('/dashboard');
+          } else {
+            router.push('/');
+          }
         }
 
       } else {

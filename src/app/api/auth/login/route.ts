@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials } from '@/lib/userStore';
+import { findUserByCredentials, registerNewUser } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
-    const { identifier, password } = await req.json();
+    const { identifier, password, clientUsers } = await req.json();
 
     if (!identifier || !password) {
       return NextResponse.json(
@@ -14,6 +14,15 @@ export async function POST(req: Request) {
 
     const cleanIdentifier = identifier.trim();
     const cleanPassword = password.trim();
+
+    // Sync any registered client users into server memory if provided
+    if (Array.isArray(clientUsers) && clientUsers.length > 0) {
+      for (const cu of clientUsers) {
+        if (cu && cu.email && cu.username) {
+          registerNewUser(cu);
+        }
+      }
+    }
 
     // 1. Check Admin Login
     if (
@@ -34,7 +43,21 @@ export async function POST(req: Request) {
     }
 
     // 2. Strict Check: User MUST have registered first!
-    const existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
+    let existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
+
+    // If not found in global memory, check clientUsers fallback
+    if (!existingUser && Array.isArray(clientUsers)) {
+      const match = clientUsers.find(
+        (u: any) =>
+          (u.username?.toLowerCase() === cleanIdentifier.toLowerCase() ||
+            u.email?.toLowerCase() === cleanIdentifier.toLowerCase()) &&
+          u.password === cleanPassword
+      );
+      if (match) {
+        registerNewUser(match);
+        existingUser = match;
+      }
+    }
 
     if (!existingUser) {
       return NextResponse.json(

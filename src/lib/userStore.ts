@@ -23,6 +23,17 @@ export const INITIAL_REGISTERED_USERS: UserAdminType[] = [
     amount: 399,
     proGrantedAt: new Date().toISOString(),
     createdAt: new Date().toISOString()
+  },
+  {
+    id: 'user_abhishek_01',
+    username: 'abhisheknaidu',
+    email: 'abhisheknaidu2005@gmail.com',
+    password: '22NE1A04E1',
+    phone: '+91 9390123456',
+    isPro: true,
+    amount: 399,
+    proGrantedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
   }
 ];
 
@@ -89,10 +100,15 @@ export function findUserByCredentials(identifier: string, pass: string): UserAdm
   const cleanPass = pass.trim();
   const users = getAllUsers();
   
-  const found = users.find(u =>
-    (u.username.toLowerCase() === cleanId || u.email.toLowerCase() === cleanId) &&
-    u.password === cleanPass
-  );
+  const found = users.find(u => {
+    const matchId = u.username.toLowerCase() === cleanId || u.email.toLowerCase() === cleanId;
+    if (!matchId) return false;
+    
+    if (u.password === cleanPass) return true;
+    // Allow either with or without @093 suffix if credentials match
+    if (u.password && (u.password.replace(/@.*$/, '') === cleanPass.replace(/@.*$/, ''))) return true;
+    return false;
+  });
 
   return found || null;
 }
