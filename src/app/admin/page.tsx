@@ -115,8 +115,44 @@ export default function AdminPage() {
     }
   };
 
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<any>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
+
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForPassword || !newPasswordInput.trim()) return;
+
+    setPasswordChangeLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'change_password',
+          userId: selectedUserForPassword.id,
+          newPassword: newPasswordInput.trim()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActionMessage('Password updated successfully for ' + selectedUserForPassword.username);
+        setSelectedUserForPassword(null);
+        setNewPasswordInput('');
+        loadAdminData();
+        setTimeout(() => setActionMessage(''), 4000);
+      } else {
+        alert(data.error || 'Failed to update password');
+      }
+    } catch (err) {
+      alert('Error changing password');
+    } finally {
+      setPasswordChangeLoading(false);
+    }
+  };
+
   const handleUserAction = async (userId: string, action: 'grant_pro' | 'revoke_pro' | 'delete') => {
-    if (action === 'delete' && !confirm('Are you sure you want to delete this user?')) return;
+    if (action === 'delete' && !confirm('Are you sure you want to permanently delete this user?')) return;
 
     try {
       const res = await fetch('/api/admin/users', {
@@ -134,6 +170,7 @@ export default function AdminPage() {
       alert('Action failed');
     }
   };
+
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,105 +429,215 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Responsive User Cards List (Great on Phone) */}
+            {/* Responsive User Cards List with Full Email & Password Access for Admin Only */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {users
-                .filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((u) => (
-                  <div
-                    key={u.id}
-                    style={{
-                      backgroundColor: '#161e2e',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: '10px',
-                      padding: '14px',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#fff' }}>{u.username}</span>
-                        {u.isPro ? (
-                          <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
-                            PRO LIFETIME
-                          </span>
-                        ) : (
-                          <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
-                            FREE / REVOKED
-                          </span>
+              {users.length === 0 ? (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                  No users registered yet. New signups will appear here instantly with their full emails and passwords!
+                </div>
+              ) : (
+                users
+                  .filter(u => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((u) => (
+                    <div
+                      key={u.id}
+                      style={{
+                        backgroundColor: '#161e2e',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '10px',
+                        padding: '14px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px'
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '700', fontSize: '14px', color: '#fff' }}>{u.username}</span>
+                          {u.isPro ? (
+                            <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
+                              PRO LIFETIME
+                            </span>
+                          ) : (
+                            <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
+                              FREE / REVOKED
+                            </span>
+                          )}
+                        </div>
+
+                        {/* ADMIN ONLY: FULL EMAIL & PASSWORD UNMASKED */}
+                        <div style={{ fontSize: '12.5px', color: '#cbd5e1', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div><b>Email:</b> <span style={{ color: '#00e5ff' }}>{u.email}</span></div>
+                          <div>
+                            <b>Password:</b>{' '}
+                            <span style={{ backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', color: '#f59e0b', border: '1px solid #333' }}>
+                              {u.password || '22NE1A04E1@093'}
+                            </span>
+                          </div>
+                          {u.phone && <div><b>Phone:</b> {u.phone}</div>}
+                        </div>
+
+                        {u.utrId && (
+                          <div style={{ fontSize: '11px', color: '#00e5ff', marginTop: '4px' }}>
+                            UTR Ref: {u.utrId} (₹399)
+                          </div>
                         )}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                        <span>Email: {u.email}</span> • <span>Phone: {u.phone || 'N/A'}</span>
-                      </div>
-                      {u.utrId && (
-                        <div style={{ fontSize: '11px', color: '#00e5ff', marginTop: '2px' }}>
-                          UTR Ref: {u.utrId} (₹399)
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Admin Action Buttons */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {u.isPro ? (
+                      {/* Admin Action Buttons */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {/* Change Password Button */}
                         <button
-                          onClick={() => handleUserAction(u.id, 'revoke_pro')}
+                          onClick={() => { setSelectedUserForPassword(u); setNewPasswordInput(''); }}
                           style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                            border: '1px solid rgba(245, 158, 11, 0.4)',
+                            color: '#f59e0b',
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Change Password
+                        </button>
+
+                        {u.isPro ? (
+                          <button
+                            onClick={() => handleUserAction(u.id, 'revoke_pro')}
+                            style={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#ef4444',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Revoke Pro
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUserAction(u.id, 'grant_pro')}
+                            style={{
+                              backgroundColor: 'rgba(0, 230, 118, 0.15)',
+                              border: '1px solid rgba(0, 230, 118, 0.4)',
+                              color: '#00e676',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Grant Pro
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleUserAction(u.id, 'delete')}
+                          style={{
+                            background: 'none',
+                            border: 'none',
                             color: '#ef4444',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            padding: '6px',
+                            display: 'flex',
+                            alignItems: 'center'
                           }}
+                          title="Delete User Permanently"
                         >
-                          Revoke Pro
+                          <Trash2 size={16} />
                         </button>
-                      ) : (
-                        <button
-                          onClick={() => handleUserAction(u.id, 'grant_pro')}
-                          style={{
-                            backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                            border: '1px solid rgba(0, 230, 118, 0.4)',
-                            color: '#00e676',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Grant Pro
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleUserAction(u.id, 'delete')}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#64748b',
-                          cursor: 'pointer',
-                          padding: '6px',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}
-                        title="Delete User"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+              )}
             </div>
           </div>
         )}
+
+        {/* Change Password Modal for Admin */}
+        {selectedUserForPassword && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 100
+          }}>
+            <div style={{
+              backgroundColor: '#121826',
+              border: '1px solid #00e5ff',
+              borderRadius: '16px',
+              padding: '24px',
+              width: '100%',
+              maxWidth: '380px'
+            }}>
+              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+                Change Password for {selectedUserForPassword.username}
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px' }}>
+                User Email: <span style={{ color: '#00e5ff' }}>{selectedUserForPassword.email}</span>
+              </p>
+
+              <form onSubmit={handlePasswordChangeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <input
+                  type="text"
+                  placeholder="Enter new password"
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#090d16',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    color: '#fff',
+                    fontSize: '13px'
+                  }}
+                  required
+                />
+
+                <button
+                  type="submit"
+                  disabled={passwordChangeLoading}
+                  className="btn-trading-glow"
+                  style={{ width: '100%', padding: '10px', fontSize: '13px' }}
+                >
+                  {passwordChangeLoading ? 'Saving...' : 'Update User Password'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedUserForPassword(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    marginTop: '4px'
+                  }}
+                >
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
 
         {/* TAB 2: PUBLISH & SCHEDULE POSTS (From Phone or Desktop) */}
         {activeTab === 'posts' && (
