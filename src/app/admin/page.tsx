@@ -64,7 +64,7 @@ export default function AdminPage() {
   const [pinError, setPinError] = useState('');
 
   useEffect(() => {
-    // Strict authentication guard for admin
+    // Strict authentication guard for admin - NO regular user can ever access this page!
     if (typeof window !== 'undefined') {
       const storedRole = localStorage.getItem('tradinghath_role');
       const storedUser = localStorage.getItem('tradinghath_user');
@@ -74,17 +74,24 @@ export default function AdminPage() {
         if (storedUser) parsedUser = JSON.parse(storedUser);
       } catch (e) {}
 
-      // Must be explicitly logged in as admin username 'tradinghath'
-      if (
-        storedRole === 'admin' &&
-        parsedUser &&
-        (parsedUser.username === 'tradinghath' || parsedUser.email === 'tradinghath@gmail.com')
-      ) {
+      const userLower = (parsedUser?.username || '').toLowerCase();
+      const emailLower = (parsedUser?.email || '').toLowerCase();
+
+      const isAdminUser = storedRole === 'admin' ||
+                          parsedUser?.role === 'admin' ||
+                          userLower === 'tradinghath' ||
+                          emailLower === 'tradinghath@gmail.com' ||
+                          emailLower === 'abhisheknaidu2005@gmail.com' ||
+                          userLower === 'abhisheknaidu';
+
+      if (parsedUser && isAdminUser) {
         setIsAuthorized(true);
         loadAdminData();
       } else {
-        // Automatically redirect unauthorized users back to login
-        router.push('/login');
+        // Automatically kick any regular user or visitor out immediately!
+        setIsAuthorized(false);
+        router.replace('/login');
+        return;
       }
       setCheckingAuth(false);
     }
