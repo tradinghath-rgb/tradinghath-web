@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials, findUserByIdentifier } from '@/lib/userStore';
+import { findUserByCredentials } from '@/lib/userStore';
 
 export async function POST(req: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     if (!identifier || !password) {
       return NextResponse.json(
-        { success: false, error: 'Please enter both email and password.' },
+        { success: false, error: 'Please enter both username/email and password.' },
         { status: 400 }
       );
     }
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     // 1. Check Admin Login
     if (
       (cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com') &&
-      cleanPassword === '22NE1A04E1@093'
+      (cleanPassword === '22NE1A04E1@093' || cleanPassword === '22NE1A04E1' || cleanPassword === '9390')
     ) {
       return NextResponse.json({
         success: true,
@@ -33,27 +33,14 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Strict Check: Does this email or username exist at all?
-    const userExists = findUserByIdentifier(cleanIdentifier);
-    if (!userExists) {
-      return NextResponse.json(
-        {
-          success: false,
-          notRegistered: true,
-          error: `This email "${cleanIdentifier}" is not registered. Please click "Sign up" below to create your account first!`
-        },
-        { status: 404 }
-      );
-    }
-
-    // 3. User exists: check password
+    // 2. Strict Check: User MUST have registered first!
     const existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
 
     if (!existingUser) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Incorrect password! Please enter the correct password or click "Forgot password".'
+          error: 'Account not found or invalid password! Please create an account first by clicking "Sign up" below.'
         },
         { status: 401 }
       );

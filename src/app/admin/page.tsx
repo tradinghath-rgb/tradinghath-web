@@ -82,8 +82,8 @@ export default function AdminPage() {
 
   const handlePinUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    // Secondary 4-digit Master Security PIN for extra protection: 9390
-    if (adminPin === '9390' || adminPin === '22NE1A04E1@093') {
+    // Master Security PIN or Password: 9390 or 22NE1A04E1@093 or 22NE1A04E1
+    if (adminPin === '9390' || adminPin === '22NE1A04E1@093' || adminPin === '22NE1A04E1') {
       setIsAuthorized(true);
       loadAdminData();
     } else {
