@@ -124,24 +124,6 @@ export default function DashboardPage() {
 
           {/* User Status / Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ display: 'none', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-                {user?.email ? user.email.slice(0, 3) + '***@gmail.com' : 'VIP Member'}
-              </span>
-            </div>
-
-            <Link href="/admin" style={{
-              fontSize: '12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
-              color: '#cbd5e1',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: '600'
-            }}>
-              Admin Switch
-            </Link>
-
             <button
               onClick={handleLogout}
               style={{

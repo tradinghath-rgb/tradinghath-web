@@ -556,10 +556,6 @@ export default function HomePage() {
             >
               Terms & Conditions
             </button>
-
-            <Link href="/login" style={{ color: '#94a3b8', textDecoration: 'none' }}>
-              Admin / Member Portal
-            </Link>
           </div>
         </div>
       </footer>

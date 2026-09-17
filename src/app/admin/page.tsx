@@ -48,9 +48,49 @@ export default function AdminPage() {
   // Drag and drop indicator
   const [isDragging, setIsDragging] = useState(false);
 
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [adminPin, setAdminPin] = useState('');
+  const [pinError, setPinError] = useState('');
+
   useEffect(() => {
-    loadAdminData();
-  }, []);
+    // Strict authentication guard for admin
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('tradinghath_role');
+      const storedUser = localStorage.getItem('tradinghath_user');
+      
+      let parsedUser: any = null;
+      try {
+        if (storedUser) parsedUser = JSON.parse(storedUser);
+      } catch (e) {}
+
+      // Must be explicitly logged in as admin username 'tradinghath'
+      if (
+        storedRole === 'admin' &&
+        parsedUser &&
+        (parsedUser.username === 'tradinghath' || parsedUser.email === 'tradinghath@gmail.com')
+      ) {
+        setIsAuthorized(true);
+        loadAdminData();
+      } else {
+        // Automatically redirect unauthorized users back to login
+        router.push('/login');
+      }
+      setCheckingAuth(false);
+    }
+  }, [router]);
+
+  const handlePinUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Secondary 4-digit Master Security PIN for extra protection: 9390
+    if (adminPin === '9390' || adminPin === '22NE1A04E1@093') {
+      setIsAuthorized(true);
+      loadAdminData();
+    } else {
+      setPinError('Invalid Security PIN. Access denied.');
+    }
+  };
+
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -131,8 +171,55 @@ export default function AdminPage() {
     }
   };
 
+  if (checkingAuth) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00e5ff' }}>
+        Verifying Security Credentials...
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ backgroundColor: '#121212', border: '1px solid #27272a', borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '380px', textAlign: 'center' }}>
+          <Shield size={44} color="#ef4444" style={{ margin: '0 auto 12px auto' }} />
+          <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Restricted Area</h2>
+          <p style={{ fontSize: '12.5px', color: '#a1a1aa', marginBottom: '20px' }}>
+            This page is strictly reserved for the TradingHath Administrator.
+          </p>
+
+          {pinError && (
+            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '8px', borderRadius: '6px', fontSize: '12px', marginBottom: '14px' }}>
+              {pinError}
+            </div>
+          )}
+
+          <form onSubmit={handlePinUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <input
+              type="password"
+              placeholder="Enter Master Security PIN"
+              value={adminPin}
+              onChange={(e) => setAdminPin(e.target.value)}
+              style={{ width: '100%', backgroundColor: '#1e1e1e', border: '1px solid #333', borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '13px', textAlign: 'center', letterSpacing: '3px' }}
+              required
+            />
+            <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '10px' }}>
+              Unlock Console
+            </button>
+          </form>
+
+          <Link href="/login" style={{ display: 'block', marginTop: '16px', fontSize: '12px', color: '#71717a', textDecoration: 'none' }}>
+            Return to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc' }}>
+
       {/* Admin Mobile-Optimized Sticky Bar */}
       <header style={{
         position: 'sticky',
