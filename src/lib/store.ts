@@ -127,7 +127,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     title: 'Reel 15: Why FVG Fails in Retail Traps',
     description: 'Learn why retail fair value gaps fail and how smart money enters.',
     type: 'video',
-    language: 'telugu',
+    language: 'english',
     videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0&rel=0&modestbranding=1',
     published: true,
     createdAt: new Date().toISOString()

@@ -90,6 +90,14 @@ export default function DashboardPage() {
             } catch (e) {}
           }
 
+          // Enforce correct language categorization
+          allPosts = allPosts.map(p => {
+            if (p.id === 'vid_2' || p.title.toLowerCase().includes('reel 15')) {
+              return { ...p, language: 'english' };
+            }
+            return p;
+          });
+
           if (allPosts.length > 0) {
             setPosts(allPosts);
             const firstChart = allPosts.find(p => p.type === 'chart');
