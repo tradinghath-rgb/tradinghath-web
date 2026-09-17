@@ -289,7 +289,7 @@ export default function AdminPage() {
       type: postType,
       language: postLanguage,
       chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
-      videoUrl: !isChart ? (effectiveVideoUrl || 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1') : undefined,
+      videoUrl: !isChart ? (effectiveVideoUrl || 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0') : undefined,
       downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: scheduleDateTime || undefined,
       published: !isScheduled,

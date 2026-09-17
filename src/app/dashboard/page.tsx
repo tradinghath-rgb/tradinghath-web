@@ -725,19 +725,28 @@ export default function DashboardPage() {
                       {selectedChart.videoUrl?.includes('youtube.com') || selectedChart.videoUrl?.includes('youtu.be') ? (
                         <iframe
                           src={
-                            selectedChart.videoUrl.includes('/embed/')
-                              ? selectedChart.videoUrl
-                              : selectedChart.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/')
+                            (() => {
+                              let cleanUrl = selectedChart.videoUrl.includes('/embed/')
+                                ? selectedChart.videoUrl
+                                : selectedChart.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/');
+                              // Force remove autoplay=1 so video only plays when user explicitly taps play
+                              cleanUrl = cleanUrl.replace(/([?&])autoplay=1(&|$)/g, '$1autoplay=0$2');
+                              if (!cleanUrl.includes('autoplay=')) {
+                                cleanUrl += (cleanUrl.includes('?') ? '&' : '?') + 'autoplay=0';
+                              }
+                              return cleanUrl;
+                            })()
                           }
                           title={selectedChart.title}
                           style={{ width: '100%', height: '100%', border: 'none' }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                         />
                       ) : (
                         <video
                           src={selectedChart.videoUrl}
                           controls
+                          autoPlay={false}
                           controlsList="nodownload"
                           disablePictureInPicture
                           onContextMenu={(e) => e.preventDefault()}
@@ -882,19 +891,27 @@ export default function DashboardPage() {
                     {item.videoUrl && (item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be')) ? (
                       <iframe
                         src={
-                          item.videoUrl.includes('/embed/')
-                            ? item.videoUrl
-                            : item.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/')
+                          (() => {
+                            let cleanUrl = item.videoUrl.includes('/embed/')
+                              ? item.videoUrl
+                              : item.videoUrl.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/');
+                            cleanUrl = cleanUrl.replace(/([?&])autoplay=1(&|$)/g, '$1autoplay=0$2');
+                            if (!cleanUrl.includes('autoplay=')) {
+                              cleanUrl += (cleanUrl.includes('?') ? '&' : '?') + 'autoplay=0';
+                            }
+                            return cleanUrl;
+                          })()
                         }
                         title={item.title}
                         style={{ width: '100%', height: '100%', border: 'none' }}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                       />
                     ) : (
                       <video
                         src={item.videoUrl}
                         controls
+                        autoPlay={false}
                         controlsList="nodownload"
                         disablePictureInPicture
                         onContextMenu={(e) => e.preventDefault()}

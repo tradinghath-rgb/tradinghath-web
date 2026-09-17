@@ -67,7 +67,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     type: 'chart',
     language: 'both',
     chartUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
-    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1&rel=0&modestbranding=1',
+    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0&rel=0&modestbranding=1',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
     createdAt: new Date().toISOString()
@@ -128,7 +128,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     description: 'Learn why retail fair value gaps fail and how smart money enters.',
     type: 'video',
     language: 'telugu',
-    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=1&rel=0&modestbranding=1',
+    videoUrl: 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0&rel=0&modestbranding=1',
     published: true,
     createdAt: new Date().toISOString()
   },
