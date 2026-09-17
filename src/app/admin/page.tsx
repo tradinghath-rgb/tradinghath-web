@@ -105,7 +105,20 @@ export default function AdminPage() {
       const postsData = await postsRes.json();
       const commentsData = await commentsRes.json();
 
-      if (usersData.users) setUsers(usersData.users);
+      let serverUsers = usersData.users || [];
+      if (typeof window !== 'undefined') {
+        try {
+          const storedUsers = localStorage.getItem('tradinghath_client_users');
+          if (storedUsers) {
+            const localUsers = JSON.parse(storedUsers);
+            const existingIds = new Set(serverUsers.map((u: any) => u.id));
+            const existingEmails = new Set(serverUsers.map((u: any) => u.email.toLowerCase()));
+            const toAdd = localUsers.filter((u: any) => !existingIds.has(u.id) && !existingEmails.has(u.email.toLowerCase()));
+            serverUsers = [...serverUsers, ...toAdd];
+          }
+        } catch (e) {}
+      }
+      setUsers(serverUsers);
 
       let serverPosts: PostItem[] = postsData.posts || [];
       if (typeof window !== 'undefined') {
@@ -540,6 +553,40 @@ export default function AdminPage() {
                     outline: 'none'
                   }}
                 />
+              </div>
+            </div>
+
+            {/* MASTER ADMIN CREDENTIALS QUICK REFERENCE & STATUS */}
+            <div style={{
+              backgroundColor: 'rgba(0, 229, 255, 0.06)',
+              border: '1px solid rgba(0, 229, 255, 0.25)',
+              borderRadius: '12px',
+              padding: '14px 18px',
+              marginBottom: '16px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={16} color="#00e5ff" />
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Master Admin Credentials & Security
+                  </span>
+                  <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.2)', color: '#00e676', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '700' }}>
+                    ACTIVE
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '8px', fontSize: '12.5px', color: '#cbd5e1' }}>
+                  <span><b>Admin ID:</b> <code style={{ color: '#00e5ff', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>tradinghath</code></span>
+                  <span><b>Master Password:</b> <code style={{ color: '#f59e0b', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>22NE1A04E1@093</code></span>
+                  <span><b>Security PIN:</b> <code style={{ color: '#00e676', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>9390</code></span>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                All user accounts & passwords tracked in real-time below.
               </div>
             </div>
 

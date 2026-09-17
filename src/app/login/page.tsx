@@ -43,6 +43,26 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (data.success) {
+        // Save to client localStorage backup to guarantee persistence
+        if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('tradinghath_client_users');
+            const list = stored ? JSON.parse(stored) : [];
+            const userObj = {
+              id: data.user?.id || `user_${Date.now()}`,
+              username: signupUsername.trim(),
+              email: signupEmail.trim(),
+              password: signupPassword.trim(),
+              phone: signupPhone ? signupPhone.trim() : '',
+              isPro: false,
+              amount: 0,
+              createdAt: new Date().toISOString()
+            };
+            const filtered = list.filter((u: any) => u.username !== userObj.username && u.email !== userObj.email);
+            localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
+          } catch (e) {}
+        }
+
         setSignupSuccess('Account created successfully! Switching to login...');
         setIdentifier(signupEmail || signupUsername);
         setPassword(signupPassword);
