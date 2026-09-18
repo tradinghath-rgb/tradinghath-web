@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { findUserByCredentials, registerNewUser, isUserDeleted, getEffectivePassword } from '@/lib/userStore';
+import { dbFindUserByCredentials, dbGetAllUsersRaw, UserRecord } from '@/lib/db';
+
+// Admin credentials (from env or hardcoded fallback)
+const ADMIN_EMAIL = 'tradinghath@gmail.com';
+const ADMIN_USERNAME = 'tradinghath';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '22NE1A04E1@093';
 
 export async function POST(req: Request) {
   try {
-    const { identifier, password, clientUsers } = await req.json();
+    const { identifier, password } = await req.json();
 
     if (!identifier || !password) {
       return NextResponse.json(
@@ -12,128 +17,83 @@ export async function POST(req: Request) {
       );
     }
 
-    const cleanIdentifier = identifier.trim();
+    const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // 1. Strict Check: If this user ID, email, or username is marked as DELETED by Admin, block completely!
-    if (isUserDeleted(cleanIdentifier)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'This account has been deleted by Administrator. Please create a new account to continue.'
-        },
-        { status: 401 }
-      );
-    }
+    // 1. Admin login check
+    const isAdminLogin =
+      cleanIdentifier === ADMIN_EMAIL ||
+      cleanIdentifier === ADMIN_USERNAME;
 
-    // Sync any registered client users into server memory if provided (skip any that were deleted)
-    // Note: registerNewUser now preserves any admin password overrides and pro overrides!
-    if (Array.isArray(clientUsers) && clientUsers.length > 0) {
-      for (const cu of clientUsers) {
-        if (cu && cu.email && cu.username) {
-          if (!isUserDeleted(cu.id) && !isUserDeleted(cu.email) && !isUserDeleted(cu.username)) {
-            registerNewUser(cu);
-          }
-        }
-      }
-    }
-
-    // 2. Check Admin Login (tradinghath / tradinghath@gmail.com)
-    const isAdminAccount = cleanIdentifier.toLowerCase() === 'tradinghath' || cleanIdentifier.toLowerCase() === 'tradinghath@gmail.com';
-    if (isAdminAccount) {
-      const adminEffectivePass = getEffectivePassword('tradinghath') || getEffectivePassword('tradinghath@gmail.com');
-      const isValidAdminPass = (
-        cleanPassword === '22NE1A04E1@093' ||
-        cleanPassword === '22NE1A04E1' ||
-        cleanPassword === '9390' ||
-        (adminEffectivePass && cleanPassword === adminEffectivePass)
-      );
-
-      if (isValidAdminPass) {
+    if (isAdminLogin) {
+      if (cleanPassword === ADMIN_PASSWORD) {
         return NextResponse.json({
           success: true,
           isAdmin: true,
           isPro: true,
           user: {
-            username: 'tradinghath',
-            email: 'tradinghath@gmail.com',
-            role: 'admin'
+            id: 'admin',
+            username: ADMIN_USERNAME,
+            email: ADMIN_EMAIL,
+            role: 'admin',
           },
-          token: 'admin_token_' + Date.now()
+          token: 'admin_token_' + Date.now(),
         });
       } else {
         return NextResponse.json(
-          {
-            success: false,
-            error: 'Invalid admin credentials! Please enter the correct password.'
-          },
+          { success: false, error: 'Invalid admin credentials.' },
           { status: 401 }
         );
       }
     }
 
-    // 3. Strict Check: User MUST authenticate against their active password!
-    // Check if the user exists but provided an invalid/old password
-    const effectivePass = getEffectivePassword(cleanIdentifier);
-    if (effectivePass && effectivePass !== cleanPassword) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid password! If your password was recently changed by Admin, please enter your new password.'
-        },
-        { status: 401 }
-      );
-    }
+    // 2. Regular user login — query persistent KV database
+    const user = await dbFindUserByCredentials(cleanIdentifier, cleanPassword);
 
-    let existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
-
-    // If not found in memory, check clientUsers fallback ONLY if no password override exists
-    if (!existingUser && Array.isArray(clientUsers)) {
-      const match = clientUsers.find(
-        (u: any) =>
-          (u.username?.toLowerCase() === cleanIdentifier.toLowerCase() ||
-            u.email?.toLowerCase() === cleanIdentifier.toLowerCase()) &&
-          !isUserDeleted(u.id) &&
-          !isUserDeleted(u.email) &&
-          !isUserDeleted(u.username)
+    if (!user) {
+      // Check if email exists at all (to give better error message)
+      const allUsers = await dbGetAllUsersRaw();
+      const emailExists = allUsers.find(
+        u => (u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier) && !u.deleted
       );
-      if (match) {
-        const expectedPass = getEffectivePassword(cleanIdentifier) || match.password;
-        if (cleanPassword === expectedPass) {
-          registerNewUser({ ...match, password: expectedPass });
-          existingUser = findUserByCredentials(cleanIdentifier, cleanPassword);
-        }
+
+      if (emailExists) {
+        return NextResponse.json(
+          { success: false, error: 'Incorrect password. Please try again.' },
+          { status: 401 }
+        );
       }
-    }
 
-    if (!existingUser) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Account not found or invalid password! Please create an account first by clicking "Sign up" below.'
-        },
+        { success: false, error: 'No account found. Please sign up first.' },
         { status: 401 }
       );
     }
 
-    // Registered user authenticated successfully
+    if (user.deleted) {
+      return NextResponse.json(
+        { success: false, error: 'This account has been deleted. Please contact support.' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       isAdmin: false,
-      isPro: existingUser.isPro,
+      isPro: user.isPro,
       user: {
-        id: existingUser.id,
-        username: existingUser.username,
-        email: existingUser.email,
-        role: 'user'
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: 'user',
       },
-      token: 'user_token_' + Date.now()
+      token: 'user_token_' + Date.now(),
     });
   } catch (error: any) {
+    console.error('[LOGIN]', error);
     return NextResponse.json(
-      { success: false, error: 'Login service failed' },
+      { success: false, error: 'Login service failed. Please try again.' },
       { status: 500 }
     );
   }
 }
-

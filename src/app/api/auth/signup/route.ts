@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { registerNewUser, UserAdminType } from '@/lib/userStore';
+import { dbFindUserByEmail, dbRegisterUser, UserRecord } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Please enter your Gmail / email address and password.' },
+        { success: false, error: 'Please enter your email address and password.' },
         { status: 400 }
       );
     }
@@ -20,22 +20,32 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const derivedUsername = cleanEmail.split('@')[0] || `user_${Date.now()}`;
-    const isAdminEmail = cleanEmail === 'tradinghath@gmail.com' || derivedUsername === 'tradinghath';
 
-    const newUser: UserAdminType = {
-      id: `user_${Date.now()}`,
+    // Check for existing user
+    const existing = await dbFindUserByEmail(cleanEmail);
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'An account with this email already exists. Please log in.' },
+        { status: 409 }
+      );
+    }
+
+    const derivedUsername = cleanEmail.split('@')[0] || `user_${Date.now()}`;
+    const isAdminEmail = cleanEmail === 'tradinghath@gmail.com';
+
+    const newUser: UserRecord = {
+      id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       username: derivedUsername,
       email: cleanEmail,
-      password: password.trim(), // Stored for admin viewing & management
+      password: password.trim(),
       phone: '',
-      isPro: isAdminEmail ? true : false,
+      isPro: isAdminEmail,
       amount: isAdminEmail ? 399 : 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
-    registerNewUser(newUser);
-
+    // Persist to KV database (survives server restarts)
+    await dbRegisterUser(newUser);
 
     return NextResponse.json({
       success: true,
@@ -44,15 +54,14 @@ export async function POST(req: Request) {
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
-        isPro: newUser.isPro
+        isPro: newUser.isPro,
       },
-      token: `token_${Date.now()}`
     });
   } catch (err: any) {
+    console.error('[SIGNUP]', err);
     return NextResponse.json(
-      { success: false, error: 'Failed to create account.' },
+      { success: false, error: 'Failed to create account. Please try again.' },
       { status: 500 }
     );
   }
 }
-
