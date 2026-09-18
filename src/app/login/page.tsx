@@ -381,7 +381,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 className="ig-input"
-                placeholder="Phone number, username, or email"
+                placeholder="Gmail / Email address"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
