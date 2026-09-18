@@ -31,7 +31,9 @@ import {
   Eye,
   ArrowLeft,
   X,
-  Search
+  Search,
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
@@ -46,6 +48,8 @@ export default function DashboardPage() {
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState('');
   const [user, setUser] = useState<any>(null);
   const [isPro, setIsPro] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -275,6 +279,197 @@ export default function DashboardPage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    }
+  };
+
+  // 1-Click "Download All Charts as PDF" for Lifetime Pro Users
+  const handleDownloadAllChartsPdf = async () => {
+    if (!isPro) {
+      alert('This exclusive master PDF bundle is reserved for Lifetime Pro members.');
+      return;
+    }
+
+    const allCharts = posts.filter(p => p.type === 'chart');
+    if (allCharts.length === 0) {
+      alert('No charts currently available to compile.');
+      return;
+    }
+
+    setPdfDownloading(true);
+    setPdfProgress('Initializing PDF builder...');
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      // Helper function to convert image url to HTMLImageElement / base64
+      const loadImageDataUrl = (imgUrl: string): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+        return new Promise((resolve) => {
+          const img = new window.Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth || img.width;
+              canvas.height = img.naturalHeight || img.height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                resolve(null);
+                return;
+              }
+              ctx.drawImage(img, 0, 0);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+              resolve({ dataUrl, width: canvas.width, height: canvas.height });
+            } catch (err) {
+              resolve(null);
+            }
+          };
+          img.onerror = () => resolve(null);
+          img.src = imgUrl;
+        });
+      };
+
+      // 1. COVER PAGE
+      doc.setFillColor(9, 13, 22);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+      // Cyan Accent Line
+      doc.setFillColor(0, 229, 255);
+      doc.rect(20, 25, 8, pageHeight - 50, 'F');
+
+      // Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(28);
+      doc.text('TRADINGHATH SECRET VAULT', 36, 48);
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 229, 255);
+      doc.text('COMPLETE HAND-MADE CHART BLUEPRINTS', 36, 60);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(148, 163, 184);
+      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide', 36, 70);
+
+      // Metadata Box
+      doc.setFillColor(17, 23, 38);
+      doc.roundedRect(36, 85, pageWidth - 60, 48, 4, 4, 'F');
+
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Total Setups Included: ${allCharts.length} Blueprints`, 44, 98);
+      doc.text(`Edition / Download Date: ${currentDate}`, 44, 108);
+      doc.text(`Licensed To: ${user?.email || 'Pro Member'} (${user?.username || 'Trader'})`, 44, 118);
+      doc.setTextColor(0, 230, 118);
+      doc.text(`Status: Verified Lifetime Pro Vault Access`, 44, 126);
+
+      // Footer note
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Confidential & Proprietary. Created by TradingHath (tradinghath@gmail.com). All rights reserved.', 36, pageHeight - 20);
+
+      // 2. CHART PAGES
+      for (let i = 0; i < allCharts.length; i++) {
+        const chart = allCharts[i];
+        setPdfProgress(`Adding chart ${i + 1} of ${allCharts.length}: ${chart.title.slice(0, 25)}...`);
+
+        doc.addPage('a4', 'landscape');
+
+        // Dark background
+        doc.setFillColor(10, 13, 20);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Top Banner
+        doc.setFillColor(17, 24, 39);
+        doc.rect(0, 0, pageWidth, 22, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(0, 229, 255);
+        doc.text(`CHART #${i + 1}`, 14, 14);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(13);
+        const titleTrimmed = chart.title.length > 55 ? `${chart.title.slice(0, 55)}...` : chart.title;
+        doc.text(titleTrimmed, 46, 14);
+
+        doc.setFontSize(10);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`TradingHath Vault`, pageWidth - 45, 14);
+
+        // Chart Image Processing
+        const imgUrl = chart.chartUrl || chart.downloadUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200';
+        const imgResult = await loadImageDataUrl(imgUrl);
+
+        const imgX = 14;
+        const imgY = 28;
+        const maxImgWidth = pageWidth - 28;
+        const maxImgHeight = pageHeight - 65;
+
+        if (imgResult) {
+          let renderW = maxImgWidth;
+          let renderH = (imgResult.height / imgResult.width) * renderW;
+          if (renderH > maxImgHeight) {
+            renderH = maxImgHeight;
+            renderW = (imgResult.width / imgResult.height) * renderH;
+          }
+          const centeredX = imgX + (maxImgWidth - renderW) / 2;
+          doc.addImage(imgResult.dataUrl, 'JPEG', centeredX, imgY, renderW, renderH, undefined, 'FAST');
+        } else {
+          // Fallback placeholder box
+          doc.setFillColor(20, 28, 45);
+          doc.rect(imgX, imgY, maxImgWidth, maxImgHeight, 'F');
+          doc.setTextColor(148, 163, 184);
+          doc.setFontSize(12);
+          doc.text(`[${chart.title}]`, pageWidth / 2, imgY + maxImgHeight / 2, { align: 'center' });
+        }
+
+        // Bottom Description Box
+        const descBoxY = pageHeight - 32;
+        doc.setFillColor(15, 20, 32);
+        doc.roundedRect(14, descBoxY, pageWidth - 28, 24, 3, 3, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(0, 229, 255);
+        doc.text('Key Strategy Rule:', 18, descBoxY + 7);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(226, 232, 240);
+        const cleanDesc = (chart.description || 'Master level price action setup and trade management rules.')
+          .replace(/\r?\n|\r/g, ' ');
+        const wrappedDesc = doc.splitTextToSize(cleanDesc, pageWidth - 65);
+        doc.text(wrappedDesc.slice(0, 2), 18, descBoxY + 14);
+
+        // Page Number
+        doc.setFontSize(8.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Page ${i + 2} of ${allCharts.length + 1}`, pageWidth - 36, descBoxY + 14);
+      }
+
+      setPdfProgress('Finalizing and saving PDF...');
+      const cleanDate = new Date().toISOString().slice(0, 10);
+      doc.save(`TradingHath_All_Charts_Vault_${cleanDate}.pdf`);
+    } catch (pdfErr) {
+      console.error('PDF Generation Error:', pdfErr);
+      alert('Could not compile PDF. Please try again or download charts individually.');
+    } finally {
+      setPdfDownloading(false);
+      setPdfProgress('');
     }
   };
 
@@ -1115,10 +1310,58 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Hand-Made Charts Grid */}
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px', color: '#ffffff' }}>
-              All Hand-Made Trading Charts
-            </h3>
+            {/* Hand-Made Charts Header with 1-Click PDF Download Button */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginBottom: '16px'
+            }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+                  All Hand-Made Trading Charts
+                </h3>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  Total {posts.filter(p => p.type === 'chart').length} institutional price action blueprints currently in vault
+                </span>
+              </div>
+
+              {/* 1-Click Master PDF Download Button */}
+              <button
+                type="button"
+                onClick={handleDownloadAllChartsPdf}
+                disabled={pdfDownloading}
+                className="btn-trading-glow"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  cursor: pdfDownloading ? 'wait' : 'pointer',
+                  backgroundColor: pdfDownloading ? 'rgba(0, 229, 255, 0.25)' : undefined,
+                  border: '1px solid #00e5ff',
+                  boxShadow: '0 0 16px rgba(0, 229, 255, 0.35)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {pdfDownloading ? (
+                  <>
+                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>{pdfProgress || 'Building PDF...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText size={16} />
+                    <span>Download All Charts in 1 PDF (Pro)</span>
+                  </>
+                )}
+              </button>
+            </div>
             {filteredPosts.length === 0 ? (
               <div style={{
                 textAlign: 'center',
