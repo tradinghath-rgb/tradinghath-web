@@ -121,73 +121,9 @@ export default function AdminPage() {
       const postsData = await postsRes.json();
       const commentsData = await commentsRes.json();
 
-      let serverUsers = usersData.users || [];
-      if (typeof window !== 'undefined') {
-        try {
-          const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
-          const deletedIds = new Set(storedDeleted ? JSON.parse(storedDeleted) : ['user_live_02', 'user_live_03']);
-
-          // Always blacklist the mock demo users
-          deletedIds.add('user_live_02');
-          deletedIds.add('user_live_03');
-
-          // Remove any deleted IDs or mock demo usernames
-          const blockedUsers = new Set(['kiran_trader', 'suresh_kumar', 'kiran.reddy92@gmail.com', 'suresh.kumar88@gmail.com']);
-
-          serverUsers = serverUsers.filter((u: any) => 
-            !deletedIds.has(u.id) &&
-            !blockedUsers.has(u.username?.toLowerCase()) &&
-            !blockedUsers.has(u.email?.toLowerCase())
-          );
-
-          // Apply pro status overrides from localStorage
-          let proOverrides: Record<string, boolean> = {};
-          const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
-          if (storedOverrides) {
-            try {
-              proOverrides = JSON.parse(storedOverrides);
-            } catch (e) {}
-          }
-
-          const storedUsers = localStorage.getItem('tradinghath_client_users');
-          if (storedUsers) {
-            const localUsers = JSON.parse(storedUsers);
-            const existingIds = new Set(serverUsers.map((u: any) => u.id));
-            const existingEmails = new Set(serverUsers.map((u: any) => u.email.toLowerCase()));
-            const toAdd = localUsers.filter((u: any) => 
-              !existingIds.has(u.id) && 
-              !existingEmails.has(u.email.toLowerCase()) && 
-              !deletedIds.has(u.id) &&
-              !blockedUsers.has(u.username?.toLowerCase()) &&
-              !blockedUsers.has(u.email?.toLowerCase())
-            );
-            serverUsers = [...serverUsers, ...toAdd];
-          }
-
-          // Enforce proOverrides on all users
-          serverUsers = serverUsers.map((u: any) => {
-            if (proOverrides[u.id] !== undefined) {
-              return { ...u, isPro: proOverrides[u.id] };
-            }
-            if (u.email && proOverrides[u.email.toLowerCase()] !== undefined) {
-              return { ...u, isPro: proOverrides[u.email.toLowerCase()] };
-            }
-            if (u.username && proOverrides[u.username.toLowerCase()] !== undefined) {
-              return { ...u, isPro: proOverrides[u.username.toLowerCase()] };
-            }
-            return u;
-          });
-
-          // Clean up client storage to remove any trace of blocked mock users
-          if (storedUsers) {
-            const cleaned = JSON.parse(storedUsers).filter((u: any) => 
-              !blockedUsers.has(u.username?.toLowerCase()) &&
-              !blockedUsers.has(u.email?.toLowerCase())
-            );
-            localStorage.setItem('tradinghath_client_users', JSON.stringify(cleaned));
-          }
-        } catch (e) {}
-      }
+      // FIXED: Only use server data — no localStorage filtering or merging for users
+      // This prevents users from disappearing on server restart or browser changes
+      const serverUsers = (usersData.users || []).filter((u: any) => !u.deleted);
       setUsers(serverUsers);
 
       let serverPosts: PostItem[] = postsData.posts || [];
@@ -304,89 +240,20 @@ export default function AdminPage() {
   };
 
   const handleUserAction = async (userId: string, action: 'grant_pro' | 'revoke_pro' | 'delete') => {
-    if (action === 'delete' && !confirm('Are you sure you want to permanently delete this user?')) return;
+    if (action === 'delete' && !confirm('Are you sure you want to delete this user?')) return;
 
     try {
       if (typeof window !== 'undefined') {
         try {
+          // FIXED: No more localStorage-based user management.
+          // Server is the single source of truth.
+          // Optimistic UI update only — real state comes from server after reload.
           if (action === 'delete') {
-            const targetUser = users.find(u => u.id === userId);
-            const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
-            const deletedList = storedDeleted ? JSON.parse(storedDeleted) : [];
-            
-            const keysToAdd = [userId];
-            if (targetUser?.email) keysToAdd.push(targetUser.email.toLowerCase());
-            if (targetUser?.username) keysToAdd.push(targetUser.username.toLowerCase());
-
-            keysToAdd.forEach(k => {
-              if (!deletedList.includes(k)) deletedList.push(k);
-            });
-            localStorage.setItem('tradinghath_deleted_user_ids', JSON.stringify(deletedList));
-
-            const storedClientUsers = localStorage.getItem('tradinghath_client_users');
-            if (storedClientUsers) {
-              const list = JSON.parse(storedClientUsers);
-              const filtered = list.filter((u: any) => 
-                u.id !== userId && 
-                (!targetUser?.email || u.email?.toLowerCase() !== targetUser.email.toLowerCase()) &&
-                (!targetUser?.username || u.username?.toLowerCase() !== targetUser.username.toLowerCase())
-              );
-              localStorage.setItem('tradinghath_client_users', JSON.stringify(filtered));
-            }
-
-            // If deleted user matches current session, clear it immediately
-            const loggedInStr = localStorage.getItem('tradinghath_user');
-            if (loggedInStr) {
-              try {
-                const cur = JSON.parse(loggedInStr);
-                if (cur.id === userId || (targetUser?.email && cur.email?.toLowerCase() === targetUser.email.toLowerCase())) {
-                  localStorage.removeItem('tradinghath_user');
-                  localStorage.removeItem('tradinghath_role');
-                  localStorage.removeItem('tradinghath_isPro');
-                }
-              } catch (e) {}
-            }
-          }
-
-          if (action === 'revoke_pro' || action === 'grant_pro') {
+            setUsers((prev: any[]) => prev.filter(u => u.id !== userId));
+          } else if (action === 'grant_pro' || action === 'revoke_pro') {
             const newProStatus = action === 'grant_pro';
-            // 1. Update pro overrides map in localStorage
-            const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
-            const proOverrides = storedOverrides ? JSON.parse(storedOverrides) : {};
-            proOverrides[userId] = newProStatus;
-
-            // Also find user's email/username to record in overrides
-            const targetUser = users.find(u => u.id === userId);
-            if (targetUser?.email) proOverrides[targetUser.email.toLowerCase()] = newProStatus;
-            if (targetUser?.username) proOverrides[targetUser.username.toLowerCase()] = newProStatus;
-            localStorage.setItem('tradinghath_pro_overrides', JSON.stringify(proOverrides));
-
-            // 2. Update tradinghath_client_users in localStorage
-            const storedClientUsers = localStorage.getItem('tradinghath_client_users');
-            if (storedClientUsers) {
-              const list = JSON.parse(storedClientUsers);
-              const updatedList = list.map((u: any) => 
-                (u.id === userId || u.email?.toLowerCase() === targetUser?.email?.toLowerCase())
-                  ? { ...u, isPro: newProStatus }
-                  : u
-              );
-              localStorage.setItem('tradinghath_client_users', JSON.stringify(updatedList));
-            }
-
-            // 3. If the currently logged in user is this user, sync tradinghath_isPro
-            const loggedInUserStr = localStorage.getItem('tradinghath_user');
-            if (loggedInUserStr) {
-              const loggedIn = JSON.parse(loggedInUserStr);
-              if (loggedIn.id === userId || loggedIn.email?.toLowerCase() === targetUser?.email?.toLowerCase() || loggedIn.username?.toLowerCase() === targetUser?.username?.toLowerCase()) {
-                localStorage.setItem('tradinghath_isPro', newProStatus ? 'true' : 'false');
-              }
-            }
-
-            // 4. Optimistically update local users state immediately
-            setUsers(prev => prev.map(u => 
-              (u.id === userId || u.email?.toLowerCase() === targetUser?.email?.toLowerCase()) 
-                ? { ...u, isPro: newProStatus } 
-                : u
+            setUsers((prev: any[]) => prev.map(u =>
+              u.id === userId ? { ...u, isPro: newProStatus } : u
             ));
           }
         } catch (e) {}
