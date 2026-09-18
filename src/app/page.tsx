@@ -284,19 +284,19 @@ export default function HomePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc' }}>
-      {/* 24/7 Sticky Top Bar */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', color: '#1c1d1f' }}>
+      {/* 24/7 Sticky Top Bar - Udemy Clean Light Header */}
       <header style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        backgroundColor: 'rgba(9, 13, 22, 0.85)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '14px 20px'
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #d1d7dc',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+        padding: '12px 24px'
       }}>
         <div style={{
-          maxWidth: '1200px',
+          maxWidth: '1280px',
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
@@ -308,13 +308,13 @@ export default function HomePage() {
               alt="TradingHath Logo"
               width={40}
               height={40}
-              style={{ borderRadius: '50%', border: '2px solid #00e5ff' }}
+              style={{ borderRadius: '50%', border: '2px solid #5624d0' }}
             />
             <div>
-              <span style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', color: '#fff' }}>
-                Trading<span style={{ color: '#00e5ff' }}>Hath</span>
+              <span style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', color: '#1c1d1f' }}>
+                Trading<span style={{ color: '#5624d0' }}>Hath</span>
               </span>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>Smart Money & Price Action</div>
+              <div style={{ fontSize: '11px', color: '#6a6f73', fontWeight: '500' }}>Smart Money & Price Action</div>
             </div>
           </Link>
 
@@ -326,17 +326,18 @@ export default function HomePage() {
                 <Link
                   href="/dashboard"
                   style={{
-                    backgroundColor: 'rgba(0, 229, 255, 0.15)',
-                    border: '1px solid #00e5ff',
-                    color: '#00e5ff',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontSize: '12.5px',
+                    backgroundColor: '#5624d0',
+                    border: '1px solid #5624d0',
+                    color: '#ffffff',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
                     fontWeight: '700',
                     textDecoration: 'none',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    boxShadow: '0 2px 6px rgba(86, 36, 208, 0.25)'
                   }}
                 >
                   <Sparkles size={14} /> Open Vault
@@ -347,26 +348,26 @@ export default function HomePage() {
                   <button
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     style={{
-                      backgroundColor: '#111726',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      borderRadius: '24px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d1d7dc',
+                      borderRadius: '6px',
                       padding: '6px 12px',
-                      color: '#fff',
-                      fontSize: '12px',
+                      color: '#1c1d1f',
+                      fontSize: '13px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '7px'
+                      gap: '8px'
                     }}
                   >
                     <div style={{
-                      width: '22px',
-                      height: '22px',
+                      width: '24px',
+                      height: '24px',
                       borderRadius: '50%',
-                      backgroundColor: '#00e5ff',
-                      color: '#000',
-                      fontSize: '11px',
+                      backgroundColor: '#5624d0',
+                      color: '#ffffff',
+                      fontSize: '11.5px',
                       fontWeight: '800',
                       display: 'flex',
                       alignItems: 'center',
@@ -377,7 +378,7 @@ export default function HomePage() {
                     <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {user?.username || 'Profile'}
                     </span>
-                    <ChevronDown size={14} color="#94a3b8" />
+                    <ChevronDown size={14} color="#6a6f73" />
                   </button>
 
                   {/* Profile Dropdown Menu */}
@@ -387,23 +388,23 @@ export default function HomePage() {
                       right: 0,
                       top: '115%',
                       width: '240px',
-                      backgroundColor: '#111726',
-                      border: '1px solid rgba(0, 229, 255, 0.3)',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d1d7dc',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
                       padding: '12px',
                       zIndex: 100
                     }}>
-                      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '10px', marginBottom: '10px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{user.username}</div>
-                        <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all' }}>{user.email}</div>
+                      <div style={{ borderBottom: '1px solid #f0f2f5', paddingBottom: '10px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#1c1d1f' }}>{user.username}</div>
+                        <div style={{ fontSize: '11px', color: '#6a6f73', wordBreak: 'break-all' }}>{user.email}</div>
                         <div style={{ marginTop: '6px' }}>
                           {isPro ? (
-                            <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
+                            <span style={{ backgroundColor: '#e6f4ea', color: '#137333', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '700', border: '1px solid #ceead6' }}>
                               ✓ PRO LIFETIME
                             </span>
                           ) : (
-                            <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
+                            <span style={{ backgroundColor: '#fce8e6', color: '#c5221f', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '700', border: '1px solid #fad2cf' }}>
                               FREE / UNPAID
                             </span>
                           )}
@@ -417,9 +418,9 @@ export default function HomePage() {
                           style={{
                             padding: '8px 10px',
                             borderRadius: '6px',
-                            backgroundColor: 'rgba(0, 229, 255, 0.08)',
-                            color: '#00e5ff',
-                            fontSize: '12px',
+                            backgroundColor: '#f7f9fa',
+                            color: '#5624d0',
+                            fontSize: '12.5px',
                             fontWeight: '600',
                             textDecoration: 'none',
                             display: 'flex',
@@ -437,9 +438,9 @@ export default function HomePage() {
                             style={{
                               padding: '8px 10px',
                               borderRadius: '6px',
-                              backgroundColor: 'rgba(225, 29, 72, 0.15)',
-                              color: '#fb7185',
-                              fontSize: '12px',
+                              backgroundColor: '#f7f9fa',
+                              color: '#1c1d1f',
+                              fontSize: '12.5px',
                               fontWeight: '600',
                               textDecoration: 'none',
                               display: 'flex',
@@ -456,10 +457,10 @@ export default function HomePage() {
                           style={{
                             padding: '8px 10px',
                             borderRadius: '6px',
-                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                            color: '#ef4444',
+                            backgroundColor: '#fce8e6',
+                            color: '#c5221f',
                             border: 'none',
-                            fontSize: '12px',
+                            fontSize: '12.5px',
                             fontWeight: '600',
                             cursor: 'pointer',
                             display: 'flex',
@@ -480,16 +481,16 @@ export default function HomePage() {
                   onClick={handleLogout}
                   title="Log Out"
                   style={{
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.25)',
-                    borderRadius: '8px',
-                    padding: '7px 9px',
-                    color: '#ef4444',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #d1d7dc',
+                    borderRadius: '6px',
+                    padding: '7px 10px',
+                    color: '#c02424',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
-                    fontSize: '12px',
+                    fontSize: '12.5px',
                     fontWeight: '600'
                   }}
                 >
@@ -503,12 +504,13 @@ export default function HomePage() {
                   href="/login"
                   style={{
                     fontSize: '13px',
-                    fontWeight: '600',
-                    color: '#cbd5e1',
+                    fontWeight: '700',
+                    color: '#1c1d1f',
                     padding: '8px 16px',
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     textDecoration: 'none',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    border: '1px solid #1c1d1f',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   Sign In
@@ -517,7 +519,7 @@ export default function HomePage() {
                 <button
                   onClick={scrollToPricing}
                   className="btn-trading-glow"
-                  style={{ fontSize: '13px', padding: '8px 16px' }}
+                  style={{ fontSize: '13px', padding: '9px 18px' }}
                 >
                   Get Access ₹399
                 </button>
@@ -534,10 +536,10 @@ export default function HomePage() {
           alignItems: 'center',
           gap: '8px',
           padding: '6px 16px',
-          borderRadius: '30px',
-          backgroundColor: 'rgba(0, 229, 255, 0.1)',
-          border: '1px solid rgba(0, 229, 255, 0.25)',
-          color: '#00e5ff',
+          borderRadius: '20px',
+          backgroundColor: '#f3ecfc',
+          border: '1px solid #d8b4fe',
+          color: '#5624d0',
           fontSize: '12.5px',
           fontWeight: '700',
           marginBottom: '20px'
@@ -546,58 +548,58 @@ export default function HomePage() {
         </div>
 
         <h1 style={{
-          fontSize: 'clamp(32px, 5vw, 56px)',
+          fontSize: 'clamp(32px, 5vw, 54px)',
           fontWeight: '800',
-          letterSpacing: '-1px',
-          lineHeight: '1.15',
+          letterSpacing: '-0.8px',
+          lineHeight: '1.18',
           maxWidth: '860px',
           margin: '0 auto 20px auto',
-          color: '#ffffff'
+          color: '#1c1d1f'
         }}>
-          Stop Guessing Trades. Master <span style={{ color: '#00e5ff' }}>Hand-Made Charts</span> & Step-by-Step Video Lessons.
+          Stop Guessing Trades. Master <span style={{ color: '#5624d0' }}>Hand-Made Charts</span> & Step-by-Step Video Lessons.
         </h1>
 
         <p style={{
           fontSize: 'clamp(15px, 2vw, 18px)',
-          color: '#94a3b8',
+          color: '#6a6f73',
           maxWidth: '680px',
-          margin: '0 auto 32px auto',
+          margin: '0 auto 36px auto',
           lineHeight: '1.6'
         }}>
           All charts in one section, detailed video explanations right beside them. Download blueprints to your phone anytime. Full Telugu & English commentary included.
         </p>
 
-        {/* Pricing Card Section */}
+        {/* Pricing Card Section - Udemy Clean Course Package Style */}
         <div
           id="pricing-plan-panel"
           style={{
-            maxWidth: '480px',
+            maxWidth: '500px',
             margin: '0 auto 40px auto',
-            backgroundColor: '#111726',
-            border: '2px solid #00e5ff',
-            borderRadius: '20px',
-            padding: '30px 24px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d7dc',
+            borderRadius: '12px',
+            padding: '32px 28px',
             textAlign: 'left',
-            boxShadow: '0 20px 50px -10px rgba(0, 229, 255, 0.2)'
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#5624d0', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
               Special Lifetime Deal
             </span>
-            <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
-              100% Verified Access
+            <span style={{ backgroundColor: '#eceb98', color: '#3d3c0a', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '800' }}>
+              Bestseller • Verified
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '42px', fontWeight: '800', color: '#ffffff' }}>₹399</span>
-            <span style={{ fontSize: '16px', color: '#64748b', textDecoration: 'line-through' }}>₹2,999</span>
-            <span style={{ fontSize: '13px', color: '#00e676', fontWeight: '700' }}>Lifetime Access</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '40px', fontWeight: '800', color: '#1c1d1f' }}>₹399</span>
+            <span style={{ fontSize: '16px', color: '#6a6f73', textDecoration: 'line-through' }}>₹2,999</span>
+            <span style={{ fontSize: '13px', color: '#137333', fontWeight: '700' }}>87% off • Lifetime Access</span>
           </div>
 
           {/* Feature List */}
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px', padding: 0 }}>
             {[
               'All Hand-Made Charts in dedicated section (Freely Downloadable)',
               'Side-by-Side Video Explanations for every chart pattern',
@@ -606,8 +608,8 @@ export default function HomePage() {
               'Anti-Download Protection for Proprietary Videos',
               '24/7 Unrestricted Lifetime Access'
             ].map((text, idx) => (
-              <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13.5px', color: '#cbd5e1' }}>
-                <CheckCircle2 size={18} color="#00e5ff" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13.5px', color: '#2d2f31' }}>
+                <CheckCircle2 size={18} color="#5624d0" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span>{text}</span>
               </li>
             ))}
@@ -624,26 +626,26 @@ export default function HomePage() {
                 padding: '14px',
                 fontSize: '15px',
                 fontWeight: '700',
-                backgroundColor: '#06281e',
-                border: '2px solid #00e676',
-                borderRadius: '12px',
+                backgroundColor: '#137333',
+                border: 'none',
+                borderRadius: '6px',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(0, 230, 118, 0.25)'
+                boxShadow: '0 2px 6px rgba(19, 115, 51, 0.25)'
               }}
             >
-              <CheckCircle2 size={18} color="#00e676" />
+              <CheckCircle2 size={18} color="#ffffff" />
               <span>Payment Already Done • Access Vault</span>
             </button>
           ) : !user ? (
             <button
               onClick={handleRazorpayPayment}
               className="btn-trading-glow"
-              style={{ width: '100%', padding: '14px', fontSize: '15px' }}
+              style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '6px' }}
             >
               Sign In to Unlock Access (₹399)
             </button>
@@ -652,7 +654,7 @@ export default function HomePage() {
               onClick={handleRazorpayPayment}
               disabled={paymentLoading}
               className="btn-trading-glow"
-              style={{ width: '100%', padding: '14px', fontSize: '15px' }}
+              style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '6px' }}
             >
               {paymentLoading ? 'Connecting Razorpay...' : 'Unlock Lifetime Access (₹399)'}
             </button>
@@ -665,14 +667,14 @@ export default function HomePage() {
               style={{
                 width: '100%',
                 marginTop: '10px',
-                backgroundColor: 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#94a3b8',
-                padding: '10px',
-                borderRadius: '10px',
-                fontSize: '12.5px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #1c1d1f',
+                color: '#1c1d1f',
+                padding: '11px',
+                borderRadius: '6px',
+                fontSize: '13px',
                 cursor: 'pointer',
-                fontWeight: '600'
+                fontWeight: '700'
               }}
             >
               Already Paid? Enter 12-Digit UPI UTR ID
@@ -682,24 +684,24 @@ export default function HomePage() {
           {/* Explicit No Refund Policy Warning */}
           <div style={{
             marginTop: '16px',
-            padding: '10px',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.2)',
-            borderRadius: '8px',
+            padding: '12px',
+            backgroundColor: '#fef7e0',
+            border: '1px solid #f9ab00',
+            borderRadius: '6px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             fontSize: '11.5px',
-            color: '#f87171'
+            color: '#733c00'
           }}>
-            <AlertCircle size={15} style={{ flexShrink: 0 }} />
+            <AlertCircle size={15} color="#b06000" style={{ flexShrink: 0 }} />
             <span>
               <b>Strict No Refund Policy:</b> Due to immediate access to intellectual hand-made blueprints and video files, all ₹399 payments are strictly non-refundable.
             </span>
           </div>
         </div>
 
-        {/* Platform Core Highlights (Charts vs Videos) */}
+        {/* Platform Core Highlights (Charts vs Videos) - Udemy Clean Cards */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -707,38 +709,38 @@ export default function HomePage() {
           textAlign: 'left',
           marginTop: '20px'
         }}>
-          <div className="glass-card" style={{ padding: '24px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: 'rgba(0, 229, 255, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <Download size={22} color="#00e5ff" />
+          <div className="glass-card" style={{ padding: '24px', backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '8px', backgroundColor: '#f3ecfc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <Download size={22} color="#5624d0" />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#1c1d1f' }}>
               Hand-Made Chart Section
             </h3>
-            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.6' }}>
               All chart patterns are cataloged in an exclusive gallery. Users can freely download high-resolution copies directly to phones for live trading desk reference.
             </p>
           </div>
 
-          <div className="glass-card" style={{ padding: '24px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: 'rgba(56, 117, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <PlayCircle size={22} color="#3875f6" />
+          <div className="glass-card" style={{ padding: '24px', backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '8px', backgroundColor: '#f3ecfc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <PlayCircle size={22} color="#5624d0" />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#1c1d1f' }}>
               Side-by-Side Video Explanations
             </h3>
-            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.6' }}>
               Whenever a user clicks any chart, its exact matching video explanation appears immediately alongside it. Watch the setup in action without losing your chart view.
             </p>
           </div>
 
-          <div className="glass-card" style={{ padding: '24px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: 'rgba(0, 230, 118, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <ShieldCheck size={22} color="#00e676" />
+          <div className="glass-card" style={{ padding: '24px', backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '8px', backgroundColor: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <ShieldCheck size={22} color="#137333" />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#1c1d1f' }}>
               Protected Video Streaming
             </h3>
-            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.6' }}>
               Video downloads and picture-in-picture scraping are completely blocked with anti-download safeguards to maintain community exclusivity.
             </p>
           </div>
@@ -748,15 +750,15 @@ export default function HomePage() {
         <div style={{ marginTop: '50px', textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
-              <span style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <span style={{ fontSize: '11px', color: '#5624d0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
                 Member Vault Previews
               </span>
-              <h2 style={{ fontSize: '24px', fontWeight: '800', marginTop: '4px', color: '#fff' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', marginTop: '4px', color: '#1c1d1f' }}>
                 Hand-Made Charts & Videos
               </h2>
-              <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+              <p style={{ fontSize: '13px', color: '#6a6f73', margin: '4px 0 0 0' }}>
                 {isPro || isAdmin ? (
-                  <span style={{ color: '#00e676', fontWeight: '600' }}>
+                  <span style={{ color: '#137333', fontWeight: '600' }}>
                     ✓ You have full Lifetime Access! Click any chart below to open directly in your Vault.
                   </span>
                 ) : (
@@ -771,24 +773,24 @@ export default function HomePage() {
                   fontSize: '13px',
                   padding: '10px 20px',
                   textDecoration: 'none',
-                  backgroundColor: '#06281e',
-                  border: '1.5px solid #00e676',
-                  borderRadius: '30px',
+                  backgroundColor: '#137333',
+                  border: 'none',
+                  borderRadius: '6px',
                   color: '#ffffff',
                   fontWeight: '700',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 15px rgba(0, 230, 118, 0.2)'
+                  boxShadow: '0 2px 6px rgba(19, 115, 51, 0.2)'
                 }}
               >
-                <CheckCircle2 size={15} color="#00e676" /> Payment Already Done • Open Vault
+                <CheckCircle2 size={15} color="#ffffff" /> Payment Already Done • Open Vault
               </Link>
             ) : (
               <button
                 onClick={scrollToPricing}
                 className="btn-trading-glow"
-                style={{ fontSize: '13px', padding: '10px 20px' }}
+                style={{ fontSize: '13px', padding: '10px 20px', borderRadius: '6px' }}
               >
                 <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
               </button>
@@ -798,7 +800,7 @@ export default function HomePage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '18px'
+            gap: '20px'
           }}>
             {[
               {
@@ -848,24 +850,25 @@ export default function HomePage() {
                   }
                 }}
                 style={{
-                  backgroundColor: '#111726',
-                  border: isPro || isAdmin ? '1px solid rgba(0, 229, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '14px',
+                  backgroundColor: '#ffffff',
+                  border: isPro || isAdmin ? '1.5px solid #5624d0' : '1px solid #d1d7dc',
+                  borderRadius: '8px',
                   overflow: 'hidden',
                   cursor: 'pointer',
                   position: 'relative',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease'
+                  transition: 'box-shadow 0.15s ease',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)'
                 }}
               >
                 {/* Visual Image */}
-                <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
+                <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa' }}>
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
                     style={{
                       objectFit: 'cover',
-                      filter: isPro || isAdmin ? 'brightness(0.95)' : 'blur(3px) brightness(0.7)'
+                      filter: isPro || isAdmin ? 'none' : 'blur(2px) grayscale(20%)'
                     }}
                   />
                   {/* Center Badge */}
@@ -874,21 +877,19 @@ export default function HomePage() {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    backgroundColor: 'rgba(0, 0, 0, 0.82)',
-                    backdropFilter: 'blur(8px)',
-                    border: isPro || isAdmin ? '1px solid rgba(0, 230, 118, 0.5)' : '1px solid rgba(0, 229, 255, 0.4)',
-                    borderRadius: '30px',
-                    padding: '8px 16px',
+                    backgroundColor: isPro || isAdmin ? 'rgba(19, 115, 51, 0.92)' : 'rgba(28, 29, 31, 0.85)',
+                    borderRadius: '20px',
+                    padding: '6px 14px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    color: isPro || isAdmin ? '#00e676' : '#00e5ff',
+                    color: '#ffffff',
                     fontSize: '12px',
                     fontWeight: '700'
                   }}>
                     {isPro || isAdmin ? (
                       <>
-                        <CheckCircle2 size={14} color="#00e676" /> Unlocked • Ready to View
+                        <CheckCircle2 size={14} color="#ffffff" /> Unlocked • Ready to View
                       </>
                     ) : (
                       <>
@@ -901,22 +902,22 @@ export default function HomePage() {
                     position: 'absolute',
                     top: '10px',
                     left: '10px',
-                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    backgroundColor: '#eceb98',
+                    color: '#3d3c0a',
                     padding: '3px 8px',
                     borderRadius: '4px',
                     fontSize: '10.5px',
-                    color: '#fff',
-                    fontWeight: '600'
+                    fontWeight: '800'
                   }}>
-                    {item.type}
+                    Bestseller
                   </div>
                 </div>
 
                 <div style={{ padding: '14px' }}>
-                  <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#1c1d1f', marginBottom: '4px', lineHeight: '1.3' }}>
                     {item.title}
                   </h4>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '12.5px', color: '#6a6f73', lineHeight: '1.4', marginBottom: '12px' }}>
                     {item.desc}
                   </p>
 
@@ -924,13 +925,15 @@ export default function HomePage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    fontSize: '11.5px',
-                    color: isPro || isAdmin ? '#00e676' : '#00e5ff',
-                    fontWeight: '600'
+                    fontSize: '12px',
+                    color: isPro || isAdmin ? '#137333' : '#5624d0',
+                    fontWeight: '700',
+                    paddingTop: '6px',
+                    borderTop: '1px solid #f0f2f5'
                   }}>
-                    <span>{isPro || isAdmin ? 'Click to Open Blueprint in Vault' : 'Tap to Unlock Blueprint & Video'}</span>
+                    <span>{isPro || isAdmin ? 'Click to Open in Vault' : 'Tap to Unlock Blueprint & Video'}</span>
                     {isPro || isAdmin ? (
-                      <Sparkles size={13} color="#00e676" />
+                      <Sparkles size={13} color="#137333" />
                     ) : (
                       <Lock size={12} />
                     )}
@@ -944,15 +947,15 @@ export default function HomePage() {
       </section>
 
       {/* Community Comments & Star-Masked Reviews Section */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '50px 16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '50px 16px', borderTop: '1px solid #d1d7dc' }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <span style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <span style={{ fontSize: '11px', color: '#5624d0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
             Verified Community Feedback
           </span>
-          <h2 style={{ fontSize: '28px', fontWeight: '800', marginTop: '6px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '800', marginTop: '6px', color: '#1c1d1f' }}>
             What Traders Are Saying (Privacy Protected)
           </h2>
-          <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '6px' }}>
+          <p style={{ fontSize: '13px', color: '#6a6f73', marginTop: '6px' }}>
             To safeguard member privacy, all emails are automatically masked (e.g. <code>tr*****th@gmail.com</code>).
           </p>
         </div>
@@ -965,17 +968,17 @@ export default function HomePage() {
           marginBottom: '40px'
         }}>
           {reviews.map((rev) => (
-            <div key={rev.id} className="glass-card" style={{ padding: '18px' }}>
+            <div key={rev.id} style={{ padding: '18px', backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: '700', fontSize: '13px', color: '#00e5ff' }}>
+                <span style={{ fontWeight: '700', fontSize: '13px', color: '#1c1d1f' }}>
                   {rev.userMasked}
                 </span>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>{rev.date}</span>
+                <span style={{ fontSize: '11px', color: '#6a6f73' }}>{rev.date}</span>
               </div>
-              <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', fontSize: '14px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '2px', color: '#b4690e', fontSize: '14px', marginBottom: '8px' }}>
                 {'★'.repeat(rev.rating)}
               </div>
-              <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+              <p style={{ fontSize: '12.5px', color: '#2d2f31', lineHeight: '1.5' }}>
                 "{rev.comment}"
               </p>
             </div>
@@ -986,81 +989,83 @@ export default function HomePage() {
         <div style={{
           maxWidth: '560px',
           margin: '0 auto',
-          backgroundColor: '#111726',
-          borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '24px'
+          backgroundColor: '#ffffff',
+          borderRadius: '10px',
+          border: '1px solid #d1d7dc',
+          padding: '28px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.08)'
         }}>
-          <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: '#1c1d1f' }}>
             Share Your Experience
           </h3>
-          <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px' }}>
+          <p style={{ fontSize: '12.5px', color: '#6a6f73', marginBottom: '18px' }}>
             Your email is encrypted and starred. No personal credentials are ever exposed.
           </p>
 
           {commentError && (
-            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '10px', borderRadius: '8px', fontSize: '12.5px', marginBottom: '14px' }}>
+            <div style={{ backgroundColor: '#fce8e6', border: '1px solid #fad2cf', color: '#c5221f', padding: '10px 14px', borderRadius: '6px', fontSize: '12.5px', marginBottom: '14px', fontWeight: '600' }}>
               {commentError}
             </div>
           )}
 
           {commentSuccess && (
-            <div style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', border: '1px solid rgba(0, 230, 118, 0.3)', color: '#00e676', padding: '10px', borderRadius: '8px', fontSize: '12.5px', marginBottom: '14px' }}>
+            <div style={{ backgroundColor: '#e6f4ea', border: '1px solid #ceead6', color: '#137333', padding: '10px 14px', borderRadius: '6px', fontSize: '12.5px', marginBottom: '14px', fontWeight: '600' }}>
               {commentSuccess}
             </div>
           )}
 
           {!user ? (
             <div style={{
-              backgroundColor: 'rgba(0, 229, 255, 0.08)',
-              border: '1px solid rgba(0, 229, 255, 0.25)',
-              borderRadius: '10px',
-              padding: '16px',
+              backgroundColor: '#f7f9fa',
+              border: '1px solid #d1d7dc',
+              borderRadius: '8px',
+              padding: '20px',
               textAlign: 'center'
             }}>
-              <p style={{ fontSize: '13px', color: '#cbd5e1', marginBottom: '12px' }}>
+              <p style={{ fontSize: '13px', color: '#2d2f31', marginBottom: '14px', lineHeight: '1.5' }}>
                 Only registered members can post comments. Please sign up or log in with your Gmail to leave feedback!
               </p>
               <button
                 type="button"
                 onClick={() => router.push('/login')}
                 className="btn-trading-glow"
-                style={{ padding: '8px 18px', fontSize: '12.5px' }}
+                style={{ padding: '9px 20px', fontSize: '13px', borderRadius: '6px' }}
               >
                 Log In / Sign Up to Comment
               </button>
             </div>
           ) : (
-            <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '8px 12px',
-                backgroundColor: '#090d16',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '10px 14px',
+                backgroundColor: '#f7f9fa',
+                borderRadius: '6px',
+                border: '1px solid #d1d7dc',
                 fontSize: '12.5px',
-                color: '#94a3b8'
+                color: '#6a6f73'
               }}>
-                <span>Posting as: <b style={{ color: '#00e5ff' }}>{user.email || user.username}</b></span>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>Privacy Masked on Website</span>
+                <span>Posting as: <b style={{ color: '#1c1d1f' }}>{user.email || user.username}</b></span>
+                <span style={{ fontSize: '11px', color: '#137333', fontWeight: '600' }}>Privacy Masked</span>
               </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>Rating:</span>
+              <span style={{ fontSize: '12.5px', color: '#6a6f73', fontWeight: '600' }}>Rating:</span>
               {[5, 4, 3, 2, 1].map(num => (
                 <button
                   type="button"
                   key={num}
                   onClick={() => setRating(num)}
                   style={{
-                    background: rating >= num ? '#f59e0b' : '#1e293b',
-                    color: '#fff',
-                    border: 'none',
+                    backgroundColor: rating >= num ? '#b4690e' : '#f7f9fa',
+                    color: rating >= num ? '#ffffff' : '#6a6f73',
+                    border: rating >= num ? 'none' : '1px solid #d1d7dc',
                     borderRadius: '4px',
                     padding: '3px 8px',
-                    fontSize: '11px',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
                     cursor: 'pointer'
                   }}
                 >
@@ -1076,12 +1081,13 @@ export default function HomePage() {
               onChange={(e) => setNewComment(e.target.value)}
               style={{
                 width: '100%',
-                backgroundColor: '#090d16',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #1c1d1f',
+                borderRadius: '6px',
                 padding: '10px 12px',
-                color: '#fff',
-                fontSize: '13px'
+                color: '#1c1d1f',
+                fontSize: '13px',
+                outline: 'none'
               }}
               required
             />
@@ -1090,7 +1096,7 @@ export default function HomePage() {
               type="submit"
               disabled={submittingComment}
               className="btn-trading-glow"
-              style={{ padding: '10px 20px', alignSelf: 'flex-start', fontSize: '13px' }}
+              style={{ padding: '10px 22px', alignSelf: 'flex-start', fontSize: '13px', borderRadius: '6px' }}
             >
               {submittingComment ? 'Posting...' : 'Post Verified Comment'}
             </button>
@@ -1099,13 +1105,13 @@ export default function HomePage() {
       </div>
     </section>
 
-      {/* Footer & Support Redirection */}
+      {/* Footer & Support Redirection - Udemy Clean Dark Slate Footer */}
       <footer style={{
-        backgroundColor: '#060910',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '36px 16px',
+        backgroundColor: '#1c1d1f',
+        borderTop: '1px solid #3e4143',
+        padding: '36px 20px',
         fontSize: '13px',
-        color: '#64748b'
+        color: '#94a3b8'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -1125,9 +1131,9 @@ export default function HomePage() {
                 height={24}
                 style={{ borderRadius: '50%' }}
               />
-              <span style={{ fontWeight: '700', color: '#fff' }}>TradingHath</span>
+              <span style={{ fontWeight: '700', color: '#ffffff' }}>TradingHath</span>
             </div>
-            <p>© 2026 TradingHath. All rights reserved. 24/7 Uptime.</p>
+            <p style={{ margin: 0 }}>© 2026 TradingHath. All rights reserved. 24/7 Uptime.</p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -1138,7 +1144,7 @@ export default function HomePage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                color: '#00e5ff',
+                color: '#ffffff',
                 textDecoration: 'none',
                 fontWeight: '600'
               }}
@@ -1155,7 +1161,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-
       {/* UTR Verification Modal */}
       {showUtrModal && (
         <div style={{
@@ -1164,8 +1169,8 @@ export default function HomePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(28, 29, 31, 0.65)',
+          backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1173,29 +1178,31 @@ export default function HomePage() {
           zIndex: 100
         }}>
           <div style={{
-            backgroundColor: '#111726',
-            border: '1px solid #00e5ff',
-            borderRadius: '16px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d7dc',
+            borderRadius: '12px',
             padding: '28px',
             width: '100%',
-            maxWidth: '420px'
+            maxWidth: '440px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
           }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: '#fff' }}>
+            <h3 style={{ fontSize: '19px', fontWeight: '800', marginBottom: '6px', color: '#1c1d1f' }}>
               Verify UPI UTR ID (₹399)
             </h3>
-            <p style={{ fontSize: '12.5px', color: '#94a3b8', marginBottom: '16px', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '13px', color: '#6a6f73', marginBottom: '18px', lineHeight: '1.5' }}>
               If you paid via PhonePe, Google Pay, Paytm, or direct UPI, paste your 12-digit UTR reference ID below to activate instant access.
             </p>
 
             {utrStatus && (
               <div style={{
-                backgroundColor: 'rgba(0, 229, 255, 0.1)',
-                border: '1px solid rgba(0, 229, 255, 0.3)',
-                padding: '10px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                color: '#00e5ff',
-                marginBottom: '16px'
+                backgroundColor: '#f3ecfc',
+                border: '1px solid #d8b4fe',
+                padding: '10px 14px',
+                borderRadius: '6px',
+                fontSize: '12.5px',
+                color: '#5624d0',
+                marginBottom: '16px',
+                fontWeight: '600'
               }}>
                 {utrStatus}
               </div>
@@ -1209,12 +1216,13 @@ export default function HomePage() {
                 onChange={(e) => setUtrInput(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#090d16',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #1c1d1f',
+                  borderRadius: '6px',
                   padding: '12px',
-                  color: '#fff',
-                  fontSize: '13px'
+                  color: '#1c1d1f',
+                  fontSize: '13px',
+                  outline: 'none'
                 }}
                 required
               />
@@ -1225,17 +1233,18 @@ export default function HomePage() {
                 onChange={(e) => setUtrEmail(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#090d16',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #d1d7dc',
+                  borderRadius: '6px',
                   padding: '12px',
-                  color: '#fff',
-                  fontSize: '13px'
+                  color: '#1c1d1f',
+                  fontSize: '13px',
+                  outline: 'none'
                 }}
                 required
               />
 
-              <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px' }}>
+              <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px', borderRadius: '6px' }}>
                 Verify & Activate Access
               </button>
 
@@ -1245,7 +1254,7 @@ export default function HomePage() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: '#6a6f73',
                   fontSize: '13px',
                   cursor: 'pointer',
                   marginTop: '6px'
@@ -1266,7 +1275,7 @@ export default function HomePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
+          backgroundColor: 'rgba(28, 29, 31, 0.65)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1274,16 +1283,17 @@ export default function HomePage() {
           zIndex: 100
         }}>
           <div style={{
-            backgroundColor: '#121826',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px',
-            padding: '24px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d7dc',
+            borderRadius: '12px',
+            padding: '28px',
             maxWidth: '500px',
             maxHeight: '80vh',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
           }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>Terms & Conditions</h3>
-            <div style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h3 style={{ fontSize: '19px', fontWeight: '800', marginBottom: '12px', color: '#1c1d1f' }}>Terms & Conditions</h3>
+            <div style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <p>1. <b>Access:</b> Lifetime access grants unrestricted viewing of hand-made blueprints and video lessons 24/7 on Vercel hosted servers.</p>
               <p>2. <b>Downloads:</b> Charts can be downloaded for educational study. Video downloads and recording are strictly prohibited.</p>
               <p>3. <b>No Refund Policy:</b> Due to the instant delivery of proprietary digital materials, all sales of ₹399 are final and non-refundable.</p>
@@ -1293,7 +1303,7 @@ export default function HomePage() {
             <button
               onClick={() => setTermsModal(false)}
               className="btn-trading-glow"
-              style={{ width: '100%', marginTop: '20px', padding: '10px' }}
+              style={{ width: '100%', marginTop: '20px', padding: '12px', borderRadius: '6px' }}
             >
               I Understand & Agree
             </button>
@@ -1309,7 +1319,7 @@ export default function HomePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
+          backgroundColor: 'rgba(28, 29, 31, 0.65)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1317,35 +1327,35 @@ export default function HomePage() {
           zIndex: 110
         }}>
           <div style={{
-            backgroundColor: '#111726',
-            border: '2px solid #00e676',
-            borderRadius: '18px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d7dc',
+            borderRadius: '12px',
             padding: '28px 24px',
             maxWidth: '440px',
             width: '100%',
             textAlign: 'center',
-            boxShadow: '0 20px 50px rgba(0, 230, 118, 0.2)'
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)'
           }}>
             <div style={{
               width: '56px',
               height: '56px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(0, 230, 118, 0.15)',
+              backgroundColor: '#e6f4ea',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px auto'
             }}>
-              <CheckCircle2 size={32} color="#00e676" />
+              <CheckCircle2 size={32} color="#137333" />
             </div>
 
-            <span style={{ fontSize: '11px', color: '#00e676', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            <span style={{ fontSize: '11px', color: '#137333', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
               Lifetime Access Verified
             </span>
-            <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '6px', color: '#fff', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '6px', color: '#1c1d1f', marginBottom: '8px' }}>
               Already Payment Done!
             </h3>
-            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '22px' }}>
+            <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.5', marginBottom: '22px' }}>
               {isAdmin ? (
                 <>You are logged in as <b>Administrator</b>. You have full lifetime access to all 24 hand-made charts and Telugu & English video reels.</>
               ) : (
@@ -1363,11 +1373,9 @@ export default function HomePage() {
                 width: '100%',
                 padding: '13px',
                 fontSize: '14px',
-                backgroundColor: '#00e676',
-                color: '#000',
                 fontWeight: '800',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 marginBottom: '10px',
                 display: 'flex',
@@ -1384,7 +1392,7 @@ export default function HomePage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#94a3b8',
+                color: '#6a6f73',
                 fontSize: '12.5px',
                 cursor: 'pointer',
                 padding: '6px'

@@ -575,8 +575,8 @@ export default function AdminPage() {
       onTouchEnd={handleTouchEnd}
       style={{
         minHeight: '100vh',
-        backgroundColor: '#090d16',
-        color: '#f8fafc',
+        backgroundColor: '#f7f9fa',
+        color: '#1c1d1f',
         overscrollBehaviorY: 'auto',
         WebkitOverflowScrolling: 'touch'
       }}
@@ -585,14 +585,14 @@ export default function AdminPage() {
       {pullDistance > 0 && (
         <div style={{
           height: `${pullDistance}px`,
-          backgroundColor: 'rgba(0, 229, 255, 0.12)',
-          borderBottom: '1px solid rgba(0, 229, 255, 0.3)',
+          backgroundColor: '#f3ecfc',
+          borderBottom: '1px solid #d8b4fe',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
           transition: 'height 0.1s ease',
-          color: '#00e5ff',
+          color: '#5624d0',
           fontSize: '12px',
           fontWeight: '700',
           gap: '8px'
@@ -608,37 +608,34 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Admin Mobile-Optimized Sticky Bar */}
+      {/* Admin Mobile-Optimized Sticky Bar - Udemy Clean Light */}
       <header style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        backgroundColor: 'rgba(9, 13, 22, 0.95)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        transform: 'translateZ(0)',
-        willChange: 'transform',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '12px 16px'
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #d1d7dc',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+        padding: '12px 20px'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Link href="/dashboard" style={{ color: '#94a3b8', display: 'flex', alignItems: 'center' }}>
+            <Link href="/dashboard" style={{ color: '#1c1d1f', display: 'flex', alignItems: 'center' }}>
               <ArrowLeft size={18} />
             </Link>
             <Image
               src="/logo/general-profile-picture.png"
               alt="TradingHath Logo"
-              width={32}
-              height={32}
-              style={{ borderRadius: '50%', border: '2px solid #00e5ff' }}
+              width={34}
+              height={34}
+              style={{ borderRadius: '50%', border: '2px solid #5624d0' }}
             />
             <div>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#ffffff' }}>
-                Admin <span style={{ color: '#00e5ff' }}>Console</span>
+              <span style={{ fontSize: '17px', fontWeight: '800', color: '#1c1d1f' }}>
+                Admin <span style={{ color: '#5624d0' }}>Console</span>
               </span>
-              <div style={{ fontSize: '10px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00e676', display: 'inline-block' }} />
+              <div style={{ fontSize: '11px', color: '#137333', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#137333', display: 'inline-block' }} />
                 24/7 Live Sync Active
               </div>
             </div>
@@ -653,15 +650,15 @@ export default function AdminPage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                fontSize: '12px',
-                backgroundColor: isRefreshing ? 'rgba(0, 229, 255, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                color: '#00e5ff',
-                border: '1px solid rgba(0, 229, 255, 0.3)',
-                padding: '6px 12px',
-                borderRadius: '8px',
+                fontSize: '12.5px',
+                backgroundColor: '#ffffff',
+                color: '#5624d0',
+                border: '1px solid #5624d0',
+                padding: '6px 14px',
+                borderRadius: '6px',
                 cursor: isRefreshing ? 'not-allowed' : 'pointer',
-                fontWeight: '600',
-                transition: 'all 0.2s ease'
+                fontWeight: '700',
+                transition: 'all 0.15s ease'
               }}
             >
               <RefreshCw
@@ -676,11 +673,11 @@ export default function AdminPage() {
             <Link
               href="/dashboard"
               style={{
-                fontSize: '12px',
-                backgroundColor: 'rgba(0, 229, 255, 0.15)',
-                color: '#00e5ff',
-                padding: '6px 12px',
-                borderRadius: '8px',
+                fontSize: '12.5px',
+                backgroundColor: '#1c1d1f',
+                color: '#ffffff',
+                padding: '6px 14px',
+                borderRadius: '6px',
                 textDecoration: 'none',
                 fontWeight: '700'
               }}
@@ -692,18 +689,19 @@ export default function AdminPage() {
       </header>
 
       {/* Main Admin Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 90px 16px' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 20px 90px 20px' }}>
 
         {/* Action toast message */}
         {actionMessage && (
           <div style={{
-            backgroundColor: 'rgba(0, 230, 118, 0.15)',
-            border: '1px solid rgba(0, 230, 118, 0.4)',
-            color: '#00e676',
+            backgroundColor: '#e6f4ea',
+            border: '1px solid #ceead6',
+            color: '#137333',
             padding: '12px 16px',
-            borderRadius: '10px',
+            borderRadius: '8px',
             marginBottom: '16px',
             fontSize: '13px',
+            fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
@@ -713,32 +711,32 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Metrics Overview Cards */}
+        {/* Metrics Overview Cards - Udemy Clean Metrics */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: '12px',
-          marginBottom: '20px'
+          gap: '14px',
+          marginBottom: '24px'
         }}>
-          <div style={{ backgroundColor: '#111726', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px' }}>
-            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Total Users</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#fff', marginTop: '4px' }}>{users.length}</div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '12px', color: '#6a6f73', fontWeight: '600' }}>Total Registered</span>
+            <div style={{ fontSize: '24px', fontWeight: '800', color: '#1c1d1f', marginTop: '4px' }}>{users.length}</div>
           </div>
-          <div style={{ backgroundColor: '#111726', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px' }}>
-            <span style={{ fontSize: '12px', color: '#00e5ff' }}>Lifetime Pro (₹399)</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#00e5ff', marginTop: '4px' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '700' }}>Lifetime Pro (₹399)</span>
+            <div style={{ fontSize: '24px', fontWeight: '800', color: '#5624d0', marginTop: '4px' }}>
               {users.filter(u => u.isPro).length}
             </div>
           </div>
-          <div style={{ backgroundColor: '#111726', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px' }}>
-            <span style={{ fontSize: '12px', color: '#00e676' }}>Total Revenue</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#00e676', marginTop: '4px' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '12px', color: '#137333', fontWeight: '700' }}>Total Revenue</span>
+            <div style={{ fontSize: '24px', fontWeight: '800', color: '#137333', marginTop: '4px' }}>
               ₹{users.filter(u => u.isPro).length * 399}
             </div>
           </div>
-          <div style={{ backgroundColor: '#111726', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px' }}>
-            <span style={{ fontSize: '12px', color: '#f59e0b' }}>Total Content</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>{posts.length}</div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '12px', color: '#b4690e', fontWeight: '700' }}>Vault Blueprints</span>
+            <div style={{ fontSize: '24px', fontWeight: '800', color: '#b4690e', marginTop: '4px' }}>{posts.length}</div>
           </div>
         </div>
 
@@ -751,7 +749,7 @@ export default function AdminPage() {
           WebkitOverflowScrolling: 'touch',
           paddingBottom: '12px',
           marginBottom: '20px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)'
+          borderBottom: '1px solid #d1d7dc'
         }}>
           {[
             { id: 'users', label: 'User Control', icon: Users },
@@ -771,13 +769,15 @@ export default function AdminPage() {
                   gap: '6px',
                   whiteSpace: 'nowrap',
                   padding: '9px 16px',
-                  borderRadius: '10px',
-                  border: active ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.08)',
-                  backgroundColor: active ? 'rgba(0, 229, 255, 0.15)' : '#111726',
-                  color: active ? '#00e5ff' : '#94a3b8',
+                  borderRadius: '6px',
+                  border: active ? '1.5px solid #1c1d1f' : '1px solid #d1d7dc',
+                  backgroundColor: active ? '#1c1d1f' : '#ffffff',
+                  color: active ? '#ffffff' : '#2d2f31',
                   fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: active ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <Icon size={15} />
@@ -789,11 +789,11 @@ export default function AdminPage() {
 
         {/* TAB 1: USER CONTROL (Grant Pro, Revoke Pro, Delete) */}
         {activeTab === 'users' && (
-          <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '16px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #d1d7dc', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: '700' }}>User Access Management</h3>
-              <div style={{ position: 'relative', width: '240px' }}>
-                <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#64748b' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1c1d1f' }}>User Access Management</h3>
+              <div style={{ position: 'relative', width: '260px' }}>
+                <Search size={14} style={{ position: 'absolute', left: '10px', top: '11px', color: '#6a6f73' }} />
                 <input
                   type="text"
                   placeholder="Search by email / user..."
@@ -801,12 +801,12 @@ export default function AdminPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#090d16',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #1c1d1f',
+                    borderRadius: '6px',
                     padding: '8px 10px 8px 32px',
-                    color: '#fff',
-                    fontSize: '12.5px',
+                    color: '#1c1d1f',
+                    fontSize: '13px',
                     outline: 'none'
                   }}
                 />
@@ -815,9 +815,9 @@ export default function AdminPage() {
 
             {/* MASTER ADMIN CREDENTIALS QUICK REFERENCE & STATUS */}
             <div style={{
-              backgroundColor: 'rgba(0, 229, 255, 0.06)',
-              border: '1px solid rgba(0, 229, 255, 0.25)',
-              borderRadius: '12px',
+              backgroundColor: '#f3ecfc',
+              border: '1px solid #d8b4fe',
+              borderRadius: '8px',
               padding: '14px 18px',
               marginBottom: '16px',
               display: 'flex',
@@ -828,21 +828,21 @@ export default function AdminPage() {
             }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Shield size={16} color="#00e5ff" />
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <Shield size={16} color="#5624d0" />
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#1c1d1f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Master Admin Credentials & Security
                   </span>
-                  <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.2)', color: '#00e676', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '700' }}>
+                  <span style={{ backgroundColor: '#e6f4ea', color: '#137333', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '700', border: '1px solid #ceead6' }}>
                     ACTIVE
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '8px', fontSize: '12.5px', color: '#cbd5e1' }}>
-                  <span><b>Admin ID:</b> <code style={{ color: '#00e5ff', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>tradinghath</code></span>
-                  <span><b>Master Password:</b> <code style={{ color: '#f59e0b', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>22NE1A04E1@093</code></span>
-                  <span><b>Security PIN:</b> <code style={{ color: '#00e676', backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px' }}>9390</code></span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '8px', fontSize: '12.5px', color: '#2d2f31' }}>
+                  <span><b>Admin ID:</b> <code style={{ color: '#5624d0', backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #d1d7dc' }}>tradinghath</code></span>
+                  <span><b>Master Password:</b> <code style={{ color: '#b4690e', backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #d1d7dc' }}>22NE1A04E1@093</code></span>
+                  <span><b>Security PIN:</b> <code style={{ color: '#137333', backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #d1d7dc' }}>9390</code></span>
                 </div>
               </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '12px', color: '#6a6f73' }}>
                 All user accounts & passwords tracked in real-time below.
               </div>
             </div>
@@ -850,7 +850,7 @@ export default function AdminPage() {
             {/* Responsive User Cards List with Full Email & Password Access for Admin Only */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {users.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: '#6a6f73', fontSize: '13px' }}>
                   No users registered yet. New signups will appear here instantly with their full emails and passwords!
                 </div>
               ) : (
@@ -860,37 +860,38 @@ export default function AdminPage() {
                     <div
                       key={u.id}
                       style={{
-                        backgroundColor: '#161e2e',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        borderRadius: '10px',
-                        padding: '14px',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d1d7dc',
+                        borderRadius: '8px',
+                        padding: '14px 16px',
                         display: 'flex',
                         flexWrap: 'wrap',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        gap: '12px'
+                        gap: '12px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                       }}
                     >
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: '700', fontSize: '14px', color: '#fff' }}>{u.username}</span>
+                          <span style={{ fontWeight: '700', fontSize: '14.5px', color: '#1c1d1f' }}>{u.username}</span>
                           {u.isPro ? (
-                            <span style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
+                            <span style={{ backgroundColor: '#e6f4ea', color: '#137333', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', border: '1px solid #ceead6' }}>
                               PRO LIFETIME
                             </span>
                           ) : (
-                            <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
+                            <span style={{ backgroundColor: '#fce8e6', color: '#c5221f', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', border: '1px solid #fad2cf' }}>
                               FREE / REVOKED
                             </span>
                           )}
                         </div>
 
                         {/* ADMIN ONLY: FULL EMAIL & PASSWORD UNMASKED */}
-                        <div style={{ fontSize: '12.5px', color: '#cbd5e1', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <div><b>Email:</b> <span style={{ color: '#00e5ff' }}>{u.email}</span></div>
+                        <div style={{ fontSize: '12.5px', color: '#2d2f31', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div><b>Email:</b> <span style={{ color: '#5624d0', fontWeight: '600' }}>{u.email}</span></div>
                           <div>
                             <b>Password:</b>{' '}
-                            <span style={{ backgroundColor: '#090d16', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', color: '#f59e0b', border: '1px solid #333' }}>
+                            <span style={{ backgroundColor: '#f7f9fa', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', color: '#b4690e', border: '1px solid #d1d7dc', fontWeight: '600' }}>
                               {u.password || '22NE1A04E1@093'}
                             </span>
                           </div>
@@ -898,7 +899,7 @@ export default function AdminPage() {
                         </div>
 
                         {u.utrId && (
-                          <div style={{ fontSize: '11px', color: '#00e5ff', marginTop: '4px' }}>
+                          <div style={{ fontSize: '11.5px', color: '#5624d0', marginTop: '4px', fontWeight: '600' }}>
                             UTR Ref: {u.utrId} (₹399)
                           </div>
                         )}
@@ -910,13 +911,13 @@ export default function AdminPage() {
                         <button
                           onClick={() => { setSelectedUserForPassword(u); setNewPasswordInput(''); }}
                           style={{
-                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                            border: '1px solid rgba(245, 158, 11, 0.4)',
-                            color: '#f59e0b',
-                            padding: '6px 10px',
-                            borderRadius: '6px',
+                            backgroundColor: '#fef7e0',
+                            border: '1px solid #f9ab00',
+                            color: '#733c00',
+                            padding: '6px 12px',
+                            borderRadius: '4px',
                             fontSize: '12px',
-                            fontWeight: '600',
+                            fontWeight: '700',
                             cursor: 'pointer'
                           }}
                         >
@@ -927,13 +928,13 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleUserAction(u.id, 'revoke_pro')}
                             style={{
-                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                              border: '1px solid rgba(239, 68, 68, 0.3)',
-                              color: '#ef4444',
+                              backgroundColor: '#fce8e6',
+                              border: '1px solid #fad2cf',
+                              color: '#c5221f',
                               padding: '6px 12px',
-                              borderRadius: '6px',
+                              borderRadius: '4px',
                               fontSize: '12px',
-                              fontWeight: '600',
+                              fontWeight: '700',
                               cursor: 'pointer'
                             }}
                           >
@@ -943,17 +944,17 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleUserAction(u.id, 'grant_pro')}
                             style={{
-                              backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                              border: '1px solid rgba(0, 230, 118, 0.4)',
-                              color: '#00e676',
+                              backgroundColor: '#e6f4ea',
+                              border: '1px solid #ceead6',
+                              color: '#137333',
                               padding: '6px 12px',
-                              borderRadius: '6px',
+                              borderRadius: '4px',
                               fontSize: '12px',
-                              fontWeight: '600',
+                              fontWeight: '700',
                               cursor: 'pointer'
                             }}
                           >
-                            Grant Pro
+                            Grant Pro (₹399)
                           </button>
                         )}
 
@@ -988,7 +989,7 @@ export default function AdminPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backgroundColor: 'rgba(28, 29, 31, 0.65)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -996,18 +997,19 @@ export default function AdminPage() {
             zIndex: 100
           }}>
             <div style={{
-              backgroundColor: '#121826',
-              border: '1px solid #00e5ff',
-              borderRadius: '16px',
-              padding: '24px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #d1d7dc',
+              borderRadius: '12px',
+              padding: '28px',
               width: '100%',
-              maxWidth: '380px'
+              maxWidth: '400px',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)'
             }}>
-              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px', color: '#1c1d1f' }}>
                 Change Password for {selectedUserForPassword.username}
               </h3>
-              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px' }}>
-                User Email: <span style={{ color: '#00e5ff' }}>{selectedUserForPassword.email}</span>
+              <p style={{ fontSize: '12.5px', color: '#6a6f73', marginBottom: '16px' }}>
+                User Email: <span style={{ color: '#5624d0', fontWeight: '600' }}>{selectedUserForPassword.email}</span>
               </p>
 
               <form onSubmit={handlePasswordChangeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1018,12 +1020,13 @@ export default function AdminPage() {
                   onChange={(e) => setNewPasswordInput(e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#090d16',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '8px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #1c1d1f',
+                    borderRadius: '6px',
                     padding: '10px 12px',
-                    color: '#fff',
-                    fontSize: '13px'
+                    color: '#1c1d1f',
+                    fontSize: '13px',
+                    outline: 'none'
                   }}
                   required
                 />
@@ -1032,7 +1035,7 @@ export default function AdminPage() {
                   type="submit"
                   disabled={passwordChangeLoading}
                   className="btn-trading-glow"
-                  style={{ width: '100%', padding: '10px', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '11px', fontSize: '13px', borderRadius: '6px' }}
                 >
                   {passwordChangeLoading ? 'Saving...' : 'Update User Password'}
                 </button>
@@ -1043,10 +1046,11 @@ export default function AdminPage() {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#94a3b8',
-                    fontSize: '12px',
+                    color: '#6a6f73',
+                    fontSize: '13px',
                     cursor: 'pointer',
-                    marginTop: '4px'
+                    marginTop: '4px',
+                    fontWeight: '600'
                   }}
                 >
                   Cancel
@@ -1061,14 +1065,14 @@ export default function AdminPage() {
         {activeTab === 'posts' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
             {/* Upload Form */}
-            <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '14px' }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #d1d7dc', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: '#1c1d1f' }}>
                 Upload & Schedule New Post
               </h3>
 
               <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Post Title</label>
+                  <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>Post Title</label>
                   <input
                     type="text"
                     placeholder="e.g. Stop Loss Hunt Strategy Reel 16"
@@ -1076,12 +1080,13 @@ export default function AdminPage() {
                     onChange={(e) => setPostTitle(e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#090d16',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px',
-                      padding: '10px',
-                      color: '#fff',
-                      fontSize: '13px'
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d1d7dc',
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      color: '#1c1d1f',
+                      fontSize: '13px',
+                      outline: 'none'
                     }}
                     required
                   />
@@ -1090,18 +1095,19 @@ export default function AdminPage() {
                 {/* Post Type: Chart vs Video */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Content Section</label>
+                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>Content Section</label>
                     <select
                       value={postType}
                       onChange={(e) => setPostType(e.target.value as any)}
                       style={{
                         width: '100%',
-                        backgroundColor: '#090d16',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        color: '#fff',
-                        fontSize: '13px'
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d1d7dc',
+                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        color: '#1c1d1f',
+                        fontSize: '13px',
+                        outline: 'none'
                       }}
                     >
                       <option value="chart">Hand-Made Chart (Downloadable)</option>
@@ -1110,18 +1116,19 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Language</label>
+                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>Language</label>
                     <select
                       value={postLanguage}
                       onChange={(e) => setPostLanguage(e.target.value as any)}
                       style={{
                         width: '100%',
-                        backgroundColor: '#090d16',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        color: '#fff',
-                        fontSize: '13px'
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d1d7dc',
+                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        color: '#1c1d1f',
+                        fontSize: '13px',
+                        outline: 'none'
                       }}
                     >
                       <option value="both">Both (Telugu & English)</option>
@@ -1152,31 +1159,32 @@ export default function AdminPage() {
                     }
                   }}
                   style={{
-                    border: isDragging ? '2px dashed #00e5ff' : '2px dashed rgba(255,255,255,0.15)',
-                    borderRadius: '10px',
-                    padding: '24px 16px',
+                    border: isDragging ? '2px dashed #5624d0' : '2px dashed #d1d7dc',
+                    borderRadius: '8px',
+                    padding: '28px 16px',
                     textAlign: 'center',
-                    backgroundColor: isDragging ? 'rgba(0, 229, 255, 0.05)' : '#090d16',
+                    backgroundColor: isDragging ? '#f3ecfc' : '#f7f9fa',
                     cursor: 'pointer'
                   }}
                 >
-                  <UploadCloud size={32} color="#00e5ff" style={{ margin: '0 auto 8px auto' }} />
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>
+                  <UploadCloud size={32} color="#5624d0" style={{ margin: '0 auto 8px auto' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#1c1d1f' }}>
                     Tap to Choose from Phone Gallery or Drag File
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11.5px', color: '#6a6f73', marginTop: '4px' }}>
                     Supports JPG, PNG, WEBP, MP4
                   </div>
 
                   {selectedFileName && (
                     <div style={{
                       marginTop: '10px',
-                      backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                      color: '#00e676',
-                      border: '1px solid rgba(0, 230, 118, 0.3)',
+                      backgroundColor: '#e6f4ea',
+                      color: '#137333',
+                      border: '1px solid #ceead6',
                       padding: '6px 12px',
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       fontSize: '12px',
+                      fontWeight: '700',
                       display: 'inline-block'
                     }}>
                       ✓ Selected: {selectedFileName}
@@ -1197,12 +1205,13 @@ export default function AdminPage() {
                         display: 'inline-block',
                         marginTop: '12px',
                         padding: '8px 18px',
-                        backgroundColor: '#00e5ff',
-                        color: '#000',
+                        backgroundColor: '#5624d0',
+                        color: '#ffffff',
                         fontWeight: '700',
-                        borderRadius: '8px',
+                        borderRadius: '6px',
                         fontSize: '12.5px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(86, 36, 208, 0.2)'
                       }}
                     >
                       Open Phone Gallery
@@ -1210,7 +1219,7 @@ export default function AdminPage() {
                   </div>
 
                   {uploadPreview && (
-                    <div style={{ marginTop: '14px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0, 229, 255, 0.3)', backgroundColor: '#000', maxHeight: '200px' }}>
+                    <div style={{ marginTop: '14px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #d1d7dc', backgroundColor: '#000', maxHeight: '200px' }}>
                       {postType === 'chart' ? (
                         <img
                           src={uploadPreview}
@@ -1231,7 +1240,7 @@ export default function AdminPage() {
                 {/* Direct Video URL / YouTube Link option */}
                 {postType === 'video' && (
                   <div>
-                    <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                       Or Paste Video / YouTube Unlisted Link
                     </label>
                     <input
@@ -1241,12 +1250,13 @@ export default function AdminPage() {
                       onChange={(e) => setVideoUrl(e.target.value)}
                       style={{
                         width: '100%',
-                        backgroundColor: '#090d16',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        color: '#fff',
-                        fontSize: '13px'
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d1d7dc',
+                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        color: '#1c1d1f',
+                        fontSize: '13px',
+                        outline: 'none'
                       }}
                     />
                   </div>
@@ -1254,16 +1264,16 @@ export default function AdminPage() {
 
 
                 {/* Interactive Date & Time Scheduling with Visual Pickers & Quick Presets */}
-                <div style={{ backgroundColor: 'rgba(0, 229, 255, 0.05)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(0, 229, 255, 0.2)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '13px', color: '#00e5ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Calendar size={16} /> Schedule Publish Time (Interactive Calendar)
+                <div style={{ backgroundColor: '#f7f9fa', padding: '16px', borderRadius: '8px', border: '1px solid #d1d7dc' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <label style={{ fontSize: '13px', color: '#1c1d1f', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={16} color="#5624d0" /> Schedule Publish Time (Interactive Calendar)
                     </label>
                     {(scheduleDate || scheduleTime) && (
                       <button
                         type="button"
                         onClick={() => { setScheduleDate(''); setScheduleTime(''); }}
-                        style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline' }}
+                        style={{ background: 'none', border: 'none', color: '#c02424', fontSize: '11.5px', cursor: 'pointer', textDecoration: 'underline', fontWeight: '700' }}
                       >
                         Clear Schedule (Publish Now)
                       </button>
@@ -1274,42 +1284,44 @@ export default function AdminPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     {/* Date Picker */}
                     <div>
-                      <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Select Date</span>
+                      <span style={{ fontSize: '11.5px', color: '#6a6f73', display: 'block', marginBottom: '3px', fontWeight: '600' }}>Select Date</span>
                       <input
                         type="date"
                         value={scheduleDate}
                         onChange={(e) => setScheduleDate(e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#090d16',
-                          border: '1px solid #00e5ff',
-                          borderRadius: '8px',
-                          padding: '10px 12px',
-                          color: '#fff',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #1c1d1f',
+                          borderRadius: '6px',
+                          padding: '8px 10px',
+                          color: '#1c1d1f',
                           fontSize: '13px',
                           cursor: 'pointer',
-                          colorScheme: 'dark'
+                          colorScheme: 'light',
+                          outline: 'none'
                         }}
                       />
                     </div>
 
                     {/* Time Picker */}
                     <div>
-                      <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Select Time</span>
+                      <span style={{ fontSize: '11.5px', color: '#6a6f73', display: 'block', marginBottom: '3px', fontWeight: '600' }}>Select Time</span>
                       <input
                         type="time"
                         value={scheduleTime}
                         onChange={(e) => setScheduleTime(e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#090d16',
-                          border: '1px solid #00e5ff',
-                          borderRadius: '8px',
-                          padding: '10px 12px',
-                          color: '#fff',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #1c1d1f',
+                          borderRadius: '6px',
+                          padding: '8px 10px',
+                          color: '#1c1d1f',
                           fontSize: '13px',
                           cursor: 'pointer',
-                          colorScheme: 'dark'
+                          colorScheme: 'light',
+                          outline: 'none'
                         }}
                       />
                     </div>
@@ -1317,7 +1329,7 @@ export default function AdminPage() {
 
                   {/* 1-Click Quick Schedule Presets */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>Quick:</span>
+                    <span style={{ fontSize: '11.5px', color: '#6a6f73', fontWeight: '600' }}>Quick:</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -1327,12 +1339,13 @@ export default function AdminPage() {
                         setScheduleTime('09:15');
                       }}
                       style={{
-                        padding: '3px 8px',
+                        padding: '4px 10px',
                         borderRadius: '4px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: '#00e5ff',
-                        fontSize: '11px',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #d1d7dc',
+                        color: '#5624d0',
+                        fontSize: '11.5px',
+                        fontWeight: '700',
                         cursor: 'pointer'
                       }}
                     >
@@ -1415,28 +1428,28 @@ export default function AdminPage() {
             </div>
 
             {/* List of Published & Scheduled Posts with dedicated Filter Tabs & Control */}
-            <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d7dc', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: '700', margin: 0 }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1c1d1f', margin: 0 }}>
                     Content Library & Scheduled Queue ({posts.length})
                   </h3>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                  <p style={{ fontSize: '12px', color: '#6a6f73', margin: '4px 0 0 0' }}>
                     Manage live content or cancel & publish scheduled setups in 1-click.
                   </p>
                 </div>
 
                 {/* Filter Pills: All, Scheduled Queue, Live Published */}
-                <div style={{ display: 'flex', gap: '6px', backgroundColor: '#090d16', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', gap: '6px', backgroundColor: '#f7f9fa', padding: '3px', borderRadius: '8px', border: '1px solid #d1d7dc' }}>
                   <button
                     type="button"
                     onClick={() => setPostFilter('all')}
                     style={{
-                      padding: '4px 10px',
+                      padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      backgroundColor: postFilter === 'all' ? 'rgba(0, 229, 255, 0.2)' : 'transparent',
-                      color: postFilter === 'all' ? '#00e5ff' : '#94a3b8',
+                      backgroundColor: postFilter === 'all' ? '#1c1d1f' : 'transparent',
+                      color: postFilter === 'all' ? '#ffffff' : '#6a6f73',
                       fontSize: '11.5px',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -1449,11 +1462,11 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => setPostFilter('scheduled')}
                     style={{
-                      padding: '4px 10px',
+                      padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      backgroundColor: postFilter === 'scheduled' ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                      color: postFilter === 'scheduled' ? '#f59e0b' : '#94a3b8',
+                      backgroundColor: postFilter === 'scheduled' ? '#fef3c7' : 'transparent',
+                      color: postFilter === 'scheduled' ? '#b45309' : '#6a6f73',
                       fontSize: '11.5px',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -1466,11 +1479,11 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => setPostFilter('live')}
                     style={{
-                      padding: '4px 10px',
+                      padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      backgroundColor: postFilter === 'live' ? 'rgba(0, 230, 118, 0.2)' : 'transparent',
-                      color: postFilter === 'live' ? '#00e676' : '#94a3b8',
+                      backgroundColor: postFilter === 'live' ? '#e6f4ea' : 'transparent',
+                      color: postFilter === 'live' ? '#137333' : '#6a6f73',
                       fontSize: '11.5px',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -1493,19 +1506,19 @@ export default function AdminPage() {
                   <div style={{
                     textAlign: 'center',
                     padding: '40px 20px',
-                    backgroundColor: 'rgba(9, 13, 22, 0.6)',
+                    backgroundColor: '#f7f9fa',
                     borderRadius: '10px',
-                    border: '1px dashed rgba(255, 255, 255, 0.1)'
+                    border: '1px dashed #d1d7dc'
                   }}>
-                    <Calendar size={28} color="#64748b" style={{ margin: '0 auto 10px auto' }} />
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>
+                    <Calendar size={28} color="#6a6f73" style={{ margin: '0 auto 10px auto' }} />
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#1c1d1f' }}>
                       {postFilter === 'scheduled'
                         ? 'No Scheduled Items In Queue'
                         : postFilter === 'live'
                         ? 'No Live Published Posts Found'
                         : 'No Content Found'}
                     </div>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', maxWidth: '340px', margin: '6px auto 0 auto' }}>
+                    <p style={{ fontSize: '12px', color: '#6a6f73', maxWidth: '340px', margin: '6px auto 0 auto' }}>
                       {postFilter === 'scheduled'
                         ? 'All scheduled setups have either gone live or been canceled. Pick a date & time in the form on the left to schedule new content.'
                         : 'Use the "Upload & Schedule New Post" form to upload charts or video lessons to the website.'}
@@ -1526,8 +1539,8 @@ export default function AdminPage() {
                         <div
                           key={post.id}
                           style={{
-                            backgroundColor: isUpcomingSchedule ? 'rgba(245, 158, 11, 0.04)' : '#161e2e',
-                            border: isUpcomingSchedule ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.06)',
+                            backgroundColor: isUpcomingSchedule ? '#fffbeb' : '#ffffff',
+                            border: isUpcomingSchedule ? '1px solid #fde68a' : '1px solid #e4e8eb',
                             borderRadius: '10px',
                             padding: '14px',
                             display: 'flex',
@@ -1544,8 +1557,8 @@ export default function AdminPage() {
                                 textTransform: 'uppercase',
                                 padding: '2px 8px',
                                 borderRadius: '4px',
-                                backgroundColor: post.type === 'chart' ? 'rgba(0, 229, 255, 0.15)' : 'rgba(168, 85, 247, 0.15)',
-                                color: post.type === 'chart' ? '#00e5ff' : '#c084fc',
+                                backgroundColor: post.type === 'chart' ? '#f3ecfc' : '#eceb98',
+                                color: post.type === 'chart' ? '#5624d0' : '#3d3c0a',
                                 fontWeight: '700'
                               }}>
                                 {post.type}
@@ -1557,10 +1570,10 @@ export default function AdminPage() {
                                   textTransform: 'uppercase',
                                   padding: '2px 8px',
                                   borderRadius: '4px',
-                                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                                  color: '#f59e0b',
+                                  backgroundColor: '#fef3c7',
+                                  color: '#b45309',
                                   fontWeight: '800',
-                                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                                  border: '1px solid #fde68a'
                                 }}>
                                   ⏳ Scheduled
                                 </span>
@@ -1570,23 +1583,23 @@ export default function AdminPage() {
                                   textTransform: 'uppercase',
                                   padding: '2px 8px',
                                   borderRadius: '4px',
-                                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                                  color: '#00e676',
+                                  backgroundColor: '#e6f4ea',
+                                  color: '#137333',
                                   fontWeight: '700'
                                 }}>
                                   ● Live on Web
                                 </span>
                               )}
 
-                              <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#fff', margin: 0 }}>
+                              <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#1c1d1f', margin: 0 }}>
                                 {post.title}
                               </h5>
                             </div>
 
-                            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                              <span><b>Language:</b> <span style={{ color: '#00e5ff', textTransform: 'capitalize' }}>{post.language}</span></span>
+                            <div style={{ fontSize: '12px', color: '#6a6f73', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                              <span><b>Language:</b> <span style={{ color: '#5624d0', textTransform: 'capitalize', fontWeight: '600' }}>{post.language}</span></span>
                               {post.scheduledAt && (
-                                <span style={{ color: '#f59e0b', fontWeight: '600' }}>
+                                <span style={{ color: '#b45309', fontWeight: '600' }}>
                                   🗓️ Scheduled Time: {new Date(post.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                 </span>
                               )}
@@ -1600,9 +1613,9 @@ export default function AdminPage() {
                               onClick={() => setPreviewPostModal(post)}
                               title="Preview this video/chart"
                               style={{
-                                backgroundColor: 'rgba(0, 229, 255, 0.12)',
-                                color: '#00e5ff',
-                                border: '1px solid rgba(0, 229, 255, 0.3)',
+                                backgroundColor: '#f3ecfc',
+                                color: '#5624d0',
+                                border: '1px solid #d8b4fe',
                                 borderRadius: '6px',
                                 padding: '6px 12px',
                                 cursor: 'pointer',
@@ -1622,9 +1635,9 @@ export default function AdminPage() {
                                 onClick={() => handlePublishNowPost(post.id)}
                                 title="Publish this scheduled post live immediately"
                                 style={{
-                                  backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                                  color: '#00e676',
-                                  border: '1px solid rgba(0, 230, 118, 0.4)',
+                                  backgroundColor: '#e6f4ea',
+                                  color: '#137333',
+                                  border: '1px solid #a8dab5',
                                   borderRadius: '6px',
                                   padding: '6px 12px',
                                   cursor: 'pointer',
@@ -1644,9 +1657,9 @@ export default function AdminPage() {
                               onClick={() => handleDeletePost(post.id)}
                               title={isUpcomingSchedule ? "Cancel this scheduled post" : "Delete from website"}
                               style={{
-                                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                                color: '#ef4444',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                backgroundColor: '#fef2f2',
+                                color: '#dc2626',
+                                border: '1px solid #fecaca',
                                 borderRadius: '6px',
                                 padding: '6px 10px',
                                 cursor: 'pointer',
@@ -1680,8 +1693,8 @@ export default function AdminPage() {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(28, 29, 31, 0.75)',
+              backdropFilter: 'blur(4px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1692,21 +1705,21 @@ export default function AdminPage() {
             <div
               onClick={(e) => e.stopPropagation()}
               style={{
-                backgroundColor: '#121826',
-                border: '1px solid #00e5ff',
-                borderRadius: '16px',
-                padding: '20px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #d1d7dc',
+                borderRadius: '12px',
+                padding: '24px',
                 width: '100%',
                 maxWidth: '650px',
-                boxShadow: '0 20px 50px rgba(0, 229, 255, 0.2)'
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#00e5ff', textTransform: 'uppercase', fontWeight: '700' }}>
+                  <span style={{ fontSize: '11px', color: '#5624d0', textTransform: 'uppercase', fontWeight: '700' }}>
                     {previewPostModal.type} Preview • {previewPostModal.language}
                   </span>
-                  <h3 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '2px 0 0 0' }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: '800', color: '#1c1d1f', margin: '2px 0 0 0' }}>
                     {previewPostModal.title}
                   </h3>
                 </div>
@@ -1716,7 +1729,7 @@ export default function AdminPage() {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#94a3b8',
+                    color: '#6a6f73',
                     fontSize: '22px',
                     cursor: 'pointer',
                     padding: '4px 8px'
@@ -1726,7 +1739,7 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <div style={{ borderRadius: '10px', overflow: 'hidden', backgroundColor: '#000', marginBottom: '14px' }}>
+              <div style={{ borderRadius: '10px', overflow: 'hidden', backgroundColor: '#f7f9fa', marginBottom: '14px', border: '1px solid #d1d7dc' }}>
                 {previewPostModal.type === 'chart' ? (
                   <img
                     src={previewPostModal.chartUrl}
@@ -1743,7 +1756,7 @@ export default function AdminPage() {
               </div>
 
               {previewPostModal.description && (
-                <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', margin: 0 }}>
+                <p style={{ fontSize: '12.5px', color: '#2d2f31', lineHeight: '1.5', margin: 0 }}>
                   {previewPostModal.description}
                 </p>
               )}
@@ -1753,15 +1766,15 @@ export default function AdminPage() {
 
         {/* TAB 3: REAL-TIME PAYMENT LOGS & UTR TRACKER */}
         {activeTab === 'payments' && (
-          <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '16px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d7dc', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '17px', fontWeight: '700' }}>Real-Time Payment Logs (₹399)</h3>
-                <p style={{ fontSize: '12px', color: '#94a3b8' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1c1d1f', margin: 0 }}>Real-Time Payment Logs (₹399)</h3>
+                <p style={{ fontSize: '12px', color: '#6a6f73', margin: '4px 0 0 0' }}>
                   Live integration with Razorpay Webhook and manual UTR verification submissions.
                 </p>
               </div>
-              <div style={{ fontSize: '12px', color: '#00e676', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontSize: '12px', color: '#137333', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', backgroundColor: '#e6f4ea', padding: '5px 10px', borderRadius: '6px' }}>
                 <Shield size={14} /> Razorpay Live Key Connected
               </div>
             </div>
@@ -1776,8 +1789,8 @@ export default function AdminPage() {
                 <div
                   key={idx}
                   style={{
-                    backgroundColor: '#161e2e',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e4e8eb',
                     borderRadius: '10px',
                     padding: '14px',
                     display: 'flex',
@@ -1789,20 +1802,20 @@ export default function AdminPage() {
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: '700', fontSize: '14px', color: '#fff' }}>₹{p.amount}</span>
-                      <span style={{ fontSize: '12px', color: '#00e5ff' }}>via {p.method}</span>
+                      <span style={{ fontWeight: '700', fontSize: '14px', color: '#1c1d1f' }}>₹{p.amount}</span>
+                      <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '600' }}>via {p.method}</span>
                     </div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12px', color: '#6a6f73', marginTop: '2px' }}>
                       User: {p.user} • Time: {p.time}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
                       ID: {p.rzpId || `UTR ${p.utr}`}
                     </div>
                   </div>
 
                   <span style={{
-                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                    color: '#00e676',
+                    backgroundColor: '#e6f4ea',
+                    color: '#137333',
                     padding: '4px 10px',
                     borderRadius: '6px',
                     fontSize: '11.5px',
@@ -1818,11 +1831,11 @@ export default function AdminPage() {
 
         {/* TAB 4: COMMENTS & REVIEWS STUDIO */}
         {activeTab === 'comments' && (
-          <div style={{ backgroundColor: '#111726', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', padding: '16px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '8px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d7dc', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1c1d1f', marginBottom: '8px' }}>
               Home Page Reviews & Testimonials
             </h3>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px' }}>
+            <p style={{ fontSize: '12px', color: '#6a6f73', marginBottom: '16px' }}>
               All emails are automatically star-masked (`tr***@gmail.com`) to protect user privacy. Daily comments are published here.
             </p>
 
@@ -1831,29 +1844,29 @@ export default function AdminPage() {
                 <div
                   key={rev.id}
                   style={{
-                    backgroundColor: '#161e2e',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e4e8eb',
                     borderRadius: '10px',
                     padding: '14px'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: '700', fontSize: '13px', color: '#00e5ff' }}>{rev.userMasked}</span>
+                      <span style={{ fontWeight: '700', fontSize: '13px', color: '#5624d0' }}>{rev.userMasked}</span>
                       {rev.rawEmail && (
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>({rev.rawEmail})</span>
+                        <span style={{ fontSize: '11px', color: '#6a6f73' }}>({rev.rawEmail})</span>
                       )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>{rev.date}</span>
+                      <span style={{ fontSize: '11px', color: '#6a6f73' }}>{rev.date}</span>
                       <button
                         type="button"
                         onClick={() => handleDeleteComment(rev.id)}
                         title="Delete this comment from website"
                         style={{
-                          backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                          color: '#ef4444',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          backgroundColor: '#fef2f2',
+                          color: '#dc2626',
+                          border: '1px solid #fecaca',
                           borderRadius: '6px',
                           padding: '4px 8px',
                           cursor: 'pointer',
@@ -1868,10 +1881,10 @@ export default function AdminPage() {
                       </button>
                     </div>
                   </div>
-                  <div style={{ color: '#f59e0b', fontSize: '13px', marginBottom: '4px' }}>
+                  <div style={{ color: '#b4690e', fontSize: '13px', marginBottom: '4px' }}>
                     {'★'.repeat(rev.rating)}
                   </div>
-                  <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', margin: 0 }}>
+                  <p style={{ fontSize: '12.5px', color: '#2d2f31', lineHeight: '1.5', margin: 0 }}>
                     "{rev.comment}"
                   </p>
                 </div>

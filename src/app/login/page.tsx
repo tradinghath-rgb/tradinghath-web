@@ -227,43 +227,44 @@ export default function LoginPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 16px',
-      backgroundColor: '#000000',
-      color: '#ffffff'
+      backgroundColor: '#f7f9fa',
+      color: '#1c1d1f'
     }}>
       {/* Return home link */}
-      <div style={{ width: '100%', maxWidth: '380px', marginBottom: '16px' }}>
+      <div style={{ width: '100%', maxWidth: '400px', marginBottom: '16px' }}>
         <Link href="/" style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '6px',
-          color: '#8e8e8e',
+          color: '#5624d0',
           textDecoration: 'none',
-          fontSize: '13px'
+          fontSize: '13px',
+          fontWeight: '700'
         }}>
           <ArrowLeft size={16} /> Back to TradingHath Home
         </Link>
       </div>
 
-      {/* Main Instagram Box */}
+      {/* Main Form Card - Udemy Educational Light Style */}
       <div style={{
         width: '100%',
-        maxWidth: '380px',
-        backgroundColor: '#121212',
-        border: '1px solid #262626',
-        borderRadius: '12px',
-        padding: '36px 32px 28px 32px',
-        textAlign: 'center'
+        maxWidth: '400px',
+        backgroundColor: '#ffffff',
+        border: '1px solid #d1d7dc',
+        borderRadius: '8px',
+        padding: '36px 32px 32px 32px',
+        textAlign: 'center',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
       }}>
-        {/* Instagram Brand Title */}
+        {/* Brand Title */}
         <h1 style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: '36px',
-          fontWeight: '500',
-          letterSpacing: '-0.5px',
-          marginBottom: '28px',
-          color: '#ffffff'
+          fontSize: '24px',
+          fontWeight: '800',
+          letterSpacing: '-0.4px',
+          marginBottom: '20px',
+          color: '#1c1d1f'
         }}>
-          Instagram
+          Log in to your <span style={{ color: '#5624d0' }}>TradingHath</span> account
         </h1>
 
         {/* Visual Mode Selector Tabs: Log In / Sign Up */}
@@ -271,24 +272,25 @@ export default function LoginPage() {
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '6px',
-          backgroundColor: '#1e1e1e',
+          backgroundColor: '#f7f9fa',
           padding: '4px',
-          borderRadius: '10px',
-          marginBottom: '20px'
+          borderRadius: '6px',
+          marginBottom: '24px',
+          border: '1px solid #d1d7dc'
         }}>
           <button
             type="button"
             onClick={() => { setIsSignUp(false); setError(''); setSignupSuccess(''); }}
             style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
+              padding: '9px 12px',
+              borderRadius: '4px',
               border: 'none',
-              backgroundColor: !isSignUp ? '#3875f6' : 'transparent',
-              color: '#ffffff',
+              backgroundColor: !isSignUp ? '#1c1d1f' : 'transparent',
+              color: !isSignUp ? '#ffffff' : '#6a6f73',
               fontWeight: '700',
               fontSize: '13px',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             Log In
@@ -297,18 +299,18 @@ export default function LoginPage() {
             type="button"
             onClick={() => { setIsSignUp(true); setError(''); setSignupSuccess(''); }}
             style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
+              padding: '9px 12px',
+              borderRadius: '4px',
               border: 'none',
-              backgroundColor: isSignUp ? '#00e5ff' : 'transparent',
-              color: isSignUp ? '#000000' : '#a1a1aa',
+              backgroundColor: isSignUp ? '#5624d0' : 'transparent',
+              color: isSignUp ? '#ffffff' : '#6a6f73',
               fontWeight: '700',
               fontSize: '13px',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.15s ease'
             }}
           >
-            Create Account
+            Sign Up
           </button>
         </div>
 
@@ -319,19 +321,19 @@ export default function LoginPage() {
           justifyContent: 'center',
           gap: '8px',
           marginBottom: '20px',
-          padding: '6px 12px',
-          backgroundColor: '#1e1e1e',
+          padding: '6px 14px',
+          backgroundColor: '#f3ecfc',
           borderRadius: '20px'
         }}>
           <Image
             src="/logo/general-profile-picture.png"
             alt="TradingHath Logo"
-            width={22}
-            height={22}
+            width={20}
+            height={20}
             style={{ borderRadius: '50%' }}
           />
-          <span style={{ fontSize: '12px', color: '#00e5ff', fontWeight: '600' }}>
-            TradingHath Official Portal
+          <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '700' }}>
+            TradingHath Student Portal
           </span>
         </div>
 
@@ -426,22 +428,27 @@ export default function LoginPage() {
                 style={{
                   width: '16px',
                   height: '16px',
-                  accentColor: '#3875f6',
+                  accentColor: '#5624d0',
                   cursor: 'pointer'
                 }}
               />
-              Save login info
+              <span style={{ color: '#2d2f31' }}>Save login info</span>
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="ig-button-primary"
+              className="btn-trading-glow"
               style={{
-                backgroundColor: '#4154f5',
-                padding: '12px 16px',
+                backgroundColor: '#5624d0',
+                color: '#ffffff',
+                padding: '13px 16px',
                 fontSize: '14px',
-                borderRadius: '8px'
+                borderRadius: '6px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(86, 36, 208, 0.25)'
               }}
             >
               {loading ? 'Logging in...' : 'Log in'}
@@ -454,10 +461,11 @@ export default function LoginPage() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#ffffff',
+                  color: '#5624d0',
                   fontSize: '13px',
                   cursor: 'pointer',
-                  opacity: 0.9
+                  fontWeight: '600',
+                  textDecoration: 'underline'
                 }}
               >
                 Forgot password?
@@ -492,11 +500,11 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   background: 'transparent',
-                  border: '1px solid #555555',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '600',
+                  border: '1px solid #d1d7dc',
+                  borderRadius: '4px',
+                  color: '#1c1d1f',
+                  fontSize: '12px',
+                  fontWeight: '700',
                   padding: '4px 10px',
                   cursor: 'pointer',
                   marginRight: '6px'
@@ -506,21 +514,24 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <p style={{ fontSize: '11px', color: '#8e8e8e', textAlign: 'left', lineHeight: '1.4', margin: '6px 0' }}>
+            <p style={{ fontSize: '11px', color: '#6a6f73', textAlign: 'left', lineHeight: '1.4', margin: '6px 0' }}>
               By signing up, you agree to our Terms & Conditions and 24/7 Member Guidelines.
             </p>
 
             <button
               type="submit"
               disabled={loading}
-              className="ig-button-primary"
+              className="btn-trading-glow"
               style={{
-                backgroundColor: '#00e5ff',
-                color: '#000',
+                backgroundColor: '#5624d0',
+                color: '#ffffff',
                 fontWeight: '700',
-                padding: '12px 16px',
+                padding: '13px 16px',
                 fontSize: '14px',
-                borderRadius: '8px'
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(86, 36, 208, 0.25)'
               }}
             >
               {loading ? 'Creating account...' : 'Create Account'}
@@ -529,17 +540,19 @@ export default function LoginPage() {
         )}
       </div>
 
-      {/* Instagram Bottom Switcher Box */}
+      {/* Udemy Bottom Switcher Box */}
       <div style={{
         width: '100%',
-        maxWidth: '380px',
-        backgroundColor: '#121212',
-        border: '1px solid #262626',
-        borderRadius: '12px',
+        maxWidth: '400px',
+        backgroundColor: '#ffffff',
+        border: '1px solid #d1d7dc',
+        borderRadius: '8px',
         padding: '18px 24px',
         marginTop: '12px',
         textAlign: 'center',
-        fontSize: '13.5px'
+        fontSize: '13.5px',
+        color: '#2d2f31',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)'
       }}>
         {!isSignUp ? (
           <span>
@@ -550,10 +563,11 @@ export default function LoginPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#0095f6',
+                color: '#5624d0',
                 fontWeight: '700',
                 cursor: 'pointer',
-                fontSize: '13.5px'
+                fontSize: '13.5px',
+                textDecoration: 'underline'
               }}
             >
               Sign up
@@ -568,10 +582,11 @@ export default function LoginPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#0095f6',
+                color: '#5624d0',
                 fontWeight: '700',
                 cursor: 'pointer',
-                fontSize: '13.5px'
+                fontSize: '13.5px',
+                textDecoration: 'underline'
               }}
             >
               Log in
@@ -586,16 +601,16 @@ export default function LoginPage() {
         marginTop: '24px',
         textAlign: 'center',
         fontSize: '12px',
-        color: '#737373',
-        maxWidth: '380px',
+        color: '#6a6f73',
+        maxWidth: '400px',
         lineHeight: '1.6'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '6px' }}>
-          <ShieldCheck size={14} color="#00e676" />
-          <span>End-to-End Privacy Protected</span>
+          <ShieldCheck size={14} color="#137333" />
+          <span style={{ color: '#137333', fontWeight: '600' }}>End-to-End Privacy Protected</span>
         </div>
         <p>No user credentials or emails are ever exposed publicly.</p>
-        <p style={{ marginTop: '4px' }}>Support: <a href="mailto:tradinghath@gmail.com" style={{ color: '#00e5ff', textDecoration: 'none' }}>tradinghath@gmail.com</a></p>
+        <p style={{ marginTop: '4px' }}>Support: <a href="mailto:tradinghath@gmail.com" style={{ color: '#5624d0', textDecoration: 'none', fontWeight: '600' }}>tradinghath@gmail.com</a></p>
       </div>
 
       {/* Forgot Password Modal */}
@@ -606,8 +621,8 @@ export default function LoginPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(28, 29, 31, 0.65)',
+          backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -615,29 +630,31 @@ export default function LoginPage() {
           zIndex: 100
         }}>
           <div style={{
-            backgroundColor: '#18181b',
-            border: '1px solid #27272a',
-            borderRadius: '16px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d7dc',
+            borderRadius: '12px',
             padding: '28px',
             width: '100%',
-            maxWidth: '400px'
+            maxWidth: '400px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
           }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '19px', fontWeight: '800', marginBottom: '8px', color: '#1c1d1f' }}>
               Reset Password
             </h3>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '20px', lineHeight: '1.5' }}>
-              A 6-digit verification code will be sent to you directly from <b style={{ color: '#00e5ff' }}>tradinghath@gmail.com</b>.
+            <p style={{ fontSize: '13px', color: '#6a6f73', marginBottom: '20px', lineHeight: '1.5' }}>
+              A 6-digit verification code will be sent to you directly from <b style={{ color: '#5624d0' }}>tradinghath@gmail.com</b>.
             </p>
 
             {resetMessage && (
               <div style={{
-                backgroundColor: 'rgba(0, 229, 255, 0.1)',
-                border: '1px solid rgba(0, 229, 255, 0.3)',
-                padding: '10px',
-                borderRadius: '8px',
+                backgroundColor: '#f3ecfc',
+                border: '1px solid #d8b4fe',
+                padding: '10px 14px',
+                borderRadius: '6px',
                 fontSize: '12.5px',
-                color: '#00e5ff',
-                marginBottom: '16px'
+                color: '#5624d0',
+                marginBottom: '16px',
+                fontWeight: '600'
               }}>
                 {resetMessage}
               </div>
@@ -655,7 +672,7 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                <button type="submit" className="btn-trading-glow" style={{ width: '100%' }}>
+                <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px', borderRadius: '6px' }}>
                   Send Verification Code
                 </button>
               </form>
@@ -681,7 +698,7 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                <button type="submit" className="btn-trading-glow" style={{ width: '100%' }}>
+                <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px', borderRadius: '6px' }}>
                   Verify & Change Password
                 </button>
               </form>
@@ -697,11 +714,10 @@ export default function LoginPage() {
                 marginTop: '16px',
                 background: 'none',
                 border: 'none',
-                color: '#a1a1aa',
+                color: '#6a6f73',
                 fontSize: '13px',
                 cursor: 'pointer',
-                width: '100%',
-                textAlign: 'center'
+                fontWeight: '600'
               }}
             >
               Cancel
