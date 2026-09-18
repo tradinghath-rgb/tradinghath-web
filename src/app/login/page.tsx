@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
+import { safeStorage } from '@/lib/storage';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,25 +43,23 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (data.success) {
-        // Save to client localStorage backup to guarantee persistence
-        if (typeof window !== 'undefined') {
-          try {
-            const stored = localStorage.getItem('tradinghath_client_users');
-            const list = stored ? JSON.parse(stored) : [];
-            const userObj = {
-              id: data.user?.id || `user_${Date.now()}`,
-              username: data.user?.username || derivedUsername,
-              email: cleanEmail,
-              password: signupPassword.trim(),
-              phone: '',
-              isPro: false,
-              amount: 0,
-              createdAt: new Date().toISOString()
-            };
-            const filtered = list.filter((u: any) => u.username !== userObj.username && u.email !== userObj.email);
-            localStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
-          } catch (e) {}
-        }
+        // Save to client storage backup to guarantee persistence
+        try {
+          const stored = safeStorage.getItem('tradinghath_client_users');
+          const list = stored ? JSON.parse(stored) : [];
+          const userObj = {
+            id: data.user?.id || `user_${Date.now()}`,
+            username: data.user?.username || derivedUsername,
+            email: cleanEmail,
+            password: signupPassword.trim(),
+            phone: '',
+            isPro: false,
+            amount: 0,
+            createdAt: new Date().toISOString()
+          };
+          const filtered = list.filter((u: any) => u.username !== userObj.username && u.email !== userObj.email);
+          safeStorage.setItem('tradinghath_client_users', JSON.stringify([userObj, ...filtered]));
+        } catch (e) {}
 
         setSignupSuccess('Account created successfully! Switching to login...');
         setIdentifier(cleanEmail);
@@ -87,33 +86,31 @@ export default function LoginPage() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [resetMessage, setResetMessage] = useState('');
 
-  // Auto-fill saved login credentials from localStorage & sanitize stale admin roles
+  // Auto-fill saved login credentials from storage & sanitize stale admin roles
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        // Enforce: only tradinghath / tradinghath@gmail.com can ever retain admin role in localStorage
-        const storedUser = localStorage.getItem('tradinghath_user');
-        const storedRole = localStorage.getItem('tradinghath_role');
-        if (storedRole === 'admin') {
-          let userObj: any = null;
-          try {
-            if (storedUser) userObj = JSON.parse(storedUser);
-          } catch (e) {}
-          const idLower = (userObj?.username || userObj?.email || '').toLowerCase();
-          if (idLower !== 'tradinghath' && idLower !== 'tradinghath@gmail.com') {
-            localStorage.setItem('tradinghath_role', 'user');
-          }
+    try {
+      // Enforce: only tradinghath / tradinghath@gmail.com can ever retain admin role in storage
+      const storedUser = safeStorage.getItem('tradinghath_user');
+      const storedRole = safeStorage.getItem('tradinghath_role');
+      if (storedRole === 'admin') {
+        let userObj: any = null;
+        try {
+          if (storedUser) userObj = JSON.parse(storedUser);
+        } catch (e) {}
+        const idLower = (userObj?.username || userObj?.email || '').toLowerCase();
+        if (idLower !== 'tradinghath' && idLower !== 'tradinghath@gmail.com') {
+          safeStorage.setItem('tradinghath_role', 'user');
         }
+      }
 
-        const savedCreds = localStorage.getItem('tradinghath_saved_creds');
-        if (savedCreds) {
-          const parsed = JSON.parse(savedCreds);
-          if (parsed.identifier) setIdentifier(parsed.identifier);
-          if (parsed.password) setPassword(parsed.password);
-          setSaveLogin(true);
-        }
-      } catch (e) {}
-    }
+      const savedCreds = safeStorage.getItem('tradinghath_saved_creds');
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.identifier) setIdentifier(parsed.identifier);
+        if (parsed.password) setPassword(parsed.password);
+        setSaveLogin(true);
+      }
+    } catch (e) {}
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -124,22 +121,20 @@ export default function LoginPage() {
     try {
       // Gather any client-stored users (excluding any deleted by admin)
       let clientUsers: any[] = [];
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_client_users');
-          const storedDeleted = localStorage.getItem('tradinghath_deleted_user_ids');
-          const deletedList: string[] = storedDeleted ? JSON.parse(storedDeleted).map((x: string) => x.toLowerCase()) : [];
+      try {
+        const stored = safeStorage.getItem('tradinghath_client_users');
+        const storedDeleted = safeStorage.getItem('tradinghath_deleted_user_ids');
+        const deletedList: string[] = storedDeleted ? JSON.parse(storedDeleted).map((x: string) => x.toLowerCase()) : [];
 
-          if (stored) {
-            const rawList = JSON.parse(stored);
-            clientUsers = rawList.filter((u: any) => 
-              !deletedList.includes(u.id?.toLowerCase()) &&
-              !deletedList.includes(u.email?.toLowerCase()) &&
-              !deletedList.includes(u.username?.toLowerCase())
-            );
-          }
-        } catch (e) {}
-      }
+        if (stored) {
+          const rawList = JSON.parse(stored);
+          clientUsers = rawList.filter((u: any) => 
+            !deletedList.includes(u.id?.toLowerCase()) &&
+            !deletedList.includes(u.email?.toLowerCase()) &&
+            !deletedList.includes(u.username?.toLowerCase())
+          );
+        }
+      } catch (e) {}
 
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -149,29 +144,26 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.success) {
-        if (typeof window !== 'undefined') {
-          const userIdentifier = (data.user?.email || data.user?.username || identifier).toLowerCase();
-          const isRealAdmin = data.isAdmin === true && (userIdentifier === 'tradinghath' || userIdentifier === 'tradinghath@gmail.com');
+        const userIdentifier = (data.user?.email || data.user?.username || identifier).toLowerCase();
+        const isRealAdmin = data.isAdmin === true && (userIdentifier === 'tradinghath' || userIdentifier === 'tradinghath@gmail.com');
 
-          localStorage.setItem('tradinghath_user', JSON.stringify(data.user));
+        try {
+          safeStorage.setItem('tradinghath_user', JSON.stringify(data.user));
           if (isRealAdmin) {
-            localStorage.setItem('tradinghath_role', 'admin');
-            localStorage.setItem('tradinghath_isPro', 'true');
+            safeStorage.setItem('tradinghath_role', 'admin');
+            safeStorage.setItem('tradinghath_isPro', 'true');
           } else {
-            localStorage.setItem('tradinghath_role', 'user');
-            localStorage.setItem('tradinghath_isPro', data.isPro ? 'true' : 'false');
+            safeStorage.setItem('tradinghath_role', 'user');
+            safeStorage.setItem('tradinghath_isPro', data.isPro ? 'true' : 'false');
           }
 
           // Handle "Save login info" check
           if (saveLogin) {
-            localStorage.setItem('tradinghath_saved_creds', JSON.stringify({ identifier, password }));
+            safeStorage.setItem('tradinghath_saved_creds', JSON.stringify({ identifier, password }));
           } else {
-            localStorage.removeItem('tradinghath_saved_creds');
+            safeStorage.removeItem('tradinghath_saved_creds');
           }
-        }
-
-        const userIdentifier = (data.user?.email || data.user?.username || identifier).toLowerCase();
-        const isRealAdmin = data.isAdmin === true && (userIdentifier === 'tradinghath' || userIdentifier === 'tradinghath@gmail.com');
+        } catch (storageErr) {}
 
         if (isRealAdmin) {
           router.push('/admin');

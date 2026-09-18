@@ -23,6 +23,7 @@ import {
   LogOut,
   ChevronDown
 } from 'lucide-react';
+import { safeStorage } from '@/lib/storage';
 import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
 
 declare global {
@@ -57,72 +58,70 @@ export default function HomePage() {
 
   useEffect(() => {
     // Check if user is logged in
-    if (typeof window !== 'undefined') {
-      try {
-        const storedUser = localStorage.getItem('tradinghath_user');
-        const role = localStorage.getItem('tradinghath_role');
-        const proStatus = localStorage.getItem('tradinghath_isPro');
-        
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          setUser(parsed);
-          const emailLower = (parsed?.email || '').toLowerCase();
-          const userLower = (parsed?.username || '').toLowerCase();
-          const isOwnerAdmin = (
-            userLower === 'tradinghath' || 
-            emailLower === 'tradinghath@gmail.com'
-          );
-          if (!isOwnerAdmin && role === 'admin') {
-            localStorage.setItem('tradinghath_role', 'user');
-          }
-          const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
-          setIsAdmin(adminCheck);
+    try {
+      const storedUser = safeStorage.getItem('tradinghath_user');
+      const role = safeStorage.getItem('tradinghath_role');
+      const proStatus = safeStorage.getItem('tradinghath_isPro');
+      
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        const emailLower = (parsed?.email || '').toLowerCase();
+        const userLower = (parsed?.username || '').toLowerCase();
+        const isOwnerAdmin = (
+          userLower === 'tradinghath' || 
+          emailLower === 'tradinghath@gmail.com'
+        );
+        if (!isOwnerAdmin && role === 'admin') {
+          safeStorage.setItem('tradinghath_role', 'user');
+        }
+        const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
+        setIsAdmin(adminCheck);
 
-          // Check pro status (admins always have pro)
-          let pro = adminCheck || proStatus === 'true';
-          const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
-          if (storedOverrides && !adminCheck) {
-            const overrides = JSON.parse(storedOverrides);
-            if (overrides[parsed.id] === false || (parsed.email && overrides[parsed.email.toLowerCase()] === false)) {
-              pro = false;
-            } else if (overrides[parsed.id] === true || (parsed.email && overrides[parsed.email.toLowerCase()] === true)) {
-              pro = true;
-            }
-          }
-          setIsPro(pro);
-
-          // Real-time server status check for homepage
-          if (!adminCheck) {
-            fetch('/api/auth/check', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: parsed.id,
-                email: parsed.email,
-                username: parsed.username
-              })
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  if (data.deleted) {
-                    localStorage.removeItem('tradinghath_user');
-                    localStorage.removeItem('tradinghath_role');
-                    localStorage.removeItem('tradinghath_isPro');
-                    setUser(null);
-                    setIsPro(false);
-                  } else {
-                    const livePro = data.isPro === true;
-                    setIsPro(livePro);
-                    localStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
-                  }
-                }
-              })
-              .catch(() => {});
+        // Check pro status (admins always have pro)
+        let pro = adminCheck || proStatus === 'true';
+        const storedOverrides = safeStorage.getItem('tradinghath_pro_overrides');
+        if (storedOverrides && !adminCheck) {
+          const overrides = JSON.parse(storedOverrides);
+          if (overrides[parsed.id] === false || (parsed.email && overrides[parsed.email.toLowerCase()] === false)) {
+            pro = false;
+          } else if (overrides[parsed.id] === true || (parsed.email && overrides[parsed.email.toLowerCase()] === true)) {
+            pro = true;
           }
         }
-      } catch (e) {}
-    }
+        setIsPro(pro);
+
+        // Real-time server status check for homepage
+        if (!adminCheck) {
+          fetch('/api/auth/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: parsed.id,
+              email: parsed.email,
+              username: parsed.username
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                if (data.deleted) {
+                  safeStorage.removeItem('tradinghath_user');
+                  safeStorage.removeItem('tradinghath_role');
+                  safeStorage.removeItem('tradinghath_isPro');
+                  setUser(null);
+                  setIsPro(false);
+                } else {
+                  const livePro = data.isPro === true;
+                  setIsPro(livePro);
+                  safeStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
+                }
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (e) {}
 
     fetch('/api/comments')
       .then(res => res.json())
@@ -133,15 +132,15 @@ export default function HomePage() {
   }, []);
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('tradinghath_user');
-      localStorage.removeItem('tradinghath_role');
-      localStorage.removeItem('tradinghath_isPro');
-      setUser(null);
-      setIsPro(false);
-      setIsAdmin(false);
-      window.location.reload();
-    }
+    try {
+      safeStorage.removeItem('tradinghath_user');
+      safeStorage.removeItem('tradinghath_role');
+      safeStorage.removeItem('tradinghath_isPro');
+    } catch (e) {}
+    setUser(null);
+    setIsPro(false);
+    setIsAdmin(false);
+    window.location.reload();
   };
 
   const [alreadyPaidNotice, setAlreadyPaidNotice] = useState(false);
@@ -210,8 +209,8 @@ export default function HomePage() {
       if (data.success) {
         if (data.isPro) {
           // Only if verified strictly by Razorpay
-          localStorage.setItem('tradinghath_isPro', 'true');
-          localStorage.setItem('tradinghath_utrId', utrInput.trim());
+          safeStorage.setItem('tradinghath_isPro', 'true');
+          safeStorage.setItem('tradinghath_utrId', utrInput.trim());
           setUtrStatus('Payment verified via Razorpay! Redirecting to vault...');
           setTimeout(() => {
             setShowUtrModal(false);
@@ -219,7 +218,7 @@ export default function HomePage() {
           }, 1500);
         } else {
           // Fake / unverified UTR: DO NOT GRANT ACCESS
-          localStorage.setItem('tradinghath_isPro', 'false');
+          safeStorage.setItem('tradinghath_isPro', 'false');
           setUtrStatus('⚠️ Payment not found in Razorpay records. Your UTR has been sent to admin for manual review. Access will remain locked until verified.');
         }
       } else {

@@ -29,6 +29,7 @@ import {
 import { PostItem } from '@/lib/store';
 import { saveMediaFile, deleteMediaFile } from '@/lib/videoStorage';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
+import { safeStorage } from '@/lib/storage';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -65,34 +66,32 @@ export default function AdminPage() {
 
   useEffect(() => {
     // Strict authentication guard for admin - NO regular user can ever access this page!
-    if (typeof window !== 'undefined') {
-      const storedRole = localStorage.getItem('tradinghath_role');
-      const storedUser = localStorage.getItem('tradinghath_user');
-      
-      let parsedUser: any = null;
-      try {
-        if (storedUser) parsedUser = JSON.parse(storedUser);
-      } catch (e) {}
+    const storedRole = safeStorage.getItem('tradinghath_role');
+    const storedUser = safeStorage.getItem('tradinghath_user');
+    
+    let parsedUser: any = null;
+    try {
+      if (storedUser) parsedUser = JSON.parse(storedUser);
+    } catch (e) {}
 
-      const userLower = (parsedUser?.username || '').toLowerCase();
-      const emailLower = (parsedUser?.email || '').toLowerCase();
+    const userLower = (parsedUser?.username || '').toLowerCase();
+    const emailLower = (parsedUser?.email || '').toLowerCase();
 
-      const isAdminUser = (
-        userLower === 'tradinghath' ||
-        emailLower === 'tradinghath@gmail.com'
-      ) && (storedRole === 'admin' || parsedUser?.role === 'admin');
+    const isAdminUser = (
+      userLower === 'tradinghath' ||
+      emailLower === 'tradinghath@gmail.com'
+    ) && (storedRole === 'admin' || parsedUser?.role === 'admin');
 
-      if (parsedUser && isAdminUser) {
-        setIsAuthorized(true);
-        loadAdminData();
-      } else {
-        // Automatically kick any regular user or visitor out immediately!
-        setIsAuthorized(false);
-        router.replace('/login');
-        return;
-      }
-      setCheckingAuth(false);
+    if (parsedUser && isAdminUser) {
+      setIsAuthorized(true);
+      loadAdminData();
+    } else {
+      // Automatically kick any regular user or visitor out immediately!
+      setIsAuthorized(false);
+      router.replace('/login');
+      return;
     }
+    setCheckingAuth(false);
   }, [router]);
 
   const handlePinUnlock = (e: React.FormEvent) => {
@@ -127,17 +126,15 @@ export default function AdminPage() {
       setUsers(serverUsers);
 
       let serverPosts: PostItem[] = postsData.posts || [];
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_dynamic_posts');
-          if (stored) {
-            const localPosts: PostItem[] = JSON.parse(stored);
-            // Combine localPosts and serverPosts, keeping uniqueness by ID
-            const existingIds = new Set(localPosts.map(p => p.id));
-            serverPosts = [...localPosts, ...serverPosts.filter(p => !existingIds.has(p.id))];
-          }
-        } catch (e) {}
-      }
+      try {
+        const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+        if (stored) {
+          const localPosts: PostItem[] = JSON.parse(stored);
+          // Combine localPosts and serverPosts, keeping uniqueness by ID
+          const existingIds = new Set(localPosts.map(p => p.id));
+          serverPosts = [...localPosts, ...serverPosts.filter(p => !existingIds.has(p.id))];
+        }
+      } catch (e) {}
 
       setPosts(serverPosts);
       if (commentsData.reviews) setReviews(commentsData.reviews);
@@ -169,47 +166,45 @@ export default function AdminPage() {
 
     setPasswordChangeLoading(true);
     try {
-      // 1. Immediately update localStorage for client users and saved creds
-      if (typeof window !== 'undefined') {
-        try {
-          const storedClientUsers = localStorage.getItem('tradinghath_client_users');
-          if (storedClientUsers) {
-            const list = JSON.parse(storedClientUsers);
-            const updatedList = list.map((u: any) => {
-              if (
-                u.id === targetUserId ||
-                (targetEmail && u.email?.toLowerCase() === targetEmail) ||
-                (targetUsername && u.username?.toLowerCase() === targetUsername)
-              ) {
-                return { ...u, password: trimmedPassword };
-              }
-              return u;
-            });
-            localStorage.setItem('tradinghath_client_users', JSON.stringify(updatedList));
-          }
-
-          // Invalidate saved credentials if they belonged to this target user so old password is removed
-          const savedCredsStr = localStorage.getItem('tradinghath_saved_creds');
-          if (savedCredsStr) {
-            const parsedCreds = JSON.parse(savedCredsStr);
-            const credId = parsedCreds.identifier?.toLowerCase();
+      // 1. Immediately update client storage for client users and saved creds
+      try {
+        const storedClientUsers = safeStorage.getItem('tradinghath_client_users');
+        if (storedClientUsers) {
+          const list = JSON.parse(storedClientUsers);
+          const updatedList = list.map((u: any) => {
             if (
-              credId === targetUserId ||
-              credId === targetEmail ||
-              credId === targetUsername
+              u.id === targetUserId ||
+              (targetEmail && u.email?.toLowerCase() === targetEmail) ||
+              (targetUsername && u.username?.toLowerCase() === targetUsername)
             ) {
-              localStorage.removeItem('tradinghath_saved_creds');
+              return { ...u, password: trimmedPassword };
             }
-          }
+            return u;
+          });
+          safeStorage.setItem('tradinghath_client_users', JSON.stringify(updatedList));
+        }
 
-          // Optimistically update local users state immediately
-          setUsers(prev => prev.map(u => 
-            (u.id === targetUserId || (targetEmail && u.email?.toLowerCase() === targetEmail))
-              ? { ...u, password: trimmedPassword }
-              : u
-          ));
-        } catch (e) {}
-      }
+        // Invalidate saved credentials if they belonged to this target user so old password is removed
+        const savedCredsStr = safeStorage.getItem('tradinghath_saved_creds');
+        if (savedCredsStr) {
+          const parsedCreds = JSON.parse(savedCredsStr);
+          const credId = parsedCreds.identifier?.toLowerCase();
+          if (
+            credId === targetUserId ||
+            credId === targetEmail ||
+            credId === targetUsername
+          ) {
+            safeStorage.removeItem('tradinghath_saved_creds');
+          }
+        }
+
+        // Optimistically update local users state immediately
+        setUsers(prev => prev.map(u => 
+          (u.id === targetUserId || (targetEmail && u.email?.toLowerCase() === targetEmail))
+            ? { ...u, password: trimmedPassword }
+            : u
+        ));
+      } catch (e) {}
 
       const res = await fetch('/api/admin/users', {
         method: 'POST',
@@ -375,14 +370,12 @@ export default function AdminPage() {
 
     try {
       // 1. Instantly save to local storage cache with indexeddb reference or lightweight URL
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_dynamic_posts');
-          const customPosts = stored ? JSON.parse(stored) : [];
-          localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify([newPostPayload, ...customPosts]));
-        } catch (storageErr) {
-          console.warn('LocalStorage quota notice:', storageErr);
-        }
+      try {
+        const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+        const customPosts = stored ? JSON.parse(stored) : [];
+        safeStorage.setItem('tradinghath_dynamic_posts', JSON.stringify([newPostPayload, ...customPosts]));
+      } catch (storageErr) {
+        console.warn('Storage quota notice:', storageErr);
       }
 
       // Optimistically update post list in admin immediately
@@ -438,19 +431,17 @@ export default function AdminPage() {
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to cancel and delete this post?')) return;
     try {
-      // Remove from client localStorage cache
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_dynamic_posts');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            const filtered = parsed.filter((p: any) => p.id !== postId);
-            localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(filtered));
-          }
-          // Clean up any large media file stored in IndexedDB
-          await deleteMediaFile(postId);
-        } catch (e) {}
-      }
+      // Remove from client storage cache
+      try {
+        const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const filtered = parsed.filter((p: any) => p.id !== postId);
+          safeStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(filtered));
+        }
+        // Clean up any large media file stored in IndexedDB
+        await deleteMediaFile(postId);
+      } catch (e) {}
 
       // Optimistically update local posts state
       setPosts(prev => prev.filter(p => p.id !== postId));
@@ -474,17 +465,15 @@ export default function AdminPage() {
 
   const handlePublishNowPost = async (postId: string) => {
     try {
-      // Update client localStorage cache
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('tradinghath_dynamic_posts');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            const updated = parsed.map((p: any) => p.id === postId ? { ...p, published: true, scheduledAt: undefined } : p);
-            localStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(updated));
-          }
-        } catch (e) {}
-      }
+      // Update client storage cache
+      try {
+        const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const updated = parsed.map((p: any) => p.id === postId ? { ...p, published: true, scheduledAt: undefined } : p);
+          safeStorage.setItem('tradinghath_dynamic_posts', JSON.stringify(updated));
+        }
+      } catch (e) {}
 
       // Optimistically update local posts state
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, published: true, scheduledAt: undefined } : p));

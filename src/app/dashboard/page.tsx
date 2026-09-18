@@ -32,6 +32,7 @@ import {
   ArrowLeft,
   X
 } from 'lucide-react';
+import { safeStorage } from '@/lib/storage';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 
@@ -52,97 +53,96 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Load auth status strictly
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('tradinghath_user');
-        const proStatus = localStorage.getItem('tradinghath_isPro');
-        const role = localStorage.getItem('tradinghath_role');
+    try {
+      const stored = safeStorage.getItem('tradinghath_user');
+      const proStatus = safeStorage.getItem('tradinghath_isPro');
+      const role = safeStorage.getItem('tradinghath_role');
 
-        if (!stored && role !== 'admin') {
-          // Not logged in at all, redirect to login
-          window.location.href = '/login';
-          return;
-        }
+      if (!stored && role !== 'admin') {
+        // Not logged in at all, redirect to login
+        window.location.href = '/login';
+        return;
+      }
 
-        let currentUser: any = null;
-        if (stored) {
-          try {
-            currentUser = JSON.parse(stored);
-            setUser(currentUser);
-          } catch (e) {}
-        }
+      let currentUser: any = null;
+      if (stored) {
+        try {
+          currentUser = JSON.parse(stored);
+          setUser(currentUser);
+        } catch (e) {}
+      }
 
-        // Strictly only tradinghath is the administrator!
-        const emailLower = (currentUser?.email || '').toLowerCase();
-        const userLower = (currentUser?.username || '').toLowerCase();
-        const isOwnerAdmin = (
-          userLower === 'tradinghath' || 
-          emailLower === 'tradinghath@gmail.com'
-        );
-        if (!isOwnerAdmin && role === 'admin') {
-          localStorage.setItem('tradinghath_role', 'user');
-        }
-        const adminRole = isOwnerAdmin && (role === 'admin' || currentUser?.role === 'admin');
-        setIsAdmin(adminRole);
+      // Strictly only tradinghath is the administrator!
+      const emailLower = (currentUser?.email || '').toLowerCase();
+      const userLower = (currentUser?.username || '').toLowerCase();
+      const isOwnerAdmin = (
+        userLower === 'tradinghath' || 
+        emailLower === 'tradinghath@gmail.com'
+      );
+      if (!isOwnerAdmin && role === 'admin') {
+        safeStorage.setItem('tradinghath_role', 'user');
+      }
+      const adminRole = isOwnerAdmin && (role === 'admin' || currentUser?.role === 'admin');
+      setIsAdmin(adminRole);
 
-        // Initial local pro check (admins always have pro; regular users depend on isPro / server)
-        let hasPro = adminRole || (proStatus === 'true' && currentUser?.isPro !== false);
-        if (!adminRole && currentUser) {
-          try {
-            const storedOverrides = localStorage.getItem('tradinghath_pro_overrides');
-            if (storedOverrides) {
-              const overrides = JSON.parse(storedOverrides);
-              if (overrides[currentUser.id] === false || (currentUser.email && overrides[currentUser.email.toLowerCase()] === false) || (currentUser.username && overrides[currentUser.username.toLowerCase()] === false)) {
-                hasPro = false;
-                localStorage.setItem('tradinghath_isPro', 'false');
-              } else if (overrides[currentUser.id] === true || (currentUser.email && overrides[currentUser.email.toLowerCase()] === true)) {
-                hasPro = true;
-                localStorage.setItem('tradinghath_isPro', 'true');
-              }
+      // Initial local pro check (admins always have pro; regular users depend on isPro / server)
+      let hasPro = adminRole || (proStatus === 'true' && currentUser?.isPro !== false);
+      if (!adminRole && currentUser) {
+        try {
+          const storedOverrides = safeStorage.getItem('tradinghath_pro_overrides');
+          if (storedOverrides) {
+            const overrides = JSON.parse(storedOverrides);
+            if (overrides[currentUser.id] === false || (currentUser.email && overrides[currentUser.email.toLowerCase()] === false) || (currentUser.username && overrides[currentUser.username.toLowerCase()] === false)) {
+              hasPro = false;
+              safeStorage.setItem('tradinghath_isPro', 'false');
+            } else if (overrides[currentUser.id] === true || (currentUser.email && overrides[currentUser.email.toLowerCase()] === true)) {
+              hasPro = true;
+              safeStorage.setItem('tradinghath_isPro', 'true');
             }
-          } catch (e) {}
-        }
-        setIsPro(hasPro);
+          }
+        } catch (e) {}
+      }
+      setIsPro(hasPro);
 
-        // 2. REAL-TIME SERVER VERIFICATION:
-        // Query server to immediately sync revoke_pro or user deletion!
-        const verifyWithServer = () => {
-          if (!currentUser || adminRole) return;
-          fetch('/api/auth/check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: currentUser.id,
-              email: currentUser.email,
-              username: currentUser.username
-            })
+      // 2. REAL-TIME SERVER VERIFICATION:
+      // Query server to immediately sync revoke_pro or user deletion!
+      const verifyWithServer = () => {
+        if (!currentUser || adminRole) return;
+        fetch('/api/auth/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            email: currentUser.email,
+            username: currentUser.username
           })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                if (data.deleted === true && data.notFound !== true) {
-                  // User was EXPLICITLY deleted by admin — log out
-                  localStorage.removeItem('tradinghath_user');
-                  localStorage.removeItem('tradinghath_role');
-                  localStorage.removeItem('tradinghath_isPro');
-                  window.location.href = '/login';
-                } else if (!data.deleted) {
-                  // Live pro status from server
-                  const livePro = data.isPro === true;
-                  setIsPro(livePro);
-                  localStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
-                }
-                // If notFound=true (server restart / DB not ready), keep session alive silently
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              if (data.deleted === true && data.notFound !== true) {
+                // User was EXPLICITLY deleted by admin — log out
+                safeStorage.removeItem('tradinghath_user');
+                safeStorage.removeItem('tradinghath_role');
+                safeStorage.removeItem('tradinghath_isPro');
+                window.location.href = '/login';
+              } else if (!data.deleted) {
+                // Live pro status from server
+                const livePro = data.isPro === true;
+                setIsPro(livePro);
+                safeStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
               }
-            })
-            .catch(console.error);
-        };
+              // If notFound=true (server restart / DB not ready), keep session alive silently
+            }
+          })
+          .catch(console.error);
+      };
 
-        verifyWithServer();
+      verifyWithServer();
 
-        // Heartbeat every 4 seconds to instantly lock/revoke if admin changes status in admin panel
-        if (!adminRole) {
-          const intervalId = setInterval(verifyWithServer, 4000);
+      // Heartbeat every 4 seconds to instantly lock/revoke if admin changes status in admin panel
+      if (!adminRole) {
+        const intervalId = setInterval(verifyWithServer, 4000);
           return () => clearInterval(intervalId);
         }
       } catch (err) {
@@ -150,9 +150,6 @@ export default function DashboardPage() {
       } finally {
         setCheckingAccess(false);
       }
-    } else {
-      setCheckingAccess(false);
-    }
 
     // Function to load and sync all published posts (from API, INITIAL_POSTS, and local storage fallback)
     const loadPublishedPosts = () => {
@@ -166,17 +163,15 @@ export default function DashboardPage() {
           const missingDefaults = INITIAL_POSTS.filter(p => !existingIds.has(p.id));
           allPosts = [...allPosts, ...missingDefaults];
           
-          if (typeof window !== 'undefined') {
-            try {
-              const stored = localStorage.getItem('tradinghath_dynamic_posts');
-              if (stored) {
-                const localPosts: PostItem[] = JSON.parse(stored);
-                const liveLocal = localPosts.filter(p => p.published);
-                const currentIds = new Set(allPosts.map(p => p.id));
-                allPosts = [...allPosts, ...liveLocal.filter(p => !currentIds.has(p.id))];
-              }
-            } catch (e) {}
-          }
+          try {
+            const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+            if (stored) {
+              const localPosts: PostItem[] = JSON.parse(stored);
+              const liveLocal = localPosts.filter(p => p.published);
+              const currentIds = new Set(allPosts.map(p => p.id));
+              allPosts = [...allPosts, ...liveLocal.filter(p => !currentIds.has(p.id))];
+            }
+          } catch (e) {}
 
           // Enforce correct language categorization
           allPosts = allPosts.map(p => {
@@ -196,17 +191,15 @@ export default function DashboardPage() {
           console.error(err);
           // Fallback to initial posts & local storage
           let combined = [...INITIAL_POSTS];
-          if (typeof window !== 'undefined') {
-            try {
-              const stored = localStorage.getItem('tradinghath_dynamic_posts');
-              if (stored) {
-                const localPosts: PostItem[] = JSON.parse(stored);
-                const liveLocal = localPosts.filter(p => p.published);
-                const existing = new Set(combined.map(p => p.id));
-                combined = [...combined, ...liveLocal.filter(p => !existing.has(p.id))];
-              }
-            } catch (e) {}
-          }
+          try {
+            const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+            if (stored) {
+              const localPosts: PostItem[] = JSON.parse(stored);
+              const liveLocal = localPosts.filter(p => p.published);
+              const existing = new Set(combined.map(p => p.id));
+              combined = [...combined, ...liveLocal.filter(p => !existing.has(p.id))];
+            }
+          } catch (e) {}
           setPosts(combined);
           const firstChart = combined.find(p => p.type === 'chart');
           if (firstChart) setSelectedChart(firstChart);
@@ -224,12 +217,12 @@ export default function DashboardPage() {
   });
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('tradinghath_user');
-      localStorage.removeItem('tradinghath_role');
-      localStorage.removeItem('tradinghath_isPro');
-      window.location.href = '/login';
-    }
+    try {
+      safeStorage.removeItem('tradinghath_user');
+      safeStorage.removeItem('tradinghath_role');
+      safeStorage.removeItem('tradinghath_isPro');
+    } catch (e) {}
+    window.location.href = '/login';
   };
 
   const handleDownloadChart = async (e: React.MouseEvent, url: string, title: string) => {
