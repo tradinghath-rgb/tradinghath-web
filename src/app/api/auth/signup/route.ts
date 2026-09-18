@@ -21,6 +21,15 @@ export async function POST(req: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // Enforce valid email structure (must include @ and valid domain)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return NextResponse.json(
+        { success: false, error: 'Please enter a valid email address (e.g. yourname@gmail.com).' },
+        { status: 400 }
+      );
+    }
+
     // Check for existing user
     const existing = await dbFindUserByEmail(cleanEmail);
     if (existing) {

@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // 1. Admin login check
+    // 1. Admin login check (admin username 'tradinghath' or admin email 'tradinghath@gmail.com')
     const isAdminLogin =
       cleanIdentifier === ADMIN_EMAIL ||
       cleanIdentifier === ADMIN_USERNAME;
@@ -47,25 +47,31 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Regular user login — query persistent KV database
-    const user = await dbFindUserByCredentials(cleanIdentifier, cleanPassword);
+    // 2. Enforce email format for all regular users (@ and domain required)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanIdentifier)) {
+      return NextResponse.json(
+        { success: false, error: 'Please enter your complete email address including @gmail.com (or your email domain). Name alone is not accepted.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Regular user login — strictly match user by their registered email
+    const allUsers = await dbGetAllUsersRaw();
+    const user = allUsers.find(
+      u => u.email?.toLowerCase() === cleanIdentifier && !u.deleted
+    );
 
     if (!user) {
-      // Check if email exists at all (to give better error message)
-      const allUsers = await dbGetAllUsersRaw();
-      const emailExists = allUsers.find(
-        u => (u.email?.toLowerCase() === cleanIdentifier || u.username?.toLowerCase() === cleanIdentifier) && !u.deleted
-      );
-
-      if (emailExists) {
-        return NextResponse.json(
-          { success: false, error: 'Incorrect password. Please try again.' },
-          { status: 401 }
-        );
-      }
-
       return NextResponse.json(
-        { success: false, error: 'No account found. Please sign up first.' },
+        { success: false, error: 'No account found with this email address. Please check your email or sign up.' },
+        { status: 401 }
+      );
+    }
+
+    if (user.password !== cleanPassword) {
+      return NextResponse.json(
+        { success: false, error: 'Incorrect password. Please try again.' },
         { status: 401 }
       );
     }

@@ -373,9 +373,9 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div className="ig-input-container">
               <input
-                type="text"
+                type="email"
                 className="ig-input"
-                placeholder="Gmail / Email address"
+                placeholder="Email address (e.g. yourname@gmail.com)"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
