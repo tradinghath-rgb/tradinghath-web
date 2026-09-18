@@ -30,7 +30,8 @@ import {
   Minimize2,
   Eye,
   ArrowLeft,
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
@@ -39,6 +40,7 @@ import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
   const [languageFilter, setLanguageFilter] = useState<'all' | 'english' | 'telugu'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
   const [selectedChart, setSelectedChart] = useState<PostItem | null>(null);
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
@@ -212,8 +214,16 @@ export default function DashboardPage() {
 
   const filteredPosts = posts.filter(p => {
     if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
-    if (languageFilter === 'all') return true;
-    return p.language === languageFilter || p.language === 'both';
+    if (languageFilter !== 'all' && p.language !== languageFilter && p.language !== 'both') return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const matchTitle = (p.title || '').toLowerCase().includes(q);
+      const matchDesc = (p.description || '').toLowerCase().includes(q);
+      if (!matchTitle && !matchDesc) return false;
+    }
+
+    return true;
   });
 
   const handleLogout = () => {
@@ -758,6 +768,98 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Search Bar for Vault Charts & Videos */}
+        <div style={{
+          marginBottom: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '650px'
+          }}>
+            <Search
+              size={18}
+              color={searchQuery ? '#00e5ff' : '#64748b'}
+              style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                transition: 'color 0.2s ease'
+              }}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={`Search ${activeTab === 'charts' ? 'charts' : 'videos'} by name or keyword (e.g. "fvg", "liquidity", "secret", "trap")...`}
+              style={{
+                width: '100%',
+                backgroundColor: '#111726',
+                border: searchQuery ? '1.5px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '12px',
+                padding: '12px 42px 12px 42px',
+                fontSize: '14px',
+                color: '#ffffff',
+                outline: 'none',
+                boxShadow: searchQuery ? '0 0 16px rgba(0, 229, 255, 0.15)' : 'none',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                title="Clear search"
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#94a3b8',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {searchQuery.trim() && (
+            <div style={{ fontSize: '13px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>
+                Found <b style={{ color: '#00e5ff' }}>{filteredPosts.length}</b> {activeTab === 'charts' ? 'chart(s)' : 'video(s)'} matching "{searchQuery}"
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#00e5ff',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: 0
+                }}
+              >
+                Reset
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* TAB 1: CHARTS WITH SIDE-BY-SIDE VIDEO EXPLANATION */}
         {activeTab === 'charts' && (
           <div>
@@ -1017,88 +1119,125 @@ export default function DashboardPage() {
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px', color: '#ffffff' }}>
               All Hand-Made Trading Charts
             </h3>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '18px'
-            }}>
-              {filteredPosts.map((post) => (
-                <div
-                  key={post.id}
-                  onClick={() => {
-                    setSelectedChart(post);
-                    window.scrollTo({ top: 120, behavior: 'smooth' });
-                  }}
+            {filteredPosts.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '48px 20px',
+                backgroundColor: '#111726',
+                borderRadius: '16px',
+                border: '1px dashed rgba(255, 255, 255, 0.12)'
+              }}>
+                <Search size={36} color="#64748b" style={{ margin: '0 auto 12px auto' }} />
+                <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '6px' }}>
+                  No charts found matching "{searchQuery}"
+                </h4>
+                <p style={{ fontSize: '13px', color: '#94a3b8', maxWidth: '400px', margin: '0 auto 16px auto' }}>
+                  Try searching for words like "fvg", "liquidity", "secret", "order block", or "trap".
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
                   style={{
-                    backgroundColor: selectedChart?.id === post.id ? 'rgba(0, 229, 255, 0.08)' : '#111726',
-                    border: selectedChart?.id === post.id ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '14px',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, border-color 0.2s'
+                    backgroundColor: 'rgba(0, 229, 255, 0.15)',
+                    border: '1px solid #00e5ff',
+                    color: '#00e5ff',
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
                   }}
                 >
-                  <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
-                    <Image
-                      src={post.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80'}
-                      alt={post.title}
-                      fill
-                      unoptimized
-                      style={{ objectFit: 'cover' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      backgroundColor: 'rgba(0,0,0,0.7)',
-                      backdropFilter: 'blur(4px)',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      color: '#00e5ff',
-                      fontWeight: '700'
-                    }}>
-                      Hand-Made
+                  Clear Search Filter
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '18px'
+              }}>
+                {filteredPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    onClick={() => {
+                      setSelectedChart(post);
+                      window.scrollTo({ top: 120, behavior: 'smooth' });
+                    }}
+                    style={{
+                      backgroundColor: selectedChart?.id === post.id ? 'rgba(0, 229, 255, 0.08)' : '#111726',
+                      border: selectedChart?.id === post.id ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, border-color 0.2s'
+                    }}
+                  >
+                    <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#000' }}>
+                      <Image
+                        src={post.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80'}
+                        alt={post.title}
+                        fill
+                        unoptimized
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        backdropFilter: 'blur(4px)',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: '#00e5ff',
+                        fontWeight: '700'
+                      }}>
+                        Hand-Made
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '14px' }}>
+                      <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', color: '#fff' }}>
+                        {post.title}
+                      </h4>
+                      <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
+                        {post.description.slice(0, 75)}...
+                      </p>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '11px', color: '#00e5ff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <PlayCircle size={13} /> View Explanation Side-by-Side
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadChart(e, post.downloadUrl || post.chartUrl || '', post.title);
+                          }}
+                          style={{
+                            backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                            border: '1px solid rgba(0, 229, 255, 0.3)',
+                            color: '#00e5ff',
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Download size={12} /> Save to Gallery
+                        </button>
+                      </div>
                     </div>
                   </div>
-
-                  <div style={{ padding: '14px' }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', color: '#fff' }}>
-                      {post.title}
-                    </h4>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '12px' }}>
-                      {post.description.slice(0, 75)}...
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', color: '#00e5ff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <PlayCircle size={13} /> View Explanation Side-by-Side
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={(e) => handleDownloadChart(e, post.downloadUrl || post.chartUrl || '', post.title)}
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                          color: '#fff',
-                          border: 'none',
-                          padding: '5px 9px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <Download size={12} /> Save to Gallery
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -1114,77 +1253,110 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* Video Cards Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-              gap: '20px'
-            }}>
-              {filteredPosts.map((item) => (
-                <div
-                  key={item.id}
+            {filteredPosts.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '48px 20px',
+                backgroundColor: '#111726',
+                borderRadius: '16px',
+                border: '1px dashed rgba(255, 255, 255, 0.12)'
+              }}>
+                <Search size={36} color="#64748b" style={{ margin: '0 auto 12px auto' }} />
+                <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '6px' }}>
+                  No videos found matching "{searchQuery}"
+                </h4>
+                <p style={{ fontSize: '13px', color: '#94a3b8', maxWidth: '400px', margin: '0 auto 16px auto' }}>
+                  Try searching for words like "fvg", "volume", "secret", "reversal", or "trap".
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
                   style={{
-                    backgroundColor: '#121826',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column'
+                    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+                    border: '1px solid #c084fc',
+                    color: '#c084fc',
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
                   }}
                 >
-                  {/* Protected Video Element Supporting IndexedDB & Local Uploads */}
-                  <div style={{ position: 'relative', height: '220px', backgroundColor: '#000000' }}>
-                    <UnifiedVideoPlayer
-                      src={item.videoUrl}
-                      title={item.title}
-                      maxHeight="220px"
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      left: '8px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      borderRadius: '4px',
-                      padding: '2px 6px',
-                      fontSize: '10.5px',
-                      color: '#00e5ff',
-                      fontWeight: '700',
-                      textTransform: 'capitalize',
-                      zIndex: 5
-                    }}>
-                      {item.language}
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <h4 style={{ fontSize: '14.5px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
-                        {item.title}
-                      </h4>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>
-                        {item.description || 'Master level price action setup and trade management rules.'}
-                      </p>
-                    </div>
-
-                    <div style={{
-                      marginTop: '12px',
+                  Clear Search Filter
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+                gap: '20px'
+              }}>
+                {filteredPosts.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      backgroundColor: '#121826',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      overflow: 'hidden',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: '11px',
-                      color: '#64748b'
-                    }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <ShieldCheck size={13} color="#00e676" /> Verified TradingHath Content
-                      </span>
-                      <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <Lock size={11} /> Anti-Download Active
-                      </span>
+                      flexDirection: 'column'
+                    }}
+                  >
+                    {/* Protected Video Element Supporting IndexedDB & Local Uploads */}
+                    <div style={{ position: 'relative', height: '220px', backgroundColor: '#000000' }}>
+                      <UnifiedVideoPlayer
+                        src={item.videoUrl}
+                        title={item.title}
+                        maxHeight="220px"
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '10.5px',
+                        color: '#00e5ff',
+                        fontWeight: '700',
+                        textTransform: 'capitalize',
+                        zIndex: 5
+                      }}>
+                        {item.language}
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <h4 style={{ fontSize: '14.5px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                          {item.title}
+                        </h4>
+                        <p style={{ fontSize: '12px', color: '#94a3b8' }}>
+                          {item.description || 'Master level price action setup and trade management rules.'}
+                        </p>
+                      </div>
+
+                      <div style={{
+                        marginTop: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '11px',
+                        color: '#64748b'
+                      }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <ShieldCheck size={13} color="#00e676" /> Verified TradingHath Content
+                        </span>
+                        <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Lock size={11} /> Anti-Download Active
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
