@@ -132,32 +132,52 @@ export default function UnifiedVideoPlayer({
     );
   }
 
-  // Handle YouTube links
+  // Handle YouTube links (Unlisted videos styled like native player)
   const isYouTube = resolvedSrc?.includes('youtube.com') || resolvedSrc?.includes('youtu.be');
   if (isYouTube && resolvedSrc) {
-    let cleanUrl = resolvedSrc.includes('/embed/')
-      ? resolvedSrc
-      : resolvedSrc.replace('/shorts/', '/embed/').replace('watch?v=', 'embed/');
-    cleanUrl = cleanUrl.replace(/([?&])autoplay=1(&|$)/g, '$1autoplay=0$2');
-    if (!cleanUrl.includes('autoplay=')) {
-      cleanUrl += (cleanUrl.includes('?') ? '&' : '?') + 'autoplay=0';
+    let videoId = '';
+    if (resolvedSrc.includes('youtu.be/')) {
+      videoId = resolvedSrc.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (resolvedSrc.includes('watch?v=')) {
+      videoId = resolvedSrc.split('watch?v=')[1]?.split('&')[0] || '';
+    } else if (resolvedSrc.includes('/embed/')) {
+      videoId = resolvedSrc.split('/embed/')[1]?.split('?')[0] || '';
+    } else if (resolvedSrc.includes('/shorts/')) {
+      videoId = resolvedSrc.split('/shorts/')[1]?.split('?')[0] || '';
     }
 
+    // Stealth parameters to strip YouTube branding, recommendations, titles, and overlays
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&iv_load_policy=3&disablekb=0&fs=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+
     return (
-      <iframe
-        src={cleanUrl}
-        title={title}
+      <div
         style={{
+          position: 'relative',
           width: '100%',
           height: '100%',
           minHeight: '200px',
           maxHeight,
-          border: 'none',
+          overflow: 'hidden',
+          backgroundColor: '#000000',
+          borderRadius: '10px',
           ...style
         }}
-        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
+      >
+        <iframe
+          src={embedUrl}
+          title={title}
+          style={{
+            position: 'absolute',
+            top: '-55px', // Trims the YouTube top header (title, avatar, watch later icon)
+            left: 0,
+            width: '100%',
+            height: 'calc(100% + 55px)', // Compensates for the offset so full video & controls remain visible
+            border: 'none'
+          }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
     );
   }
 
