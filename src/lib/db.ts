@@ -37,9 +37,11 @@ const _mem: {
 } = { users: [], utr: [] };
 
 function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const rawToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!rawUrl || !rawToken) return null;
+  const url = rawUrl.trim().replace(/^["']|["']$/g, '');
+  const token = rawToken.trim().replace(/^["']|["']$/g, '');
   return new Redis({ url, token });
 }
 
