@@ -1092,6 +1092,35 @@ export default function DashboardPage() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    {/* Back / Close Chart Viewer Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedChart(null);
+                        const gridElem = document.getElementById('charts-grid-section');
+                        if (gridElem) {
+                          gridElem.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        color: '#cbd5e1',
+                        padding: '9px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
+                      }}
+                      title="Close this chart and return to browse all charts"
+                    >
+                      <ArrowLeft size={16} color="#00e5ff" /> Back to All Charts
+                    </button>
+
                     {/* Expand Button */}
                     <button
                       type="button"
@@ -1111,7 +1140,7 @@ export default function DashboardPage() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      <Maximize2 size={15} /> Expand Chart Fullscreen
+                      <Maximize2 size={15} /> Expand Fullscreen
                     </button>
 
                     {/* Chart Download Action */}
@@ -1311,7 +1340,7 @@ export default function DashboardPage() {
             )}
 
             {/* Hand-Made Charts Header with 1-Click PDF Download Button */}
-            <div style={{
+            <div id="charts-grid-section" style={{
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
