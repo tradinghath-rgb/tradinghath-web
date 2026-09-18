@@ -229,8 +229,52 @@ export default function UnifiedVideoPlayer({
     );
   }
 
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const handleGlobalPauseOthers = (e: Event) => {
+      const customEvent = e as CustomEvent<{ playerId: string }>;
+      if (videoRef.current && customEvent.detail?.playerId !== resolvedSrc) {
+        if (!videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('th_pause_other_videos', handleGlobalPauseOthers as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('th_pause_other_videos', handleGlobalPauseOthers as EventListener);
+      }
+    };
+  }, [resolvedSrc]);
+
+  const handlePlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    // 1. Immediately pause any other video elements present on the page
+    if (typeof document !== 'undefined') {
+      const allVideos = document.querySelectorAll('video');
+      allVideos.forEach((v) => {
+        if (v !== e.currentTarget && !v.paused) {
+          v.pause();
+        }
+      });
+    }
+
+    // 2. Dispatch global event in case of iframe or separate instances
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('th_pause_other_videos', {
+          detail: { playerId: resolvedSrc }
+        })
+      );
+    }
+  };
+
   return (
     <video
+      ref={videoRef}
       key={resolvedSrc}
       controls
       playsInline
@@ -238,6 +282,7 @@ export default function UnifiedVideoPlayer({
       autoPlay={false}
       controlsList="nodownload"
       disablePictureInPicture
+      onPlay={handlePlay}
       onContextMenu={(e) => e.preventDefault()}
       style={{
         width: '100%',
