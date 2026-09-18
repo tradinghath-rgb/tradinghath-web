@@ -39,6 +39,7 @@ export default function HomePage() {
   const [rating, setRating] = useState(5);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentSuccess, setCommentSuccess] = useState('');
+  const [commentError, setCommentError] = useState('');
 
   // Auth & Profile states
   const [user, setUser] = useState<any>(null);
@@ -233,7 +234,20 @@ export default function HomePage() {
   // User Comment Submission
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    setCommentError('');
+    setCommentSuccess('');
+
+    // Check if user is logged in
+    const activeEmail = (user?.email || commentEmail || '').trim().toLowerCase();
+    if (!user && !activeEmail) {
+      router.push('/login');
+      return;
+    }
+
+    if (!newComment.trim()) {
+      setCommentError('Please enter a comment.');
+      return;
+    }
 
     setSubmittingComment(true);
     try {
@@ -241,21 +255,30 @@ export default function HomePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: commentEmail || 'trader@gmail.com',
+          email: activeEmail,
           rating,
-          comment: newComment
+          comment: newComment.trim()
         })
       });
       const data = await res.json();
       if (data.success) {
-        setCommentSuccess('Your review is live! Email is masked to protect your privacy.');
-        setReviews(prev => [data.review, ...prev]);
+        setCommentSuccess('Thank you for sharing your experience! Your review is now live.');
+        setReviews(prev => [data.review, ...prev.filter(r => r.id !== data.review?.id)]);
         setNewComment('');
-        setCommentEmail('');
-        setTimeout(() => setCommentSuccess(''), 4000);
+        if (!user) setCommentEmail('');
+        setTimeout(() => setCommentSuccess(''), 5000);
+      } else {
+        if (data.requireAuth) {
+          setCommentError(data.error || 'Only registered members can comment.');
+          setTimeout(() => {
+            router.push('/login');
+          }, 1500);
+        } else {
+          setCommentError(data.error || 'Failed to post comment. Please try again.');
+        }
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setCommentError('Network error. Please try again.');
     } finally {
       setSubmittingComment(false);
     }
@@ -976,29 +999,54 @@ export default function HomePage() {
             Your email is encrypted and starred. No personal credentials are ever exposed.
           </p>
 
+          {commentError && (
+            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '10px', borderRadius: '8px', fontSize: '12.5px', marginBottom: '14px' }}>
+              {commentError}
+            </div>
+          )}
+
           {commentSuccess && (
-            <div style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', color: '#00e676', padding: '10px', borderRadius: '8px', fontSize: '12.5px', marginBottom: '14px' }}>
+            <div style={{ backgroundColor: 'rgba(0, 230, 118, 0.15)', border: '1px solid rgba(0, 230, 118, 0.3)', color: '#00e676', padding: '10px', borderRadius: '8px', fontSize: '12.5px', marginBottom: '14px' }}>
               {commentSuccess}
             </div>
           )}
 
-          <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <input
-              type="email"
-              placeholder="Your email (will be masked e.g. ro****@gmail.com)"
-              value={commentEmail}
-              onChange={(e) => setCommentEmail(e.target.value)}
-              style={{
-                width: '100%',
+          {!user ? (
+            <div style={{
+              backgroundColor: 'rgba(0, 229, 255, 0.08)',
+              border: '1px solid rgba(0, 229, 255, 0.25)',
+              borderRadius: '10px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <p style={{ fontSize: '13px', color: '#cbd5e1', marginBottom: '12px' }}>
+                Only registered members can post comments. Please sign up or log in with your Gmail to leave feedback!
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push('/login')}
+                className="btn-trading-glow"
+                style={{ padding: '8px 18px', fontSize: '12.5px' }}
+              >
+                Log In / Sign Up to Comment
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
                 backgroundColor: '#090d16',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '8px',
-                padding: '10px 12px',
-                color: '#fff',
-                fontSize: '13px'
-              }}
-              required
-            />
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                fontSize: '12.5px',
+                color: '#94a3b8'
+              }}>
+                <span>Posting as: <b style={{ color: '#00e5ff' }}>{user.email || user.username}</b></span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>Privacy Masked on Website</span>
+              </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '12px', color: '#94a3b8' }}>Rating:</span>

@@ -29,12 +29,14 @@ export interface UserRecord {
 
 const KV_USERS_KEY = 'tradinghath:users';
 const KV_UTR_KEY = 'tradinghath:utr_submissions';
+const KV_COMMENTS_KEY = 'tradinghath:comments';
 
 // ---- In-memory fallback for local dev without Redis ----
 const _mem: {
   users: UserRecord[];
   utr: UtrRecord[];
-} = { users: [], utr: [] };
+  comments: any[];
+} = { users: [], utr: [], comments: [] };
 
 function getRedis(): Redis | null {
   const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -212,3 +214,47 @@ export async function dbUpdateUtrStatus(
   });
   await dbSaveAllUtr(updated);
 }
+
+// =========================================================
+// COMMENTS / REVIEWS
+// =========================================================
+
+export interface CommentRecord {
+  id: string;
+  userMasked: string;
+  rawEmail?: string;
+  rating: number;
+  comment: string;
+  date: string;
+  verified: boolean;
+  createdAt: string;
+}
+
+export async function dbGetAllComments(): Promise<CommentRecord[]> {
+  const redis = getRedis();
+  if (!redis) return [..._mem.comments];
+  try {
+    return (await redis.get<CommentRecord[]>(KV_COMMENTS_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+async function dbSaveAllComments(comments: CommentRecord[]): Promise<void> {
+  const redis = getRedis();
+  if (!redis) { _mem.comments = comments; return; }
+  await redis.set(KV_COMMENTS_KEY, comments);
+}
+
+export async function dbAddComment(comment: CommentRecord): Promise<void> {
+  const comments = await dbGetAllComments();
+  comments.unshift(comment);
+  await dbSaveAllComments(comments);
+}
+
+export async function dbDeleteComment(commentId: string): Promise<void> {
+  const comments = await dbGetAllComments();
+  const filtered = comments.filter(c => c.id !== commentId);
+  await dbSaveAllComments(filtered);
+}
+

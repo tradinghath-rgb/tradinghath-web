@@ -281,6 +281,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    try {
+      const res = await fetch(`/api/comments?id=${commentId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setActionMessage('Comment deleted successfully.');
+        setReviews(prev => prev.filter(r => r.id !== commentId));
+        setTimeout(() => setActionMessage(''), 3000);
+      } else {
+        alert(data.error || 'Failed to delete comment.');
+      }
+    } catch (e) {
+      alert('Error deleting comment.');
+    }
+  };
+
 
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState('');
@@ -1832,13 +1849,40 @@ export default function AdminPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontWeight: '700', fontSize: '13px', color: '#00e5ff' }}>{rev.userMasked}</span>
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>{rev.date}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: '700', fontSize: '13px', color: '#00e5ff' }}>{rev.userMasked}</span>
+                      {rev.rawEmail && (
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>({rev.rawEmail})</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>{rev.date}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteComment(rev.id)}
+                        title="Delete this comment from website"
+                        style={{
+                          backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                          color: '#ef4444',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '6px',
+                          padding: '4px 8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11.5px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </div>
                   </div>
                   <div style={{ color: '#f59e0b', fontSize: '13px', marginBottom: '4px' }}>
                     {'★'.repeat(rev.rating)}
                   </div>
-                  <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                  <p style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', margin: 0 }}>
                     "{rev.comment}"
                   </p>
                 </div>
