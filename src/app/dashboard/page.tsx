@@ -29,6 +29,7 @@ import {
   Maximize2,
   Minimize2,
   Eye,
+  ArrowLeft,
   X
 } from 'lucide-react';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
@@ -313,14 +314,36 @@ export default function DashboardPage() {
           <Link
             href="/"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              width: '100%',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#00e5ff',
+              padding: '12px',
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: '600',
+              textDecoration: 'none',
+              marginBottom: '10px'
+            }}
+          >
+            <ArrowLeft size={16} /> Back to Homepage
+          </Link>
+
+          <Link
+            href="/"
+            style={{
               display: 'block',
               width: '100%',
               backgroundColor: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
               color: '#94a3b8',
               padding: '10px',
               borderRadius: '10px',
-              fontSize: '12.5px',
+              fontSize: '12px',
               textDecoration: 'none'
             }}
           >
@@ -365,35 +388,57 @@ export default function DashboardPage() {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          {/* Brand Logo */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <Image
-              src="/logo/general-profile-picture.png"
-              alt="TradingHath Logo"
-              width={38}
-              height={38}
-              style={{ borderRadius: '50%', border: '2px solid #00e5ff' }}
-            />
-            <div>
-              <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px', color: '#fff' }}>
-                Trading<span style={{ color: '#00e5ff' }}>Hath</span>
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  backgroundColor: isPro ? 'rgba(0, 229, 255, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                  color: isPro ? '#00e5ff' : '#ef4444',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  fontWeight: '700'
-                }}>
-                  {isPro ? 'Lifetime Pro' : 'Free Account'}
+          {/* Brand Logo & Back to Home */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link
+              href="/"
+              title="Return to Home"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#00e5ff',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <ArrowLeft size={18} />
+            </Link>
+
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+              <Image
+                src="/logo/general-profile-picture.png"
+                alt="TradingHath Logo"
+                width={38}
+                height={38}
+                style={{ borderRadius: '50%', border: '2px solid #00e5ff' }}
+              />
+              <div>
+                <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px', color: '#fff' }}>
+                  Trading<span style={{ color: '#00e5ff' }}>Hath</span>
                 </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    backgroundColor: isPro ? 'rgba(0, 229, 255, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    color: isPro ? '#00e5ff' : '#ef4444',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontWeight: '700'
+                  }}>
+                    {isPro ? 'Lifetime Pro' : 'Free Account'}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
           {/* User Status, Profile & Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
