@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllUsers, isUserDeleted } from '@/lib/userStore';
+import { dbGetAllUsers, dbFindUserByEmail } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,52 +11,68 @@ export async function POST(req: Request) {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanId = (userId || '').trim();
 
-    // Check if deleted
-    if (isUserDeleted(cleanId) || isUserDeleted(cleanEmail) || isUserDeleted(cleanUser)) {
-      return NextResponse.json({
-        success: true,
-        deleted: true,
-        isPro: false,
-        message: 'Account has been deleted'
-      });
-    }
-
-    // Admin is strictly tradinghath only
+    // Admin is never deleted
     const isAdmin = cleanUser === 'tradinghath' || cleanEmail === 'tradinghath@gmail.com';
     if (isAdmin) {
       return NextResponse.json({
         success: true,
         isPro: true,
         isAdmin: true,
-        deleted: false
+        deleted: false,
       });
     }
 
-    // Check against live server records
-    const allUsers = getAllUsers();
+    // Query persistent database (Upstash Redis / in-memory fallback)
+    const allUsers = await dbGetAllUsers();
     const found = allUsers.find(
-      u => u.id === cleanId || 
-           (u.email && u.email.toLowerCase() === cleanEmail) || 
-           (u.username && u.username.toLowerCase() === cleanUser)
+      u =>
+        u.id === cleanId ||
+        (u.email && u.email.toLowerCase() === cleanEmail) ||
+        (u.username && u.username.toLowerCase() === cleanUser)
     );
 
     if (!found) {
-      // User does not exist in admin database
+      // IMPORTANT: If user not found, it could be because:
+      // 1. They were actually deleted by admin (legitimate)
+      // 2. Redis is not yet configured and in-memory store is empty after restart
+      //
+      // To avoid false "account removed" alerts on server restart,
+      // we return a SOFT "not found" response instead of deleted=true.
+      // The dashboard will keep the session alive and retry.
+      return NextResponse.json({
+        success: true,
+        deleted: false, // Do NOT kick users out just because DB is empty
+        notFound: true, // Soft signal — dashboard can use this to show a warning without alert
+        isPro: false,
+        message: 'User not in current session store',
+      });
+    }
+
+    // User found — check if soft-deleted
+    if (found.deleted) {
       return NextResponse.json({
         success: true,
         deleted: true,
         isPro: false,
-        message: 'User not found in system'
+        message: 'Account has been deleted by administrator',
       });
     }
 
     return NextResponse.json({
       success: true,
       deleted: false,
+      notFound: false,
       isPro: found.isPro === true,
-      amount: found.amount || 0
+      amount: found.amount || 0,
     });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    console.error('[AUTH CHECK]', err);
+    // On error, NEVER kick the user out — return safe response
+    return NextResponse.json({
+      success: false,
+      deleted: false,
+      isPro: false,
+      error: err.message,
+    });
   }
 }

@@ -119,19 +119,19 @@ export default function DashboardPage() {
             .then(res => res.json())
             .then(data => {
               if (data.success) {
-                if (data.deleted) {
-                  // User was deleted by admin! Log out immediately!
+                if (data.deleted === true && data.notFound !== true) {
+                  // User was EXPLICITLY deleted by admin — log out
                   localStorage.removeItem('tradinghath_user');
                   localStorage.removeItem('tradinghath_role');
                   localStorage.removeItem('tradinghath_isPro');
-                  alert('Your account has been removed by Administrator.');
                   window.location.href = '/login';
-                } else {
+                } else if (!data.deleted) {
                   // Live pro status from server
                   const livePro = data.isPro === true;
                   setIsPro(livePro);
                   localStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
                 }
+                // If notFound=true (server restart / DB not ready), keep session alive silently
               }
             })
             .catch(console.error);
