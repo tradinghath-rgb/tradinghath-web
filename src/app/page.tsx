@@ -1096,8 +1096,9 @@ export default function HomePage() {
               {submittingComment ? 'Posting...' : 'Post Verified Comment'}
             </button>
           </form>
-        </div>
-      </section>
+        )}
+      </div>
+    </section>
 
       {/* Footer & Support Redirection */}
       <footer style={{
