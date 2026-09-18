@@ -382,7 +382,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="ig-input-container" style={{ paddingRight: '6px' }}>
+            <div className="ig-input-container" style={{ paddingRight: '10px' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
                 className="ig-input"
@@ -394,19 +394,24 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
                 style={{
-                  background: 'transparent',
-                  border: '1px solid #555555',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  padding: '4px 10px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#6a6f73',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: 'pointer',
-                  marginRight: '6px'
+                  borderRadius: '4px',
+                  transition: 'color 0.15s ease'
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#1c1d1f')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#6a6f73')}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
               </button>
             </div>
 
@@ -486,7 +491,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="ig-input-container" style={{ paddingRight: '6px' }}>
+            <div className="ig-input-container" style={{ paddingRight: '10px' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
                 className="ig-input"
@@ -498,19 +503,24 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
                 style={{
-                  background: 'transparent',
-                  border: '1px solid #d1d7dc',
-                  borderRadius: '4px',
-                  color: '#1c1d1f',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  padding: '4px 10px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#6a6f73',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: 'pointer',
-                  marginRight: '6px'
+                  borderRadius: '4px',
+                  transition: 'color 0.15s ease'
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#1c1d1f')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#6a6f73')}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
               </button>
             </div>
 
