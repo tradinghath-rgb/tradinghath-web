@@ -274,13 +274,59 @@ export default function LoginPage() {
           Instagram
         </h1>
 
+        {/* Visual Mode Selector Tabs: Log In / Sign Up */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '6px',
+          backgroundColor: '#1e1e1e',
+          padding: '4px',
+          borderRadius: '10px',
+          marginBottom: '20px'
+        }}>
+          <button
+            type="button"
+            onClick={() => { setIsSignUp(false); setError(''); setSignupSuccess(''); }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: !isSignUp ? '#3875f6' : 'transparent',
+              color: '#ffffff',
+              fontWeight: '700',
+              fontSize: '13px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Log In
+          </button>
+          <button
+            type="button"
+            onClick={() => { setIsSignUp(true); setError(''); setSignupSuccess(''); }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: isSignUp ? '#00e5ff' : 'transparent',
+              color: isSignUp ? '#000000' : '#a1a1aa',
+              fontWeight: '700',
+              fontSize: '13px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Create Account
+          </button>
+        </div>
+
         {/* Brand Subheader */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
-          marginBottom: '24px',
+          marginBottom: '20px',
           padding: '6px 12px',
           backgroundColor: '#1e1e1e',
           borderRadius: '20px'
