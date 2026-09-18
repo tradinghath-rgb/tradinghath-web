@@ -188,7 +188,7 @@ export default function LoginPage() {
         setError(data.error || 'Invalid username or password.');
       }
     } catch (err: any) {
-      setError('Connection error. Please try again.');
+      setError(err?.message ? `Network/Server issue: ${err.message}` : 'Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
