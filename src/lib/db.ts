@@ -11,6 +11,7 @@
  */
 
 import { Redis } from '@upstash/redis';
+import { PostItem } from '@/lib/store';
 
 export interface UserRecord {
   id: string;
@@ -30,13 +31,15 @@ export interface UserRecord {
 const KV_USERS_KEY = 'tradinghath:users';
 const KV_UTR_KEY = 'tradinghath:utr_submissions';
 const KV_COMMENTS_KEY = 'tradinghath:comments';
+const KV_POSTS_KEY = 'tradinghath:posts';
 
 // ---- In-memory fallback for local dev without Redis ----
 const _mem: {
   users: UserRecord[];
   utr: UtrRecord[];
   comments: any[];
-} = { users: [], utr: [], comments: [] };
+  posts: PostItem[];
+} = { users: [], utr: [], comments: [], posts: [] };
 
 function getRedis(): Redis | null {
   const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -256,5 +259,55 @@ export async function dbDeleteComment(commentId: string): Promise<void> {
   const comments = await dbGetAllComments();
   const filtered = comments.filter(c => c.id !== commentId);
   await dbSaveAllComments(filtered);
+}
+
+// =========================================================
+// POSTS (CHARTS & VIDEOS)
+// =========================================================
+
+export async function dbGetAllPosts(): Promise<PostItem[]> {
+  const redis = getRedis();
+  if (!redis) return [..._mem.posts];
+  try {
+    return (await redis.get<PostItem[]>(KV_POSTS_KEY)) || [];
+  } catch (e) {
+    console.error('[DB] dbGetAllPosts error:', e);
+    return [..._mem.posts];
+  }
+}
+
+export async function dbSaveAllPosts(posts: PostItem[]): Promise<void> {
+  const redis = getRedis();
+  _mem.posts = [...posts];
+  if (!redis) return;
+  try {
+    await redis.set(KV_POSTS_KEY, posts);
+  } catch (e) {
+    console.error('[DB] dbSaveAllPosts error:', e);
+  }
+}
+
+export async function dbAddPost(post: PostItem): Promise<void> {
+  const posts = await dbGetAllPosts();
+  const filtered = posts.filter(p => p.id !== post.id);
+  const updated = [post, ...filtered];
+  await dbSaveAllPosts(updated);
+}
+
+export async function dbDeletePost(postId: string): Promise<void> {
+  const posts = await dbGetAllPosts();
+  const filtered = posts.filter(p => p.id !== postId);
+  await dbSaveAllPosts(filtered);
+}
+
+export async function dbPublishPostNow(postId: string): Promise<void> {
+  const posts = await dbGetAllPosts();
+  const updated = posts.map(p => {
+    if (p.id === postId) {
+      return { ...p, published: true, scheduledAt: undefined };
+    }
+    return p;
+  });
+  await dbSaveAllPosts(updated);
 }
 

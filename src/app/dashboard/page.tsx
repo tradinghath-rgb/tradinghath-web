@@ -159,27 +159,30 @@ export default function DashboardPage() {
         setCheckingAccess(false);
       }
 
-    // Function to load and sync all published posts (from API, INITIAL_POSTS, and local storage fallback)
+    // Function to load and sync all published posts (from API, local storage fallback, and INITIAL_POSTS)
     const loadPublishedPosts = () => {
       fetch('/api/admin/posts')
         .then(res => res.json())
         .then(data => {
-          let allPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published);
+          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published);
+          const postMap = new Map<string, PostItem>();
 
-          // Always ensure all 24 default hand-made charts exist
-          const existingIds = new Set(allPosts.map(p => p.id));
-          const missingDefaults = INITIAL_POSTS.filter(p => !existingIds.has(p.id));
-          allPosts = [...allPosts, ...missingDefaults];
-          
+          // 1. Defaults as base
+          INITIAL_POSTS.forEach(p => postMap.set(p.id, p));
+
+          // 2. Local dynamic posts (if admin uploaded locally)
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              const liveLocal = localPosts.filter(p => p.published);
-              const currentIds = new Set(allPosts.map(p => p.id));
-              allPosts = [...allPosts, ...liveLocal.filter(p => !currentIds.has(p.id))];
+              localPosts.filter(p => p.published).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
+
+          // 3. API server posts (takes highest priority)
+          apiPosts.forEach(p => postMap.set(p.id, p));
+
+          let allPosts = Array.from(postMap.values());
 
           // Enforce correct language categorization
           allPosts = allPosts.map(p => {
@@ -187,6 +190,13 @@ export default function DashboardPage() {
               return { ...p, language: 'english' };
             }
             return p;
+          });
+
+          // Sort descending: newest posts first (latest createdAt at the top)
+          allPosts.sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeB - timeA;
           });
 
           if (allPosts.length > 0) {
@@ -197,17 +207,24 @@ export default function DashboardPage() {
         })
         .catch(err => {
           console.error(err);
-          // Fallback to initial posts & local storage
-          let combined = [...INITIAL_POSTS];
+          const postMap = new Map<string, PostItem>();
+          INITIAL_POSTS.forEach(p => postMap.set(p.id, p));
+
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              const liveLocal = localPosts.filter(p => p.published);
-              const existing = new Set(combined.map(p => p.id));
-              combined = [...combined, ...liveLocal.filter(p => !existing.has(p.id))];
+              localPosts.filter(p => p.published).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
+
+          const combined = Array.from(postMap.values());
+          combined.sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeB - timeA;
+          });
+
           setPosts(combined);
           const firstChart = combined.find(p => p.type === 'chart');
           if (firstChart) setSelectedChart(firstChart);
@@ -1333,8 +1350,8 @@ export default function DashboardPage() {
                         key={`${selectedChart.id}_${chartLanguage}`}
                         src={
                           chartLanguage === 'english'
-                            ? (selectedChart.videoUrlEnglish || (selectedChart.language === 'english' ? selectedChart.videoUrl : ''))
-                            : (selectedChart.videoUrlTelugu || (selectedChart.language === 'telugu' ? selectedChart.videoUrl : ''))
+                            ? (selectedChart.videoUrlEnglish || (selectedChart.language === 'english' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
+                            : (selectedChart.videoUrlTelugu || (selectedChart.language === 'telugu' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
                         }
                         title={`${selectedChart.title} (${chartLanguage})`}
                         maxHeight="380px"

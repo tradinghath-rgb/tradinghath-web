@@ -3,25 +3,43 @@ import { getAllPosts, addNewPost, deletePost, publishPostNow } from '@/lib/postS
 import { PostItem } from '@/lib/store';
 
 export async function GET() {
-  const posts = getAllPosts();
-  return NextResponse.json({
-    success: true,
-    posts
-  });
+  try {
+    const posts = await getAllPosts();
+    return NextResponse.json({
+      success: true,
+      posts
+    });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { action, postId, title, description, type, language, chartUrl, videoUrl, scheduledAt } = body;
+    const { 
+      action, 
+      postId, 
+      id,
+      title, 
+      description, 
+      type, 
+      language, 
+      chartUrl, 
+      videoUrl, 
+      videoUrlTelugu,
+      videoUrlEnglish,
+      downloadUrl,
+      scheduledAt 
+    } = body;
 
     if (action === 'delete') {
-      deletePost(postId);
+      await deletePost(postId || id);
       return NextResponse.json({ success: true, message: 'Post deleted successfully!' });
     }
 
     if (action === 'publish_now') {
-      publishPostNow(postId);
+      await publishPostNow(postId || id);
       return NextResponse.json({ success: true, message: 'Scheduled post has been published live now!' });
     }
 
@@ -31,22 +49,25 @@ export async function POST(req: Request) {
 
     const isChart = type === 'chart';
     const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
+    const targetId = id || postId || `post_${Date.now()}`;
 
     const newPost: PostItem = {
-      id: `post_${Date.now()}`,
+      id: targetId,
       title: title.trim(),
       description: description ? description.trim() : '',
       type: type || 'chart',
       language: language || 'both',
       chartUrl: isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       videoUrl: videoUrl || (!isChart ? 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0' : undefined),
-      downloadUrl: isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      videoUrlTelugu: videoUrlTelugu || (language === 'telugu' || language === 'both' ? videoUrl : undefined),
+      videoUrlEnglish: videoUrlEnglish || (language === 'english' || language === 'both' ? videoUrl : undefined),
+      downloadUrl: downloadUrl || (isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined),
       scheduledAt: scheduledAt || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()
     };
 
-    addNewPost(newPost);
+    await addNewPost(newPost);
 
     return NextResponse.json({
       success: true,

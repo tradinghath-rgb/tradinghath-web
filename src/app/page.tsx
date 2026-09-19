@@ -136,20 +136,25 @@ export default function HomePage() {
     fetch('/api/admin/posts')
       .then(res => res.json())
       .then(data => {
-        let all: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
+        const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
+        const postMap = new Map<string, PostItem>();
+
+        // 1. Defaults as base
+        INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+
+        // 2. Local dynamic posts
         try {
           const stored = safeStorage.getItem('tradinghath_dynamic_posts');
           if (stored) {
             const localPosts: PostItem[] = JSON.parse(stored);
-            const liveLocal = localPosts.filter(p => p.published && p.type === 'chart');
-            const currentIds = new Set(all.map(p => p.id));
-            all = [...all, ...liveLocal.filter(p => !currentIds.has(p.id))];
+            localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
           }
         } catch (e) {}
 
-        const existingIds = new Set(all.map(p => p.id));
-        const defaultCharts = INITIAL_POSTS.filter(p => p.type === 'chart' && !existingIds.has(p.id));
-        all = [...all, ...defaultCharts];
+        // 3. API server posts (takes highest priority)
+        apiPosts.forEach(p => postMap.set(p.id, p));
+
+        const all = Array.from(postMap.values());
 
         // Sort descending: newest created posts first
         all.sort((a, b) => {
@@ -163,7 +168,18 @@ export default function HomePage() {
         }
       })
       .catch(() => {
-        const fallback = INITIAL_POSTS.filter(p => p.type === 'chart');
+        const postMap = new Map<string, PostItem>();
+        INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+
+        try {
+          const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+          if (stored) {
+            const localPosts: PostItem[] = JSON.parse(stored);
+            localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+          }
+        } catch (e) {}
+
+        const fallback = Array.from(postMap.values());
         fallback.sort((a, b) => {
           const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;

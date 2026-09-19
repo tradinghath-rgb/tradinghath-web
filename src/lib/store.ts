@@ -62,7 +62,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-1(volume secret).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_2',
@@ -76,7 +76,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-2(fake breakout).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_3',
@@ -90,7 +90,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-3(supportt&resistance).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_4',
@@ -104,7 +104,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-4(trading psychology).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_5',
@@ -118,7 +118,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-5(liquiduty).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_6',
@@ -132,7 +132,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-6(order block).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_7',
@@ -146,7 +146,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-7(trendline).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_8',
@@ -160,7 +160,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-8 (doji).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_9',
@@ -174,7 +174,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-9(91% accurcy).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_10',
@@ -188,7 +188,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-10(trade with lqty).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_11',
@@ -202,7 +202,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-11(BOS&CHOCH).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_12',
@@ -216,7 +216,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-12(BULLISH CANDLE PATTERN).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_13',
@@ -230,7 +230,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-13(BEARISH CANDLE PATTERN).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_14',
@@ -244,7 +244,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/reel-14(nifty ststrategy).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_15',
@@ -258,7 +258,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-15(WHY FVG FAIL).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_16',
@@ -272,7 +272,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-16(SL TRAP).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_17',
@@ -286,7 +286,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '',
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_18',
@@ -300,7 +300,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-18(HEAD AND SHOULDE).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_19',
@@ -314,7 +314,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-19(LQT GRAB AND SWEEP).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_20',
@@ -328,7 +328,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-20(FAKE BREAKOUT).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_21',
@@ -342,7 +342,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-21(PERFECT ENTRY).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_22',
@@ -356,7 +356,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-22(DOUBLE TOP).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_23',
@@ -370,7 +370,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REEL-23(DOUBLE BOTTOM).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'chart_24',
@@ -384,7 +384,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     videoUrlEnglish: '/videos/english/REE;-24(LQT SETUP).mp4',
     downloadUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1200&auto=format&fit=crop&q=80',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   }
 ];
 
@@ -399,7 +399,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-1(volume secret).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_2',
@@ -409,7 +409,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-2(fake breakout).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_3',
@@ -419,7 +419,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-3(supportt&resistance).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_4',
@@ -429,7 +429,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-4(trading psychology).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_5',
@@ -439,7 +439,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-5(liquiduty).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_6',
@@ -449,7 +449,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-6(order block).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_7',
@@ -459,7 +459,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-7(trendline).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_8',
@@ -469,7 +469,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-8 (doji).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_9',
@@ -479,7 +479,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-9(91% accurcy).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_10',
@@ -489,7 +489,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-10(trade with lqty).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_11',
@@ -499,7 +499,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-11(BOS&CHOCH).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_12',
@@ -509,7 +509,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-12(BULLISH CANDLE PATTERN).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_13',
@@ -519,7 +519,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-13(BEARISH CANDLE PATTERN).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_14',
@@ -529,7 +529,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/reel-14(nifty ststrategy).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_15',
@@ -539,7 +539,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-15(WHY FVG FAIL).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_16',
@@ -549,7 +549,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-16(SL TRAP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_17',
@@ -559,7 +559,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-17(SUPPORT AND RESISTANCE).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_18',
@@ -569,7 +569,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-18(HEAD AND SHOULDE).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_19',
@@ -579,7 +579,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-19(LQT GRAB AND SWEEP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_20',
@@ -589,7 +589,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-20(FAKE BREAKOUT).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_21',
@@ -599,7 +599,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-21(PERFECT ENTRY).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_22',
@@ -609,7 +609,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-22(DOUBLE TOP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_23',
@@ -619,7 +619,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-23(DOUBLE BOTTOM).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_te_24',
@@ -629,7 +629,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'telugu',
     videoUrl: '/videos/telugu/REEL-24(LQT SETUP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
 
   // --- ENGLISH REELS (All 23 Lessons) ---
@@ -641,7 +641,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-1(volume secret).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_2',
@@ -651,7 +651,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-2(fake breakout).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_3',
@@ -661,7 +661,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-3(supportt&resistance).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_4',
@@ -671,7 +671,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-4(trading psychology).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_5',
@@ -681,7 +681,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-5(liquiduty).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_6',
@@ -691,7 +691,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-6(order block).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_7',
@@ -701,7 +701,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-7(trendline).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_8',
@@ -711,7 +711,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-8 (doji).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_9',
@@ -721,7 +721,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-9(91% accurcy).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_10',
@@ -731,7 +731,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-10(trade with lqty).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_11',
@@ -741,7 +741,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-11(BOS&CHOCH).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_12',
@@ -751,7 +751,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-12(BULLISH CANDLE PATTERN).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_13',
@@ -761,7 +761,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-13(BEARISH CANDLE PATTERN).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_14',
@@ -771,7 +771,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/reel-14(nifty ststrategy).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_15',
@@ -781,7 +781,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-15(WHY FVG FAIL).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_16',
@@ -791,7 +791,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-16(SL TRAP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_18',
@@ -801,7 +801,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-18(HEAD AND SHOULDE).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_19',
@@ -811,7 +811,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-19(LQT GRAB AND SWEEP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_20',
@@ -821,7 +821,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-20(FAKE BREAKOUT).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_21',
@@ -831,7 +831,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-21(PERFECT ENTRY).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_22',
@@ -841,7 +841,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-22(DOUBLE TOP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_23',
@@ -851,7 +851,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REEL-23(DOUBLE BOTTOM).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
     id: 'vid_en_24',
@@ -861,7 +861,7 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     language: 'english',
     videoUrl: '/videos/english/REE;-24(LQT SETUP).mp4',
     published: true,
-    createdAt: new Date().toISOString()
+    createdAt: '2025-01-01T00:00:00.000Z'
   }
 ];
 

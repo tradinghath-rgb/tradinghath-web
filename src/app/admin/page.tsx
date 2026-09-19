@@ -384,14 +384,18 @@ export default function AdminPage() {
       // Optimistically update post list in admin immediately
       setPosts(prev => [newPostPayload, ...prev.filter(p => p.id !== newPostId)]);
 
-      // 2. Publish to backend server API (Send clean URL or indexeddb reference)
+      // 2. Publish to backend server API
       const serverPayload = {
+        id: newPostId,
         title: postTitle,
         description: postDesc,
         type: postType,
         language: postLanguage,
-        chartUrl: isChart ? (clientChartUrl?.startsWith('data:') ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : clientChartUrl) : undefined,
+        chartUrl: isChart ? clientChartUrl : undefined,
+        downloadUrl: isChart ? clientChartUrl : undefined,
         videoUrl: clientVideoUrl || undefined,
+        videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? clientVideoUrl : undefined,
+        videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? clientVideoUrl : undefined,
         scheduledAt: effectiveScheduleDateTime || undefined
       };
 
