@@ -197,8 +197,11 @@ export default function DashboardPage() {
 
           if (allPosts.length > 0) {
             setPosts(allPosts);
-            const firstChart = allPosts.find(p => p.type === 'chart');
-            if (firstChart) setSelectedChart(firstChart);
+            setSelectedChart(prev => {
+              // If previously selected chart still exists, keep it; otherwise select latest chart
+              if (prev && allPosts.some(p => p.id === prev.id)) return prev;
+              return allPosts.find(p => p.type === 'chart') || prev;
+            });
           }
         })
         .catch(err => {
@@ -217,19 +220,35 @@ export default function DashboardPage() {
           const combined = sortPostsDescending(Array.from(postMap.values()));
 
           setPosts(combined);
-          const firstChart = combined.find(p => p.type === 'chart');
-          if (firstChart) setSelectedChart(firstChart);
+          setSelectedChart(prev => {
+            if (prev && combined.some(p => p.id === prev.id)) return prev;
+            return combined.find(p => p.type === 'chart') || prev;
+          });
         });
     };
 
     loadPublishedPosts();
+
+    // Auto-refresh vault posts every 4 seconds and whenever user switches back to this tab/window
+    const postsInterval = setInterval(loadPublishedPosts, 4000);
+    const handleWindowFocus = () => loadPublishedPosts();
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      clearInterval(postsInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
   }, []);
 
 
   const filteredPosts = sortPostsDescending(
     posts.filter(p => {
       if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
-      if (p.language !== languageFilter && p.language !== 'both') return false;
+      // Language filter applies specifically to video reels (Telugu vs English).
+      // All hand-made charts are visual institutional blueprints and remain visible in the vault!
+      if (activeTab === 'videos') {
+        if (p.language !== languageFilter && p.language !== 'both') return false;
+      }
 
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
@@ -952,45 +971,47 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Language Selector with Clean Pill Badges (Telugu & English only) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '13px', color: '#6a6f73', fontWeight: '600' }}>Filter Language:</span>
-            {[
-              { id: 'telugu', label: 'Telugu Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'telugu' || p.language === 'both')).length },
-              { id: 'english', label: 'English Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'english' || p.language === 'both')).length }
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => setLanguageFilter(item.id as any)}
-                style={{
-                  fontSize: '12.5px',
-                  fontWeight: '700',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  border: languageFilter === item.id ? '1.5px solid #5624d0' : '1px solid #d1d7dc',
-                  cursor: 'pointer',
-                  backgroundColor: languageFilter === item.id ? '#f3ecfc' : '#ffffff',
-                  color: languageFilter === item.id ? '#5624d0' : '#2d2f31',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <span>{item.label}</span>
-                <span style={{
-                  fontSize: '11px',
-                  backgroundColor: languageFilter === item.id ? '#5624d0' : '#e4e8eb',
-                  color: languageFilter === item.id ? '#ffffff' : '#2d2f31',
-                  padding: '1px 7px',
-                  borderRadius: '10px',
-                  fontWeight: '800'
-                }}>
-                  {item.count}
-                </span>
-              </button>
-            ))}
-          </div>
+          {/* Language Selector with Clean Pill Badges (Telugu & English only) - Visible in Video Library Vault */}
+          {activeTab === 'videos' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '13px', color: '#6a6f73', fontWeight: '600' }}>Filter Language:</span>
+              {[
+                { id: 'telugu', label: 'Telugu Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'telugu' || p.language === 'both')).length },
+                { id: 'english', label: 'English Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'english' || p.language === 'both')).length }
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setLanguageFilter(item.id as any)}
+                  style={{
+                    fontSize: '12.5px',
+                    fontWeight: '700',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: languageFilter === item.id ? '1.5px solid #5624d0' : '1px solid #d1d7dc',
+                    cursor: 'pointer',
+                    backgroundColor: languageFilter === item.id ? '#f3ecfc' : '#ffffff',
+                    color: languageFilter === item.id ? '#5624d0' : '#2d2f31',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span>{item.label}</span>
+                  <span style={{
+                    fontSize: '11px',
+                    backgroundColor: languageFilter === item.id ? '#5624d0' : '#e4e8eb',
+                    color: languageFilter === item.id ? '#ffffff' : '#2d2f31',
+                    padding: '1px 7px',
+                    borderRadius: '10px',
+                    fontWeight: '800'
+                  }}>
+                    {item.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Search Bar for Vault Charts & Videos - Udemy Pill Style */}
