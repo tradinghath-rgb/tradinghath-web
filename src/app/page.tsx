@@ -405,7 +405,12 @@ export default function HomePage() {
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {/* Direct Vault Access Button */}
                 <Link
-                  href="/dashboard"
+                  href={vaultCharts[0]?.id ? `/dashboard?chart=${encodeURIComponent(vaultCharts[0].id)}` : '/dashboard'}
+                  onClick={() => {
+                    if (vaultCharts[0]?.id) {
+                      safeStorage.setItem('tradinghath_selected_chart', vaultCharts[0].id);
+                    }
+                  }}
                   style={{
                     backgroundColor: '#5624d0',
                     border: '1px solid #5624d0',
@@ -494,8 +499,13 @@ export default function HomePage() {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <Link
-                          href="/dashboard"
-                          onClick={() => setShowProfileDropdown(false)}
+                          href={vaultCharts[0]?.id ? `/dashboard?chart=${encodeURIComponent(vaultCharts[0].id)}` : '/dashboard'}
+                          onClick={() => {
+                            if (vaultCharts[0]?.id) {
+                              safeStorage.setItem('tradinghath_selected_chart', vaultCharts[0].id);
+                            }
+                            setShowProfileDropdown(false);
+                          }}
                           style={{
                             padding: '8px 10px',
                             borderRadius: '6px',
@@ -849,7 +859,12 @@ export default function HomePage() {
             </div>
             {isPro || isAdmin ? (
               <Link
-                href="/dashboard"
+                href={vaultCharts[0]?.id ? `/dashboard?chart=${encodeURIComponent(vaultCharts[0].id)}` : '/dashboard'}
+                onClick={() => {
+                  if (vaultCharts[0]?.id) {
+                    safeStorage.setItem('tradinghath_selected_chart', vaultCharts[0].id);
+                  }
+                }}
                 style={{
                   fontSize: '13px',
                   padding: '10px 20px',

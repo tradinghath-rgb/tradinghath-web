@@ -235,21 +235,25 @@ export default function DashboardPage() {
               if (targetId) {
                 const targetPost = allPosts.find(p => p.id === targetId && p.type === 'chart');
                 if (targetPost) {
-                  // Clear the one-time storage key so subsequent manual card clicks aren't overridden
                   safeStorage.removeItem('tradinghath_selected_chart');
                   return targetPost;
                 }
               }
 
               const topChart = allPosts.find(p => p.type === 'chart');
-              // If user hasn't explicitly selected a chart yet or previous selection was baseline,
-              // sync to the top chart from the server
+              if (!topChart) return prev;
+
+              // If currently selected chart is not in allPosts, or is a default baseline chart (e.g. chart_24 or chart_1),
+              // or user hasn't explicitly clicked a different chart yet:
+              // always show the newest top chart (like the newly uploaded admin chart).
               if (!prev || prev.id.startsWith('chart_')) {
-                return topChart || prev;
+                return topChart;
               }
-              // User explicitly selected a chart — keep it if it still exists
+
+              // If user selected a specific custom post that still exists, keep it
               if (allPosts.some(p => p.id === prev.id)) return prev;
-              return topChart || prev;
+
+              return topChart;
             });
           }
         })
@@ -281,8 +285,15 @@ export default function DashboardPage() {
               }
             }
 
-            if (prev && combined.some(p => p.id === prev.id)) return prev;
-            return combined.find(p => p.type === 'chart') || prev;
+            const topChart = combined.find(p => p.type === 'chart');
+            if (!topChart) return prev;
+
+            if (!prev || prev.id.startsWith('chart_')) {
+              return topChart;
+            }
+
+            if (combined.some(p => p.id === prev.id)) return prev;
+            return topChart;
           });
         });
     };
