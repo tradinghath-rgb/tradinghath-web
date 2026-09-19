@@ -38,6 +38,8 @@ import {
 import { safeStorage } from '@/lib/storage';
 import { INITIAL_POSTS, PostItem } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
+import UnifiedChartImage from '@/lib/UnifiedChartImage';
+import { resolveMediaUrl } from '@/lib/videoStorage';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
@@ -247,10 +249,16 @@ export default function DashboardPage() {
     const filename = `${cleanTitle}.jpg`;
 
     try {
+      let targetUrl = url;
+      if (targetUrl.startsWith('indexeddb://')) {
+        const resolved = await resolveMediaUrl(targetUrl);
+        if (resolved) targetUrl = resolved;
+      }
+
       // If it is already a base64 data url from gallery upload:
-      if (url.startsWith('data:')) {
+      if (targetUrl.startsWith('data:')) {
         const a = document.createElement('a');
-        a.href = url;
+        a.href = targetUrl;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
@@ -259,7 +267,7 @@ export default function DashboardPage() {
       }
 
       // If remote image (Unsplash or CDN), fetch as blob to force file download dialog instead of browser tab view
-      const response = await fetch(url, { mode: 'cors' });
+      const response = await fetch(targetUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Fetch failed');
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
@@ -315,7 +323,13 @@ export default function DashboardPage() {
       });
 
       // Helper function to convert image url to HTMLImageElement / base64
-      const loadImageDataUrl = (imgUrl: string): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+      const loadImageDataUrl = async (imgUrl: string): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+        let finalUrl = imgUrl;
+        if (finalUrl.startsWith('indexeddb://')) {
+          const resolved = await resolveMediaUrl(finalUrl);
+          if (resolved) finalUrl = resolved;
+        }
+
         return new Promise((resolve) => {
           const img = new window.Image();
           img.crossOrigin = 'anonymous';
@@ -1216,16 +1230,17 @@ export default function DashboardPage() {
                         height: '380px', 
                         width: '100%', 
                         backgroundColor: '#f7f9fa',
-                        cursor: 'zoom-in'
+                        cursor: 'zoom-in',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                       title="Click to expand chart fullscreen"
                     >
-                      <Image
-                        src={selectedChart.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80'}
+                      <UnifiedChartImage
+                        src={selectedChart.chartUrl}
                         alt={selectedChart.title}
-                        fill
-                        unoptimized
-                        style={{ objectFit: 'contain' }}
+                        style={{ maxHeight: '380px', objectFit: 'contain' }}
                       />
                       <div style={{
                         position: 'absolute',
@@ -1456,13 +1471,11 @@ export default function DashboardPage() {
                       boxShadow: selectedChart?.id === post.id ? '0 4px 12px rgba(86, 36, 208, 0.15)' : '0 1px 4px rgba(0,0,0,0.06)'
                     }}
                   >
-                    <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa' }}>
-                      <Image
-                        src={post.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80'}
+                    <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa', overflow: 'hidden' }}>
+                      <UnifiedChartImage
+                        src={post.chartUrl}
                         alt={post.title}
-                        fill
-                        unoptimized
-                        style={{ objectFit: 'cover' }}
+                        style={{ height: '170px', objectFit: 'cover' }}
                       />
                       <div style={{
                         position: 'absolute',
@@ -2025,12 +2038,10 @@ export default function DashboardPage() {
                 overflow: 'hidden'
               }}
             >
-              <Image
-                src={selectedChart.chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&auto=format&fit=crop&q=90'}
+              <UnifiedChartImage
+                src={selectedChart.chartUrl}
                 alt={selectedChart.title}
-                fill
-                unoptimized
-                style={{ objectFit: 'contain' }}
+                style={{ maxHeight: 'calc(100vh - 130px)', objectFit: 'contain' }}
               />
             </div>
           </div>

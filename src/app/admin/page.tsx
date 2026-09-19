@@ -29,6 +29,7 @@ import {
 import { PostItem } from '@/lib/store';
 import { saveMediaFile, deleteMediaFile } from '@/lib/videoStorage';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
+import UnifiedChartImage from '@/lib/UnifiedChartImage';
 import { safeStorage } from '@/lib/storage';
 
 export default function AdminPage() {
@@ -1741,10 +1742,10 @@ export default function AdminPage() {
 
               <div style={{ borderRadius: '10px', overflow: 'hidden', backgroundColor: '#f7f9fa', marginBottom: '14px', border: '1px solid #d1d7dc' }}>
                 {previewPostModal.type === 'chart' ? (
-                  <img
+                  <UnifiedChartImage
                     src={previewPostModal.chartUrl}
                     alt={previewPostModal.title}
-                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                    style={{ maxHeight: '420px', objectFit: 'contain' }}
                   />
                 ) : (
                   <UnifiedVideoPlayer
