@@ -46,7 +46,10 @@ export default function DashboardPage() {
   const [languageFilter, setLanguageFilter] = useState<'english' | 'telugu'>('telugu');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
-  const [selectedChart, setSelectedChart] = useState<PostItem | null>(null);
+  const [selectedChart, setSelectedChart] = useState<PostItem | null>(
+    // Auto-open the top chart so users immediately see the setup panel on load
+    INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null
+  );
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
@@ -206,10 +209,18 @@ export default function DashboardPage() {
           if (allPosts.length > 0) {
             setPosts(allPosts);
             setSelectedChart(prev => {
-              // If previously selected chart still exists, keep it; otherwise select latest chart
-              if (prev && allPosts.some(p => p.id === prev.id)) return prev;
-              return allPosts.find(p => p.type === 'chart') || prev;
+              const topChart = allPosts.find(p => p.type === 'chart');
+              // If user hasn't explicitly selected a chart yet (still on the initial auto-selection),
+              // always update to the real top chart from the server (newest/Chart 24).
+              // This ensures the panel shows the correct chart, not a broken old one.
+              if (!prev || prev.id.startsWith('chart_')) {
+                return topChart || prev;
+              }
+              // User explicitly selected a chart — keep it if it still exists
+              if (allPosts.some(p => p.id === prev.id)) return prev;
+              return topChart || prev;
             });
+
           }
         })
         .catch(err => {
@@ -1219,7 +1230,7 @@ export default function DashboardPage() {
                 {/* Side-by-Side Flex Layout (Responsive Grid) */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
                   gap: '20px',
                   alignItems: 'start'
                 }}>
