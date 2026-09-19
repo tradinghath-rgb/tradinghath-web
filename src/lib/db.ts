@@ -276,12 +276,28 @@ export async function dbGetAllPosts(): Promise<PostItem[]> {
   }
 }
 
+const DEFAULT_CHART_FALLBACK = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+
 export async function dbSaveAllPosts(posts: PostItem[]): Promise<void> {
   const redis = getRedis();
   _mem.posts = [...posts];
   if (!redis) return;
   try {
-    await redis.set(KV_POSTS_KEY, posts);
+    // IMPORTANT: Strip raw base64 data URLs before saving to Redis.
+    // A single base64 image can be 500KB+ which causes the entire posts array
+    // to exceed Redis limits and silently fail — making posts disappear for all users.
+    // The actual image should already be stored separately via /api/upload.
+    const sanitized = posts.map(p => {
+      const updated = { ...p };
+      if (updated.chartUrl?.startsWith('data:image/')) {
+        updated.chartUrl = DEFAULT_CHART_FALLBACK;
+      }
+      if (updated.downloadUrl?.startsWith('data:image/')) {
+        updated.downloadUrl = DEFAULT_CHART_FALLBACK;
+      }
+      return updated;
+    });
+    await redis.set(KV_POSTS_KEY, sanitized);
   } catch (e) {
     console.error('[DB] dbSaveAllPosts error:', e);
   }
