@@ -299,24 +299,84 @@ export default function AdminPage() {
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState('');
 
-  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Automatically optimize image uploads so they fit cleanly in database and load fast for all members
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = document.createElement('img');
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1440;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(compressed);
+        } else {
+          resolve(img.src);
+        }
+      };
+
+      img.onerror = () => {
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setSelectedFileName(file.name);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setUploadPreview(result);
-      if (postType === 'chart' || file.type.startsWith('image/')) {
-        setChartUrl(result);
-      } else {
-        setVideoUrl(result);
+    if (file.type.startsWith('image/')) {
+      try {
+        const compressedBase64 = await compressImage(file);
+        setUploadPreview(compressedBase64);
+        setChartUrl(compressedBase64);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          setUploadPreview(result);
+          setChartUrl(result);
+        };
+        reader.readAsDataURL(file);
       }
-    };
-    reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setUploadPreview(result);
+        setVideoUrl(result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
+
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -386,14 +446,17 @@ export default function AdminPage() {
       setPosts(prev => [newPostPayload, ...prev.filter(p => p.id !== newPostId)]);
 
       // 2. Publish to backend server API
+      // When uploading an image from phone/PC, send the optimized data URL to the server so it is persisted in the database and visible to all members on any device
+      const persistentChartUrl = isChart ? (uploadPreview || chartUrl || clientChartUrl) : undefined;
+
       const serverPayload = {
         id: newPostId,
         title: postTitle,
         description: postDesc,
         type: postType,
         language: postLanguage,
-        chartUrl: isChart ? clientChartUrl : undefined,
-        downloadUrl: isChart ? clientChartUrl : undefined,
+        chartUrl: persistentChartUrl,
+        downloadUrl: persistentChartUrl,
         videoUrl: clientVideoUrl || undefined,
         videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? clientVideoUrl : undefined,
         videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? clientVideoUrl : undefined,
