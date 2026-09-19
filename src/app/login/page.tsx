@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Mail, ShieldCheck, X } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
 
 export default function LoginPage() {
@@ -371,7 +371,7 @@ export default function LoginPage() {
         {!isSignUp ? (
           /* LOGIN FORM */
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div className="ig-input-container">
+            <div className="ig-input-container" style={{ paddingRight: identifier ? '6px' : '0' }}>
               <input
                 type="email"
                 className="ig-input"
@@ -380,6 +380,36 @@ export default function LoginPage() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
               />
+              {identifier && (
+                <button
+                  type="button"
+                  onClick={() => setIdentifier('')}
+                  aria-label="Clear email"
+                  title="Clear email"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#8e8e8e',
+                    padding: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    borderRadius: '50%',
+                    transition: 'color 0.15s ease, background 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#1c1d1f';
+                    e.currentTarget.style.background = '#e0e0e0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#8e8e8e';
+                    e.currentTarget.style.background = 'none';
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
 
             <div className="ig-input-container" style={{ paddingRight: '10px' }}>
@@ -480,7 +510,7 @@ export default function LoginPage() {
         ) : (
           /* CREATE ACCOUNT FORM */
           <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div className="ig-input-container">
+            <div className="ig-input-container" style={{ paddingRight: signupEmail ? '6px' : '0' }}>
               <input
                 type="email"
                 className="ig-input"
@@ -489,6 +519,36 @@ export default function LoginPage() {
                 onChange={(e) => setSignupEmail(e.target.value)}
                 required
               />
+              {signupEmail && (
+                <button
+                  type="button"
+                  onClick={() => setSignupEmail('')}
+                  aria-label="Clear email"
+                  title="Clear email"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#8e8e8e',
+                    padding: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    borderRadius: '50%',
+                    transition: 'color 0.15s ease, background 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#1c1d1f';
+                    e.currentTarget.style.background = '#e0e0e0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#8e8e8e';
+                    e.currentTarget.style.background = 'none';
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
 
             <div className="ig-input-container" style={{ paddingRight: '10px' }}>
@@ -672,7 +732,7 @@ export default function LoginPage() {
 
             {resetStep === 'request' ? (
               <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div className="ig-input-container">
+                <div className="ig-input-container" style={{ paddingRight: resetEmail ? '6px' : '0' }}>
                   <input
                     type="email"
                     className="ig-input"
@@ -681,6 +741,36 @@ export default function LoginPage() {
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
                   />
+                  {resetEmail && (
+                    <button
+                      type="button"
+                      onClick={() => setResetEmail('')}
+                      aria-label="Clear email"
+                      title="Clear email"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#8e8e8e',
+                        padding: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        borderRadius: '50%',
+                        transition: 'color 0.15s ease, background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#1c1d1f';
+                        e.currentTarget.style.background = '#e0e0e0';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#8e8e8e';
+                        e.currentTarget.style.background = 'none';
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </div>
                 <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px', borderRadius: '6px' }}>
                   Send Verification Code
