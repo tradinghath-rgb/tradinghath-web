@@ -43,7 +43,7 @@ import { resolveMediaUrl } from '@/lib/videoStorage';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'english' | 'telugu'>('all');
+  const [languageFilter, setLanguageFilter] = useState<'english' | 'telugu'>('telugu');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
   const [selectedChart, setSelectedChart] = useState<PostItem | null>(null);
@@ -229,7 +229,7 @@ export default function DashboardPage() {
   const filteredPosts = sortPostsDescending(
     posts.filter(p => {
       if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
-      if (languageFilter !== 'all' && p.language !== languageFilter && p.language !== 'both') return false;
+      if (p.language !== languageFilter && p.language !== 'both') return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
@@ -952,13 +952,12 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Language Selector with Clean Pill Badges */}
+          {/* Language Selector with Clean Pill Badges (Telugu & English only) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '13px', color: '#6a6f73', fontWeight: '600' }}>Filter Language:</span>
             {[
-              { id: 'all', label: 'All Reels', count: posts.filter(p => p.type === 'video').length },
-              { id: 'telugu', label: 'Telugu', count: posts.filter(p => p.type === 'video' && (p.language === 'telugu' || p.language === 'both')).length },
-              { id: 'english', label: 'English', count: posts.filter(p => p.type === 'video' && (p.language === 'english' || p.language === 'both')).length }
+              { id: 'telugu', label: 'Telugu Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'telugu' || p.language === 'both')).length },
+              { id: 'english', label: 'English Reels', count: posts.filter(p => p.type === 'video' && (p.language === 'english' || p.language === 'both')).length }
             ].map(item => (
               <button
                 key={item.id}
@@ -1547,15 +1546,15 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* TAB 2: VIDEOS SECTION (23+ Telugu & English Reels) */}
+        {/* TAB 2: VIDEOS SECTION (Separated Telugu & English Reels) */}
         {activeTab === 'videos' && (
           <div>
             <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#1c1d1f', margin: '0 0 4px 0' }}>
-                Complete Video Vault (English & Telugu)
+              <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#1c1d1f', margin: '0 0 4px 0', textTransform: 'capitalize' }}>
+                Video Vault • {languageFilter === 'telugu' ? 'Telugu Reels' : 'English Reels'}
               </h3>
               <p style={{ fontSize: '13px', color: '#6a6f73' }}>
-                Watch proprietary market structure, trap identification, and volume strategies on demand. Video downloading is strictly restricted.
+                Watch proprietary market structure, trap identification, and volume strategies in {languageFilter === 'telugu' ? 'Telugu' : 'English'}. Video downloading is strictly restricted.
               </p>
             </div>
 
