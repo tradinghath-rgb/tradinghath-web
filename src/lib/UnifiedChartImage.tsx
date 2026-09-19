@@ -42,6 +42,24 @@ export default function UnifiedChartImage({
             setResolvedSrc(fallbackSrc);
           }
         });
+    } else if (src.includes('youtube.com') || src.includes('youtu.be')) {
+      // Auto-extract High-Res YouTube thumbnail when a YouTube link is provided as chart image!
+      let videoId = '';
+      if (src.includes('youtu.be/')) {
+        videoId = src.split('youtu.be/')[1]?.split('?')[0] || '';
+      } else if (src.includes('watch?v=')) {
+        videoId = src.split('watch?v=')[1]?.split('&')[0] || '';
+      } else if (src.includes('/embed/')) {
+        videoId = src.split('/embed/')[1]?.split('?')[0] || '';
+      } else if (src.includes('/shorts/')) {
+        videoId = src.split('/shorts/')[1]?.split('?')[0] || '';
+      }
+
+      if (videoId) {
+        setResolvedSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`);
+      } else {
+        setResolvedSrc(fallbackSrc);
+      }
     } else {
       setResolvedSrc(src);
     }
