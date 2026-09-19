@@ -1333,9 +1333,13 @@ export default function AdminPage() {
                       outline: 'none'
                     }}
                   />
-                  {postType === 'chart' && (
+                  {postType === 'chart' ? (
                     <span style={{ fontSize: '11px', color: '#6a6f73', display: 'block', marginTop: '4px' }}>
                       💡 Paste any YouTube link here. It will automatically play right beside this chart setup in the member vault.
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: '#5624d0', display: 'block', marginTop: '4px', fontWeight: '600' }}>
+                      ⚡ Recommended: Paste a YouTube (Unlisted) link here. It publishes instantly to all users on every phone & PC with zero buffering!
                     </span>
                   )}
                 </div>
