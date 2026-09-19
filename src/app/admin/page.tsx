@@ -386,8 +386,8 @@ export default function AdminPage() {
     }
 
     const isChart = postType === 'chart';
-    const effectiveChartUrl = chartUrl || (isChart ? uploadPreview : undefined);
-    const effectiveVideoUrl = videoUrl || (!isChart ? uploadPreview : undefined);
+    let effectiveChartUrl = chartUrl || (isChart ? uploadPreview || undefined : undefined);
+    let effectiveVideoUrl = videoUrl || (!isChart ? uploadPreview || undefined : undefined);
 
     // Combine Date and Time pickers into ISO string
     let effectiveScheduleDateTime: string | undefined = undefined;
@@ -399,20 +399,33 @@ export default function AdminPage() {
     const isScheduled = effectiveScheduleDateTime && new Date(effectiveScheduleDateTime) > new Date();
     const newPostId = `post_${Date.now()}`;
 
-    // Handle large base64 media by storing directly in browser IndexedDB
-    let clientVideoUrl = effectiveVideoUrl;
-    let clientChartUrl = effectiveChartUrl;
-
-    if (uploadPreview && uploadPreview.startsWith('data:')) {
+    // If there is a base64 image, upload it to the server to get a persistent public URL
+    // that is visible to ALL users on ALL devices (not just this browser/device).
+    if (uploadPreview && uploadPreview.startsWith('data:image/') && isChart) {
+      // Also save to IndexedDB so admin sees it instantly while upload is in flight
       try {
         await saveMediaFile(newPostId, uploadPreview);
-        if (!isChart) {
-          clientVideoUrl = `indexeddb://${newPostId}`;
+        effectiveChartUrl = `indexeddb://${newPostId}`; // local admin fallback
+      } catch (e) {}
+
+      try {
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: newPostId, dataUrl: uploadPreview })
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.success && uploadData.url) {
+          // Got a real server URL — use it instead of the indexeddb:// reference
+          effectiveChartUrl = uploadData.url;
         } else {
-          clientChartUrl = `indexeddb://${newPostId}`;
+          console.warn('[upload] Server rejected image:', uploadData.error);
+          // Fall back to raw base64 so at least the server post has an image
+          effectiveChartUrl = uploadPreview;
         }
-      } catch (err) {
-        console.warn('Could not store in IndexedDB:', err);
+      } catch (uploadErr) {
+        console.warn('[upload] Could not upload image to server, using base64:', uploadErr);
+        effectiveChartUrl = uploadPreview;
       }
     }
 
@@ -422,18 +435,18 @@ export default function AdminPage() {
       description: postDesc ? postDesc.trim() : '',
       type: postType,
       language: postLanguage,
-      chartUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
-      videoUrl: clientVideoUrl || undefined,
-      videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? clientVideoUrl : undefined,
-      videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? clientVideoUrl : undefined,
-      downloadUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      videoUrl: effectiveVideoUrl || undefined,
+      videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
+      videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
+      downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()
     };
 
     try {
-      // 1. Instantly save to local storage cache with indexeddb reference or lightweight URL
+      // 1. Instantly save to local storage cache
       try {
         const stored = safeStorage.getItem('tradinghath_dynamic_posts');
         const customPosts = stored ? JSON.parse(stored) : [];
@@ -446,8 +459,11 @@ export default function AdminPage() {
       setPosts(prev => [newPostPayload, ...prev.filter(p => p.id !== newPostId)]);
 
       // 2. Publish to backend server API
-      // When uploading an image from phone/PC, send the optimized data URL to the server so it is persisted in the database and visible to all members on any device
-      const persistentChartUrl = isChart ? (uploadPreview || chartUrl || clientChartUrl) : undefined;
+      // IMPORTANT: Never send indexeddb:// references to the server — they are browser-local only.
+      // If effectiveChartUrl is still indexeddb:// (upload failed), fall back to the raw base64 data.
+      const safeServerChartUrl = isChart
+        ? (effectiveChartUrl?.startsWith('indexeddb://') ? (uploadPreview || undefined) : effectiveChartUrl)
+        : undefined;
 
       const serverPayload = {
         id: newPostId,
@@ -455,28 +471,23 @@ export default function AdminPage() {
         description: postDesc,
         type: postType,
         language: postLanguage,
-        chartUrl: persistentChartUrl,
-        downloadUrl: persistentChartUrl,
-        videoUrl: clientVideoUrl || undefined,
-        videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? clientVideoUrl : undefined,
-        videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? clientVideoUrl : undefined,
+        chartUrl: safeServerChartUrl,
+        downloadUrl: safeServerChartUrl,
+        videoUrl: effectiveVideoUrl || undefined,
+        videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
+        videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
         scheduledAt: effectiveScheduleDateTime || undefined
       };
 
-      try {
-        const res = await fetch('/api/admin/posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(serverPayload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          setActionMessage(data.message || 'Post published successfully!');
-        } else {
-          setActionMessage('Post published successfully to website!');
-        }
-      } catch (apiErr) {
-        // Even if server fetch fails due to size or offline, local cache and IndexedDB has it live
+      const res = await fetch('/api/admin/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(serverPayload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActionMessage(data.message || 'Post published successfully!');
+      } else {
         setActionMessage('Post published successfully to website!');
       }
       

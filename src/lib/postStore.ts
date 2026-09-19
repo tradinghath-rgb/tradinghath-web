@@ -33,14 +33,30 @@ export async function getAllPosts(): Promise<PostItem[]> {
   // Overlay database posts (takes highest precedence)
   dbPosts.forEach(p => combinedMap.set(p.id, p));
 
+  const DEFAULT_CHART = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+
   const allPosts = Array.from(combinedMap.values());
 
-  // Update schedule status
+  // Update schedule status and sanitize browser-only URLs
   return allPosts.map(p => {
+    let updated = { ...p };
+
+    // Fix scheduled posts that are now past due
     if (p.scheduledAt && p.scheduledAt <= now && !p.published) {
-      return { ...p, published: true };
+      updated.published = true;
     }
-    return p;
+
+    // Sanitize: remove any indexeddb:// references — they are browser-local only and
+    // meaningless/broken on other users' devices. Replace with the default stock chart.
+    if (updated.chartUrl?.startsWith('indexeddb://')) {
+      updated.chartUrl = DEFAULT_CHART;
+      updated.downloadUrl = DEFAULT_CHART;
+    }
+    if (updated.downloadUrl?.startsWith('indexeddb://')) {
+      updated.downloadUrl = DEFAULT_CHART;
+    }
+
+    return updated;
   });
 }
 
