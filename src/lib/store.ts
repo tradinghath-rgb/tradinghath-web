@@ -279,11 +279,11 @@ export const DEFAULT_CHARTS: PostItem[] = [
     title: 'Chart 17: Support & Resistance Advanced (Reel 17)',
     description: 'Advanced liquidity level verification for high risk-to-reward executions.',
     type: 'chart',
-    language: 'both',
+    language: 'telugu',
     chartUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     videoUrl: '/videos/telugu/REEL-17(SUPPORT AND RESISTANCE).mp4',
     videoUrlTelugu: '/videos/telugu/REEL-17(SUPPORT AND RESISTANCE).mp4',
-    videoUrlEnglish: '/videos/english/reel-3(supportt&resistance).mp4',
+    videoUrlEnglish: '',
     downloadUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=1200&auto=format&fit=crop&q=80',
     published: true,
     createdAt: new Date().toISOString()

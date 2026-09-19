@@ -1312,8 +1312,8 @@ export default function DashboardPage() {
                         key={`${selectedChart.id}_${chartLanguage}`}
                         src={
                           chartLanguage === 'english'
-                            ? (selectedChart.videoUrlEnglish || selectedChart.videoUrl)
-                            : (selectedChart.videoUrlTelugu || selectedChart.videoUrl)
+                            ? (selectedChart.videoUrlEnglish || (selectedChart.language === 'english' ? selectedChart.videoUrl : ''))
+                            : (selectedChart.videoUrlTelugu || (selectedChart.language === 'telugu' ? selectedChart.videoUrl : ''))
                         }
                         title={`${selectedChart.title} (${chartLanguage})`}
                         maxHeight="380px"

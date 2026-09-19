@@ -90,20 +90,38 @@ export default function UnifiedVideoPlayer({
         style={{
           width: '100%',
           height: '100%',
-          minHeight: '200px',
+          minHeight: '220px',
           maxHeight,
-          backgroundColor: '#090d16',
+          backgroundColor: '#111827',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#64748b',
-          fontSize: '13px',
+          padding: '24px 20px',
+          textAlign: 'center',
+          borderRadius: '8px',
           ...style
         }}
       >
-        <Play size={28} color="#64748b" style={{ marginBottom: '8px' }} />
-        <span>No video file provided</span>
+        <div style={{
+          width: '54px',
+          height: '54px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(86, 36, 208, 0.15)',
+          border: '1px solid rgba(86, 36, 208, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '12px'
+        }}>
+          <Play size={24} color="#a78bfa" style={{ marginLeft: '3px' }} />
+        </div>
+        <div style={{ fontSize: '15px', fontWeight: '800', color: '#ffffff', marginBottom: '6px' }}>
+          Video Will Be Uploaded Soon
+        </div>
+        <p style={{ fontSize: '12px', color: '#9ca3af', maxWidth: '300px', lineHeight: '1.5', margin: 0 }}>
+          The video breakdown for this setup is being prepared and will be added here shortly.
+        </p>
       </div>
     );
   }
