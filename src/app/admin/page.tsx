@@ -1319,7 +1319,70 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                {/* Direct Video URL / YouTube Link option for both charts and videos */}
+                {/* Chart Image URL — YouTube thumbnail or direct image URL (only for chart posts) */}
+                {postType === 'chart' && (
+                  <div style={{ backgroundColor: '#fffbf0', border: '1px solid #f0d060', borderRadius: '8px', padding: '14px' }}>
+                    <label style={{ fontSize: '12px', color: '#1c1d1f', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: '800' }}>
+                      🎥 Use Video Thumbnail as Chart Image <span style={{ fontSize: '10.5px', backgroundColor: '#5624d0', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontWeight: '700' }}>NEW</span>
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="Paste YouTube link → thumbnail auto-used as chart image"
+                      value={chartUrl}
+                      onChange={(e) => setChartUrl(e.target.value)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#ffffff',
+                        border: '1.5px solid #f0d060',
+                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        color: '#1c1d1f',
+                        fontSize: '13px',
+                        outline: 'none'
+                      }}
+                    />
+                    <div style={{ fontSize: '11px', color: '#6a6f73', marginTop: '6px', lineHeight: '1.6' }}>
+                      📌 <b>Paste any YouTube link</b> (watch, shorts, unlisted) — the video thumbnail is automatically used as the chart image.<br />
+                      🖼️ Or paste any <b>direct image URL</b> (e.g. from Imgur, Cloudinary, etc.) to use that as the chart.<br />
+                      📁 <b>Or</b> use the file picker above to upload directly from your phone gallery.
+                    </div>
+                    {/* Live thumbnail preview */}
+                    {chartUrl && (chartUrl.includes('youtube.com') || chartUrl.includes('youtu.be')) && (() => {
+                      let vid = '';
+                      if (chartUrl.includes('youtu.be/')) vid = chartUrl.split('youtu.be/')[1]?.split('?')[0] || '';
+                      else if (chartUrl.includes('watch?v=')) vid = chartUrl.split('watch?v=')[1]?.split('&')[0] || '';
+                      else if (chartUrl.includes('/embed/')) vid = chartUrl.split('/embed/')[1]?.split('?')[0] || '';
+                      else if (chartUrl.includes('/shorts/')) vid = chartUrl.split('/shorts/')[1]?.split('?')[0] || '';
+                      return vid ? (
+                        <div style={{ marginTop: '10px', borderRadius: '6px', overflow: 'hidden', border: '2px solid #5624d0' }}>
+                          <div style={{ fontSize: '10.5px', backgroundColor: '#5624d0', color: '#fff', padding: '4px 10px', fontWeight: '700' }}>
+                            ✓ Thumbnail preview — this will be shown as your chart image
+                          </div>
+                          <img
+                            src={`https://img.youtube.com/vi/${vid}/hqdefault.jpg`}
+                            alt="YouTube thumbnail preview"
+                            style={{ width: '100%', display: 'block', maxHeight: '180px', objectFit: 'cover' }}
+                          />
+                        </div>
+                      ) : null;
+                    })()}
+                    {chartUrl && !chartUrl.includes('youtube.com') && !chartUrl.includes('youtu.be') && chartUrl.startsWith('http') && (
+                      <div style={{ marginTop: '10px', borderRadius: '6px', overflow: 'hidden', border: '2px solid #137333' }}>
+                        <div style={{ fontSize: '10.5px', backgroundColor: '#137333', color: '#fff', padding: '4px 10px', fontWeight: '700' }}>
+                          ✓ Image URL preview
+                        </div>
+                        <img
+                          src={chartUrl}
+                          alt="Chart image preview"
+                          style={{ width: '100%', display: 'block', maxHeight: '180px', objectFit: 'contain', backgroundColor: '#f7f9fa' }}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Video URL / YouTube Link */}
                 <div>
                   <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                     {postType === 'chart' 
