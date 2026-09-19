@@ -890,7 +890,7 @@ export default function HomePage() {
                     style={{
                       height: '170px',
                       objectFit: 'cover',
-                      filter: isPro || isAdmin ? 'none' : 'blur(2px) grayscale(20%)'
+                      filter: isPro || isAdmin ? 'none' : 'blur(5px) grayscale(35%)'
                     }}
                   />
                   {/* Center Badge */}
