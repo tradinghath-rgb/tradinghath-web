@@ -362,7 +362,9 @@ export default function AdminPage() {
       type: postType,
       language: postLanguage,
       chartUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
-      videoUrl: !isChart ? (clientVideoUrl || '/videos/telugu/reel-1(volume secret).mp4') : undefined,
+      videoUrl: clientVideoUrl || undefined,
+      videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? clientVideoUrl : undefined,
+      videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? clientVideoUrl : undefined,
       downloadUrl: isChart ? (clientChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
       scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
@@ -389,7 +391,7 @@ export default function AdminPage() {
         type: postType,
         language: postLanguage,
         chartUrl: isChart ? (clientChartUrl?.startsWith('data:') ? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80' : clientChartUrl) : undefined,
-        videoUrl: !isChart ? (clientVideoUrl?.startsWith('data:') ? '/videos/telugu/reel-1(volume secret).mp4' : clientVideoUrl) : undefined,
+        videoUrl: clientVideoUrl || undefined,
         scheduledAt: effectiveScheduleDateTime || undefined
       };
 
@@ -1238,30 +1240,37 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                {/* Direct Video URL / YouTube Link option */}
-                {postType === 'video' && (
-                  <div>
-                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
-                      Or Paste Video / YouTube Unlisted Link
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://youtube.com/shorts/... or video link"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #d1d7dc',
-                        borderRadius: '6px',
-                        padding: '10px 12px',
-                        color: '#1c1d1f',
-                        fontSize: '13px',
-                        outline: 'none'
-                      }}
-                    />
-                  </div>
-                )}
+                {/* Direct Video URL / YouTube Link option for both charts and videos */}
+                <div>
+                  <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                    {postType === 'chart' 
+                      ? 'Attach YouTube Video Breakdown (Unlisted / Public Link)' 
+                      : 'Or Paste Video / YouTube Unlisted Link'}
+                  </label>
+                  <input
+                    type="url"
+                    placeholder={postType === 'chart' 
+                      ? 'https://youtube.com/watch?v=... or https://youtube.com/shorts/...' 
+                      : 'https://youtube.com/shorts/... or video link'}
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d1d7dc',
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      color: '#1c1d1f',
+                      fontSize: '13px',
+                      outline: 'none'
+                    }}
+                  />
+                  {postType === 'chart' && (
+                    <span style={{ fontSize: '11px', color: '#6a6f73', display: 'block', marginTop: '4px' }}>
+                      💡 Paste any YouTube link here. It will automatically play right beside this chart setup in the member vault.
+                    </span>
+                  )}
+                </div>
 
 
                 {/* Interactive Date & Time Scheduling with Visual Pickers & Quick Presets */}
