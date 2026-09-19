@@ -868,6 +868,19 @@ export const DEFAULT_VIDEOS: PostItem[] = [
 // Combine all initial posts into INITIAL_POSTS
 export const INITIAL_POSTS: PostItem[] = [...DEFAULT_CHARTS, ...DEFAULT_VIDEOS];
 
+export function isRecentlyAdded(createdAt?: string): boolean {
+  if (!createdAt) return false;
+  try {
+    const postTime = new Date(createdAt).getTime();
+    if (isNaN(postTime)) return false;
+    const now = Date.now();
+    const diffHours = (now - postTime) / (1000 * 60 * 60);
+    return diffHours >= 0 && diffHours <= 24;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return 'tr***@gmail.com';
   const [user, domain] = email.split('@');

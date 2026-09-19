@@ -36,7 +36,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_POSTS, PostItem } from '@/lib/store';
+import { INITIAL_POSTS, PostItem, isRecentlyAdded } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 import { resolveMediaUrl } from '@/lib/videoStorage';
@@ -218,19 +218,25 @@ export default function DashboardPage() {
   }, []);
 
 
-  const filteredPosts = posts.filter(p => {
-    if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
-    if (languageFilter !== 'all' && p.language !== languageFilter && p.language !== 'both') return false;
+  const filteredPosts = posts
+    .filter(p => {
+      if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
+      if (languageFilter !== 'all' && p.language !== languageFilter && p.language !== 'both') return false;
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      const matchTitle = (p.title || '').toLowerCase().includes(q);
-      const matchDesc = (p.description || '').toLowerCase().includes(q);
-      if (!matchTitle && !matchDesc) return false;
-    }
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        const matchTitle = (p.title || '').toLowerCase().includes(q);
+        const matchDesc = (p.description || '').toLowerCase().includes(q);
+        if (!matchTitle && !matchDesc) return false;
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
 
   const handleLogout = () => {
     try {
@@ -1481,14 +1487,15 @@ export default function DashboardPage() {
                         position: 'absolute',
                         top: '10px',
                         left: '10px',
-                        backgroundColor: '#eceb98',
-                        color: '#3d3c0a',
+                        backgroundColor: isRecentlyAdded(post.createdAt) ? '#5624d0' : '#eceb98',
+                        color: isRecentlyAdded(post.createdAt) ? '#ffffff' : '#3d3c0a',
                         padding: '3px 8px',
                         borderRadius: '4px',
                         fontSize: '10.5px',
-                        fontWeight: '800'
+                        fontWeight: '800',
+                        boxShadow: isRecentlyAdded(post.createdAt) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
                       }}>
-                        Bestseller
+                        {isRecentlyAdded(post.createdAt) ? '✨ Recently Added' : 'Bestseller'}
                       </div>
                     </div>
 
@@ -1621,6 +1628,24 @@ export default function DashboardPage() {
                       }}>
                         {item.language}
                       </div>
+
+                      {isRecentlyAdded(item.createdAt) && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: '#137333',
+                          borderRadius: '4px',
+                          padding: '2px 8px',
+                          fontSize: '10.5px',
+                          color: '#ffffff',
+                          fontWeight: '800',
+                          zIndex: 5,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }}>
+                          ✨ Recently Added
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

@@ -24,7 +24,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_REVIEWS, ReviewItem } from '@/lib/store';
+import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded } from '@/lib/store';
+import UnifiedChartImage from '@/lib/UnifiedChartImage';
 
 declare global {
   interface Window {
@@ -55,6 +56,7 @@ export default function HomePage() {
   const [utrEmail, setUtrEmail] = useState('');
   const [utrStatus, setUtrStatus] = useState('');
   const [termsModal, setTermsModal] = useState(false);
+  const [vaultCharts, setVaultCharts] = useState<PostItem[]>([]);
 
   useEffect(() => {
     // Check if user is logged in
@@ -129,6 +131,46 @@ export default function HomePage() {
         if (data.reviews) setReviews(data.reviews);
       })
       .catch(console.error);
+
+    // Load and sort all live charts in descending order so new charts appear first on the homepage
+    fetch('/api/admin/posts')
+      .then(res => res.json())
+      .then(data => {
+        let all: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
+        try {
+          const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+          if (stored) {
+            const localPosts: PostItem[] = JSON.parse(stored);
+            const liveLocal = localPosts.filter(p => p.published && p.type === 'chart');
+            const currentIds = new Set(all.map(p => p.id));
+            all = [...all, ...liveLocal.filter(p => !currentIds.has(p.id))];
+          }
+        } catch (e) {}
+
+        const existingIds = new Set(all.map(p => p.id));
+        const defaultCharts = INITIAL_POSTS.filter(p => p.type === 'chart' && !existingIds.has(p.id));
+        all = [...all, ...defaultCharts];
+
+        // Sort descending: newest created posts first
+        all.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
+        if (all.length > 0) {
+          setVaultCharts(all.slice(0, 6)); // Display top 6 newest charts on homepage
+        }
+      })
+      .catch(() => {
+        const fallback = INITIAL_POSTS.filter(p => p.type === 'chart');
+        fallback.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+        setVaultCharts(fallback.slice(0, 6));
+      });
   }, []);
 
   const handleLogout = () => {
@@ -802,46 +844,9 @@ export default function HomePage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
             gap: '20px'
           }}>
-            {[
-              {
-                title: 'Why FVG Fails (Reel 15)',
-                desc: 'Avoid retail trap fair value gaps that get violated instantly.',
-                image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              },
-              {
-                title: 'Stop Loss Trap (Reel 16)',
-                desc: 'How institutional market makers trigger retail stop loss clusters before explosive moves.',
-                image: 'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              },
-              {
-                title: 'LQT Setup Strategy (Reel 24)',
-                desc: 'High probability Liquidity Sweep & Smart Money Setup with risk-reward ratio 1:3+.',
-                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              },
-              {
-                title: 'Head & Shoulders Anatomy (Reel 18)',
-                desc: 'True breakout confirmation vs false neckline breaches.',
-                image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              },
-              {
-                title: 'Break of Structure BOS & CHOCH (Reel 11)',
-                desc: 'Market trend shift detection rule book with volume footprint.',
-                image: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              },
-              {
-                title: 'Volume Secret Formula (Reel 1)',
-                desc: 'Institutional volume anomalies & fake breakout strategy.',
-                image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80',
-                type: 'Hand-Made Chart + Video'
-              }
-            ].map((item, idx) => (
+            {(vaultCharts.length > 0 ? vaultCharts : INITIAL_POSTS.filter(p => p.type === 'chart').slice(0, 6)).map((item, idx) => (
               <div
-                key={idx}
+                key={item.id || idx}
                 onClick={() => {
                   if (isPro || isAdmin) {
                     router.push('/dashboard');
@@ -861,12 +866,12 @@ export default function HomePage() {
                 }}
               >
                 {/* Visual Image */}
-                <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa' }}>
-                  <Image
-                    src={item.image}
+                <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa', overflow: 'hidden' }}>
+                  <UnifiedChartImage
+                    src={item.chartUrl}
                     alt={item.title}
-                    fill
                     style={{
+                      height: '170px',
                       objectFit: 'cover',
                       filter: isPro || isAdmin ? 'none' : 'blur(2px) grayscale(20%)'
                     }}
@@ -902,14 +907,15 @@ export default function HomePage() {
                     position: 'absolute',
                     top: '10px',
                     left: '10px',
-                    backgroundColor: '#eceb98',
-                    color: '#3d3c0a',
+                    backgroundColor: isRecentlyAdded(item.createdAt) ? '#5624d0' : '#eceb98',
+                    color: isRecentlyAdded(item.createdAt) ? '#ffffff' : '#3d3c0a',
                     padding: '3px 8px',
                     borderRadius: '4px',
                     fontSize: '10.5px',
-                    fontWeight: '800'
+                    fontWeight: '800',
+                    boxShadow: isRecentlyAdded(item.createdAt) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
                   }}>
-                    Bestseller
+                    {isRecentlyAdded(item.createdAt) ? '✨ Recently Added' : 'Bestseller'}
                   </div>
                 </div>
 
@@ -918,7 +924,7 @@ export default function HomePage() {
                     {item.title}
                   </h4>
                   <p style={{ fontSize: '12.5px', color: '#6a6f73', lineHeight: '1.4', marginBottom: '12px' }}>
-                    {item.desc}
+                    {item.description ? (item.description.length > 80 ? `${item.description.slice(0, 80)}...` : item.description) : 'Master institutional trap formula and execution criteria.'}
                   </p>
 
                   <div style={{
@@ -931,12 +937,8 @@ export default function HomePage() {
                     paddingTop: '6px',
                     borderTop: '1px solid #f0f2f5'
                   }}>
-                    <span>{isPro || isAdmin ? 'Click to Open in Vault' : 'Tap to Unlock Blueprint & Video'}</span>
-                    {isPro || isAdmin ? (
-                      <Sparkles size={13} color="#137333" />
-                    ) : (
-                      <Lock size={12} />
-                    )}
+                    <span>{isPro || isAdmin ? 'Click to Open' : 'Hand-Made Chart + Video'}</span>
+                    <ArrowRight size={14} />
                   </div>
                 </div>
               </div>
