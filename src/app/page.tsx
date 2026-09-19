@@ -888,7 +888,12 @@ export default function HomePage() {
                 key={item.id || idx}
                 onClick={() => {
                   if (isPro || isAdmin) {
-                    router.push('/dashboard');
+                    if (item.id) {
+                      safeStorage.setItem('tradinghath_selected_chart', item.id);
+                      router.push(`/dashboard?chart=${encodeURIComponent(item.id)}`);
+                    } else {
+                      router.push('/dashboard');
+                    }
                   } else {
                     scrollToPricing();
                   }

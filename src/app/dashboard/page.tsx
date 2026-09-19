@@ -46,10 +46,30 @@ export default function DashboardPage() {
   const [languageFilter, setLanguageFilter] = useState<'english' | 'telugu'>('telugu');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
-  const [selectedChart, setSelectedChart] = useState<PostItem | null>(
-    // Auto-open the top chart so users immediately see the setup panel on load
-    INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null
-  );
+  const [selectedChart, setSelectedChart] = useState<PostItem | null>(() => {
+    if (typeof window === 'undefined') return INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
+      const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+      let combined = [...INITIAL_POSTS];
+      if (stored) {
+        const localPosts: PostItem[] = JSON.parse(stored);
+        const map = new Map<string, PostItem>();
+        combined.forEach(p => map.set(p.id, p));
+        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        combined = Array.from(map.values());
+      }
+      const sorted = sortPostsDescending(combined);
+      if (targetId) {
+        const matched = sorted.find(p => p.id === targetId && p.type === 'chart');
+        if (matched) return matched;
+      }
+      return sorted.find(p => p.type === 'chart') || null;
+    } catch (e) {
+      return INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null;
+    }
+  });
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
@@ -209,10 +229,21 @@ export default function DashboardPage() {
           if (allPosts.length > 0) {
             setPosts(allPosts);
             setSelectedChart(prev => {
+              const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+              const targetId = urlParams?.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
+
+              if (targetId) {
+                const targetPost = allPosts.find(p => p.id === targetId && p.type === 'chart');
+                if (targetPost) {
+                  // Clear the one-time storage key so subsequent manual card clicks aren't overridden
+                  safeStorage.removeItem('tradinghath_selected_chart');
+                  return targetPost;
+                }
+              }
+
               const topChart = allPosts.find(p => p.type === 'chart');
-              // If user hasn't explicitly selected a chart yet (still on the initial auto-selection),
-              // always update to the real top chart from the server (newest/Chart 24).
-              // This ensures the panel shows the correct chart, not a broken old one.
+              // If user hasn't explicitly selected a chart yet or previous selection was baseline,
+              // sync to the top chart from the server
               if (!prev || prev.id.startsWith('chart_')) {
                 return topChart || prev;
               }
@@ -220,7 +251,6 @@ export default function DashboardPage() {
               if (allPosts.some(p => p.id === prev.id)) return prev;
               return topChart || prev;
             });
-
           }
         })
         .catch(err => {
@@ -240,6 +270,17 @@ export default function DashboardPage() {
 
           setPosts(combined);
           setSelectedChart(prev => {
+            const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+            const targetId = urlParams?.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
+
+            if (targetId) {
+              const targetPost = combined.find(p => p.id === targetId && p.type === 'chart');
+              if (targetPost) {
+                safeStorage.removeItem('tradinghath_selected_chart');
+                return targetPost;
+              }
+            }
+
             if (prev && combined.some(p => p.id === prev.id)) return prev;
             return combined.find(p => p.type === 'chart') || prev;
           });
