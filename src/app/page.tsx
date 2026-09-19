@@ -132,49 +132,62 @@ export default function HomePage() {
       })
       .catch(console.error);
 
-    // Load and sort all live charts in descending order so new charts appear first on the homepage
-    fetch('/api/admin/posts')
-      .then(res => res.json())
-      .then(data => {
-        const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
-        const postMap = new Map<string, PostItem>();
+    // Function to load and sync all live charts in descending order so new charts appear first on the homepage
+    const loadCharts = () => {
+      fetch('/api/admin/posts')
+        .then(res => res.json())
+        .then(data => {
+          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
+          const postMap = new Map<string, PostItem>();
 
-        // 1. Defaults as base
-        INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+          // 1. Defaults as base
+          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
 
-        // 2. Local dynamic posts
-        try {
-          const stored = safeStorage.getItem('tradinghath_dynamic_posts');
-          if (stored) {
-            const localPosts: PostItem[] = JSON.parse(stored);
-            localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+          // 2. Local dynamic posts
+          try {
+            const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+            if (stored) {
+              const localPosts: PostItem[] = JSON.parse(stored);
+              localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+            }
+          } catch (e) {}
+
+          // 3. API server posts (takes highest priority)
+          apiPosts.forEach(p => postMap.set(p.id, p));
+
+          const all = sortPostsDescending(Array.from(postMap.values()));
+
+          if (all.length > 0) {
+            setVaultCharts(all.slice(0, 6)); // Display top 6 newest charts on homepage
           }
-        } catch (e) {}
+        })
+        .catch(() => {
+          const postMap = new Map<string, PostItem>();
+          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
 
-        // 3. API server posts (takes highest priority)
-        apiPosts.forEach(p => postMap.set(p.id, p));
+          try {
+            const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+            if (stored) {
+              const localPosts: PostItem[] = JSON.parse(stored);
+              localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+            }
+          } catch (e) {}
 
-        const all = sortPostsDescending(Array.from(postMap.values()));
+          const fallback = sortPostsDescending(Array.from(postMap.values()));
+          setVaultCharts(fallback.slice(0, 6));
+        });
+    };
 
-        if (all.length > 0) {
-          setVaultCharts(all.slice(0, 6)); // Display top 6 newest charts on homepage
-        }
-      })
-      .catch(() => {
-        const postMap = new Map<string, PostItem>();
-        INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+    loadCharts();
 
-        try {
-          const stored = safeStorage.getItem('tradinghath_dynamic_posts');
-          if (stored) {
-            const localPosts: PostItem[] = JSON.parse(stored);
-            localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
-          }
-        } catch (e) {}
+    const chartsInterval = setInterval(loadCharts, 4000);
+    const handleWindowFocus = () => loadCharts();
+    window.addEventListener('focus', handleWindowFocus);
 
-        const fallback = sortPostsDescending(Array.from(postMap.values()));
-        setVaultCharts(fallback.slice(0, 6));
-      });
+    return () => {
+      clearInterval(chartsInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
   }, []);
 
   const handleLogout = () => {
