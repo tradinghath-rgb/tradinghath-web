@@ -24,7 +24,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending } from '@/lib/store';
+import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending, getRotatingReviews } from '@/lib/store';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 
 declare global {
@@ -35,7 +35,7 @@ declare global {
 
 export default function HomePage() {
   const router = useRouter();
-  const [reviews, setReviews] = useState<ReviewItem[]>(INITIAL_REVIEWS);
+  const [reviews, setReviews] = useState<ReviewItem[]>(() => getRotatingReviews());
   const [newComment, setNewComment] = useState('');
   const [commentEmail, setCommentEmail] = useState('');
   const [rating, setRating] = useState(5);
@@ -184,8 +184,14 @@ export default function HomePage() {
     const handleWindowFocus = () => loadCharts();
     window.addEventListener('focus', handleWindowFocus);
 
+    // Rotate reviews every 12 hours while page is open
+    const reviewsInterval = setInterval(() => {
+      setReviews(getRotatingReviews());
+    }, 12 * 60 * 60 * 1000);
+
     return () => {
       clearInterval(chartsInterval);
+      clearInterval(reviewsInterval);
       window.removeEventListener('focus', handleWindowFocus);
     };
   }, []);

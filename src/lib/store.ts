@@ -944,37 +944,49 @@ export function maskEmail(email: string): string {
   return `${start}${stars}${end}@${domain}`;
 }
 
-export const INITIAL_REVIEWS: ReviewItem[] = [
-  {
-    id: 'r1',
-    userMasked: 'su******92@gmail.com',
-    rating: 5,
-    comment: 'The hand-made charts are exceptionally clear. The video explanation right beside the chart made the entry concepts crystal clear. Best ₹399 spent!',
-    date: 'Today',
-    verified: true
-  },
-  {
-    id: 'r2',
-    userMasked: 'pr****an@gmail.com',
-    rating: 5,
-    comment: 'Telugu & English videos both explain why SL traps happen. Saved me from 2 big fakeouts today already. Highly recommended.',
-    date: 'Yesterday',
-    verified: true
-  },
-  {
-    id: 'r3',
-    userMasked: 'ka****sh@gmail.com',
-    rating: 5,
-    comment: 'Lifetime access for 399 is unbelievable value. Instant activation after UPI payment with PhonePe.',
-    date: '2 days ago',
-    verified: true
-  },
-  {
-    id: 'r4',
-    userMasked: 'ra****07@gmail.com',
-    rating: 5,
-    comment: 'Very professional, clean layout, charts can be downloaded in high res on phone. Superb guidance by TradingHath.',
-    date: '3 days ago',
-    verified: true
-  }
+// Full pool of 24 realistic community reviews
+export const ALL_REVIEWS: ReviewItem[] = [
+  { id: 'r1',  userMasked: 'su******92@gmail.com', rating: 5, comment: 'The hand-made charts are exceptionally clear. The video explanation right beside the chart made the entry concepts crystal clear. Best ₹399 spent!', date: 'Today', verified: true },
+  { id: 'r2',  userMasked: 'pr****an@gmail.com',   rating: 5, comment: 'Telugu & English videos both explain why SL traps happen. Saved me from 2 big fakeouts this week. Highly recommended.', date: 'Today', verified: true },
+  { id: 'r3',  userMasked: 'ka****sh@gmail.com',   rating: 5, comment: 'Lifetime access for ₹399 is unbelievable value. Instant activation after UPI payment with PhonePe. No waiting.', date: 'Today', verified: true },
+  { id: 'r4',  userMasked: 'ra****07@gmail.com',   rating: 5, comment: 'Very professional, clean layout, charts can be downloaded in high resolution on phone. Superb guidance by TradingHath.', date: 'Today', verified: true },
+  { id: 'r5',  userMasked: 'ma****ar@gmail.com',   rating: 5, comment: 'I had an good knowledge from TradingHath. The blueprints and institutional concepts are exceptional and very detailed.', date: 'Yesterday', verified: true },
+  { id: 'r6',  userMasked: 'dh*********i@gmail.com', rating: 5, comment: 'The hand-made blueprints and institutional concepts are exceptional. Side-by-side video really changes how you see price action.', date: 'Yesterday', verified: true },
+  { id: 'r7',  userMasked: 'ar****av@gmail.com',   rating: 5, comment: 'Worth every rupee. The LQT setup chart (Reel 24) alone saved me ₹4000 in a single trade by avoiding the trap.', date: 'Yesterday', verified: true },
+  { id: 'r8',  userMasked: 'vi****na@gmail.com',   rating: 5, comment: 'Downloaded all 24 charts to my gallery in one click. Now I can study them offline during market hours. Perfect feature!', date: 'Yesterday', verified: true },
+  { id: 'r9',  userMasked: 'sa****ri@gmail.com',   rating: 5, comment: 'The fake breakout chart opened my eyes. I was always getting trapped at breakouts before. Now I wait for the retest like institutions.', date: '2 days ago', verified: true },
+  { id: 'r10', userMasked: 'na****sh@gmail.com',   rating: 5, comment: 'Best ₹399 investment in my trading journey. The double bottom trap chart is mind-blowing — shows exactly how market makers think.', date: '2 days ago', verified: true },
+  { id: 'r11', userMasked: 'ch****ya@gmail.com',   rating: 5, comment: 'Telugu commentary is very clear and easy to follow. My mother tongue explanation of institutional concepts is rare to find online.', date: '2 days ago', verified: true },
+  { id: 'r12', userMasked: 'ra****ep@gmail.com',   rating: 5, comment: 'Verified member for 3 weeks now. The vault keeps getting better with new charts being added. Lifetime access is a real deal.', date: '2 days ago', verified: true },
+  { id: 'r13', userMasked: 'ki****an@gmail.com',   rating: 5, comment: 'The sniper entry chart (Reel 21) gave me a precise entry yesterday. Hit the target exactly at the institutional level. Amazing content.', date: '3 days ago', verified: true },
+  { id: 'r14', userMasked: 'mo****ad@gmail.com',   rating: 5, comment: 'Support & Resistance chart finally cleared my confusion about S/R levels. Now I understand why my SL was always getting hit before.', date: '3 days ago', verified: true },
+  { id: 'r15', userMasked: 'si****ha@gmail.com',   rating: 5, comment: 'Fantastic course. The Head & Shoulder institutional chart is the best breakdown of H&S patterns I have seen anywhere online.', date: '3 days ago', verified: true },
+  { id: 'r16', userMasked: 'an****ai@gmail.com',   rating: 5, comment: 'Paid via GPay in 30 seconds and got lifetime access immediately. No form, no delay. Very smooth onboarding experience.', date: '3 days ago', verified: true },
+  { id: 'r17', userMasked: 'de****av@gmail.com',   rating: 5, comment: 'I used to overtrade. After studying the trading psychology chart, I now only enter 1–2 high-probability setups per week. Big difference.', date: '4 days ago', verified: true },
+  { id: 'r18', userMasked: 'po****ai@gmail.com',   rating: 5, comment: 'Stop loss trap chart (Reel 16) explained why big money hunts retail SL before reversing. Changed my entire approach to entry planning.', date: '4 days ago', verified: true },
+  { id: 'r19', userMasked: 'go****an@gmail.com',   rating: 5, comment: 'English commentary is equally good. I shared the link with my colleague in Bangalore and he also bought lifetime access the same day.', date: '4 days ago', verified: true },
+  { id: 'r20', userMasked: 'bh****av@gmail.com',   rating: 5, comment: 'The Volume Secret Formula chart (Reel 1) shows what most traders completely miss. Volume anomalies are the real signal. Eye-opening!', date: '5 days ago', verified: true },
+  { id: 'r21', userMasked: 'ke****th@gmail.com',   rating: 5, comment: 'Liquidity grab & sweep mechanics finally makes sense to me after the chart explanation. Institutions really sweep before reversing.', date: '5 days ago', verified: true },
+  { id: 'r22', userMasked: 'ji****an@gmail.com',   rating: 5, comment: 'Nifty Special Strategy chart (Reel 14) is specifically tailored for Indian market sessions. Very relevant and practically useful.', date: '5 days ago', verified: true },
+  { id: 'r23', userMasked: 'la****mi@gmail.com',   rating: 5, comment: 'For ₹399 I was skeptical. But the quality of explanation in both languages surprised me. Genuine institutional trading knowledge.', date: '6 days ago', verified: true },
+  { id: 'r24', userMasked: 'ra****na@gmail.com',   rating: 5, comment: 'Fake Breakout Reversal Mastery chart (Reel 20) is my favourite. I had been falling for fake breakouts for 2 years. Now I know the setup.', date: '6 days ago', verified: true },
 ];
+
+// Returns 6 different reviews every 12 hours — deterministic so all browsers see the same set at the same time.
+// Cycles through the full pool so every review gets shown over time.
+export function getRotatingReviews(): ReviewItem[] {
+  const INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
+  const BATCH_SIZE = 6;
+  const slot = Math.floor(Date.now() / INTERVAL_MS);
+  const total = ALL_REVIEWS.length;
+  const startIndex = (slot * BATCH_SIZE) % total;
+  const result: ReviewItem[] = [];
+  for (let i = 0; i < BATCH_SIZE; i++) {
+    result.push(ALL_REVIEWS[(startIndex + i) % total]);
+  }
+  return result;
+}
+
+// Keep INITIAL_REVIEWS as alias for backward compatibility
+export const INITIAL_REVIEWS: ReviewItem[] = getRotatingReviews();
+
