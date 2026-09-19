@@ -132,6 +132,16 @@ export default function HomePage() {
       })
       .catch(console.error);
 
+    const DEFAULT_CHART = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+
+    // Sanitize a post's chartUrl — remove browser-local or broken references
+    const sanitizePost = (p: PostItem): PostItem => {
+      if (!p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/')) {
+        return { ...p, chartUrl: DEFAULT_CHART, downloadUrl: DEFAULT_CHART };
+      }
+      return p;
+    };
+
     // Function to load and sync all live charts in descending order so new charts appear first on the homepage
     const loadCharts = () => {
       fetch('/api/admin/posts')
@@ -141,19 +151,22 @@ export default function HomePage() {
           const postMap = new Map<string, PostItem>();
 
           // 1. Defaults as base
-          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
 
-          // 2. Local dynamic posts
+          // 2. Local dynamic posts — sanitize broken URLs before merging
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+              localPosts
+                .filter(p => p.published && p.type === 'chart')
+                .map(sanitizePost)
+                .forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 
-          // 3. API server posts (takes highest priority)
-          apiPosts.forEach(p => postMap.set(p.id, p));
+          // 3. API server posts (takes highest priority) — already sanitized server-side
+          apiPosts.map(sanitizePost).forEach(p => postMap.set(p.id, p));
 
           const all = sortPostsDescending(Array.from(postMap.values()));
 
@@ -163,13 +176,16 @@ export default function HomePage() {
         })
         .catch(() => {
           const postMap = new Map<string, PostItem>();
-          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, p));
+          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published && p.type === 'chart').forEach(p => postMap.set(p.id, p));
+              localPosts
+                .filter(p => p.published && p.type === 'chart')
+                .map(sanitizePost)
+                .forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 

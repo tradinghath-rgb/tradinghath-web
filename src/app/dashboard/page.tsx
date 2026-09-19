@@ -160,6 +160,14 @@ export default function DashboardPage() {
       }
 
     // Function to load and sync all published posts (from API, local storage fallback, and INITIAL_POSTS)
+    const DEFAULT_CHART_URL = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+    const sanitizePost = (p: PostItem): PostItem => {
+      if (p.type === 'chart' && (!p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/'))) {
+        return { ...p, chartUrl: DEFAULT_CHART_URL, downloadUrl: DEFAULT_CHART_URL };
+      }
+      return p;
+    };
+
     const loadPublishedPosts = () => {
       fetch('/api/admin/posts')
         .then(res => res.json())
@@ -168,19 +176,19 @@ export default function DashboardPage() {
           const postMap = new Map<string, PostItem>();
 
           // 1. Defaults as base
-          INITIAL_POSTS.forEach(p => postMap.set(p.id, p));
+          INITIAL_POSTS.forEach(p => postMap.set(p.id, sanitizePost(p)));
 
-          // 2. Local dynamic posts (if admin uploaded locally)
+          // 2. Local dynamic posts — sanitize broken URLs before merging
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published).forEach(p => postMap.set(p.id, p));
+              localPosts.filter(p => p.published).map(sanitizePost).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 
-          // 3. API server posts (takes highest priority)
-          apiPosts.forEach(p => postMap.set(p.id, p));
+          // 3. API server posts (takes highest priority) — already sanitized server-side
+          apiPosts.map(sanitizePost).forEach(p => postMap.set(p.id, p));
 
           let allPosts = Array.from(postMap.values());
 
@@ -207,13 +215,13 @@ export default function DashboardPage() {
         .catch(err => {
           console.error(err);
           const postMap = new Map<string, PostItem>();
-          INITIAL_POSTS.forEach(p => postMap.set(p.id, p));
+          INITIAL_POSTS.forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published).forEach(p => postMap.set(p.id, p));
+              localPosts.filter(p => p.published).map(sanitizePost).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 
@@ -226,6 +234,7 @@ export default function DashboardPage() {
           });
         });
     };
+
 
     loadPublishedPosts();
 
