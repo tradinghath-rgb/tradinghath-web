@@ -83,7 +83,7 @@ export default function DashboardPage() {
   const [showGuideModal, setShowGuideModal] = useState(false);
 
   useEffect(() => {
-    // Load auth status strictly
+    let verifyIntervalId: NodeJS.Timeout | null = null;
     try {
       const stored = safeStorage.getItem('tradinghath_user');
       const proStatus = safeStorage.getItem('tradinghath_isPro');
@@ -172,15 +172,15 @@ export default function DashboardPage() {
       verifyWithServer();
 
       // Heartbeat every 4 seconds to instantly lock/revoke if admin changes status in admin panel
+      let verifyIntervalId: NodeJS.Timeout | null = null;
       if (!adminRole) {
-        const intervalId = setInterval(verifyWithServer, 4000);
-          return () => clearInterval(intervalId);
-        }
-      } catch (err) {
-        console.error('Auth check error:', err);
-      } finally {
-        setCheckingAccess(false);
+        verifyIntervalId = setInterval(verifyWithServer, 4000);
       }
+    } catch (err) {
+      console.error('Auth check error:', err);
+    } finally {
+      setCheckingAccess(false);
+    }
 
     // Function to load and sync all published posts (from API, local storage fallback, and INITIAL_POSTS)
     const DEFAULT_CHART_URL = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
@@ -307,6 +307,7 @@ export default function DashboardPage() {
     window.addEventListener('focus', handleWindowFocus);
 
     return () => {
+      if (verifyIntervalId) clearInterval(verifyIntervalId);
       clearInterval(postsInterval);
       window.removeEventListener('focus', handleWindowFocus);
     };
