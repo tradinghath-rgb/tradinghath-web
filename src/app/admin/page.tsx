@@ -26,7 +26,7 @@ import {
   Play,
   RefreshCw
 } from 'lucide-react';
-import { PostItem } from '@/lib/store';
+import { PostItem, sortPostsDescending } from '@/lib/store';
 import { saveMediaFile, deleteMediaFile } from '@/lib/videoStorage';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
@@ -137,6 +137,7 @@ export default function AdminPage() {
         }
       } catch (e) {}
 
+      serverPosts = sortPostsDescending(serverPosts);
       setPosts(serverPosts);
       if (commentsData.reviews) setReviews(commentsData.reviews);
     } catch (e) {

@@ -36,7 +36,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_POSTS, PostItem, isRecentlyAdded } from '@/lib/store';
+import { INITIAL_POSTS, PostItem, isRecentlyAdded, sortPostsDescending } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 import { resolveMediaUrl } from '@/lib/videoStorage';
@@ -192,12 +192,8 @@ export default function DashboardPage() {
             return p;
           });
 
-          // Sort descending: newest posts first (latest createdAt at the top)
-          allPosts.sort((a, b) => {
-            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return timeB - timeA;
-          });
+          // Sort descending: newest posts first (latest createdAt at the top, then 24 down to 1)
+          allPosts = sortPostsDescending(allPosts);
 
           if (allPosts.length > 0) {
             setPosts(allPosts);
@@ -218,12 +214,7 @@ export default function DashboardPage() {
             }
           } catch (e) {}
 
-          const combined = Array.from(postMap.values());
-          combined.sort((a, b) => {
-            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return timeB - timeA;
-          });
+          const combined = sortPostsDescending(Array.from(postMap.values()));
 
           setPosts(combined);
           const firstChart = combined.find(p => p.type === 'chart');
@@ -235,8 +226,8 @@ export default function DashboardPage() {
   }, []);
 
 
-  const filteredPosts = posts
-    .filter(p => {
+  const filteredPosts = sortPostsDescending(
+    posts.filter(p => {
       if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
       if (languageFilter !== 'all' && p.language !== languageFilter && p.language !== 'both') return false;
 
@@ -249,11 +240,7 @@ export default function DashboardPage() {
 
       return true;
     })
-    .sort((a, b) => {
-      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return timeB - timeA;
-    });
+  );
 
   const handleLogout = () => {
     try {
@@ -1504,15 +1491,15 @@ export default function DashboardPage() {
                         position: 'absolute',
                         top: '10px',
                         left: '10px',
-                        backgroundColor: isRecentlyAdded(post.createdAt) ? '#5624d0' : '#eceb98',
-                        color: isRecentlyAdded(post.createdAt) ? '#ffffff' : '#3d3c0a',
+                        backgroundColor: isRecentlyAdded(post.createdAt, post.id) ? '#5624d0' : '#eceb98',
+                        color: isRecentlyAdded(post.createdAt, post.id) ? '#ffffff' : '#3d3c0a',
                         padding: '3px 8px',
                         borderRadius: '4px',
                         fontSize: '10.5px',
                         fontWeight: '800',
-                        boxShadow: isRecentlyAdded(post.createdAt) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
+                        boxShadow: isRecentlyAdded(post.createdAt, post.id) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
                       }}>
-                        {isRecentlyAdded(post.createdAt) ? '✨ Recently Added' : 'Bestseller'}
+                        {isRecentlyAdded(post.createdAt, post.id) ? '✨ Recently Added' : 'Bestseller'}
                       </div>
                     </div>
 
@@ -1646,7 +1633,7 @@ export default function DashboardPage() {
                         {item.language}
                       </div>
 
-                      {isRecentlyAdded(item.createdAt) && (
+                      {isRecentlyAdded(item.createdAt, item.id) && (
                         <div style={{
                           position: 'absolute',
                           top: '8px',

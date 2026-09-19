@@ -868,11 +868,61 @@ export const DEFAULT_VIDEOS: PostItem[] = [
 // Combine all initial posts into INITIAL_POSTS
 export const INITIAL_POSTS: PostItem[] = [...DEFAULT_CHARTS, ...DEFAULT_VIDEOS];
 
-export function isRecentlyAdded(createdAt?: string): boolean {
+// Helper: extract chart or reel numeric index (e.g. "Chart 24" -> 24, "Reel 24" -> 24)
+export function getPostOrderNumber(post: PostItem): number {
+  const match = (post.title || '').match(/(?:chart|reel)\s*(\d+)/i);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+  return 0;
+}
+
+// Master descending sorting:
+// 1. Newly created admin posts (e.g. post_123456789 or ISO timestamp after 2025-01-01) appear first (newest on top)
+// 2. Default hand-made charts and reels appear in strict descending order: 24, 23, 22, ... down to 1 at the very bottom
+export function sortPostsDescending(posts: PostItem[]): PostItem[] {
+  const baselineEpoch = new Date('2025-01-02T00:00:00.000Z').getTime();
+
+  return [...posts].sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+
+    const isDynamicA = timeA > baselineEpoch || a.id.startsWith('post_');
+    const isDynamicB = timeB > baselineEpoch || b.id.startsWith('post_');
+
+    // Both are new dynamic uploads: sort newest created first
+    if (isDynamicA && isDynamicB) {
+      return timeB - timeA;
+    }
+    // Dynamic post always goes above default 24
+    if (isDynamicA && !isDynamicB) return -1;
+    if (!isDynamicA && isDynamicB) return 1;
+
+    // Both are default hand-made charts/reels: strict descending order 24, 23, 22 ... 3, 2, 1
+    const orderA = getPostOrderNumber(a);
+    const orderB = getPostOrderNumber(b);
+
+    if (orderA !== orderB && orderA > 0 && orderB > 0) {
+      return orderB - orderA; // 24 comes first, 1 comes last
+    }
+
+    return timeB - timeA;
+  });
+}
+
+// "Recently Added" badge ONLY for posts created within 24 hours of today, and NEVER for default baseline posts
+export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
   if (!createdAt) return false;
+  // Never badge default 24 hand-made charts and reels
+  if (id && (id.startsWith('chart_') || id.startsWith('vid_te_') || id.startsWith('vid_en_') || id === 'vid_1' || id === 'vid_2')) {
+    return false;
+  }
   try {
     const postTime = new Date(createdAt).getTime();
     if (isNaN(postTime)) return false;
+    const baselineEpoch = new Date('2025-01-02T00:00:00.000Z').getTime();
+    if (postTime <= baselineEpoch) return false;
+
     const now = Date.now();
     const diffHours = (now - postTime) / (1000 * 60 * 60);
     return diffHours >= 0 && diffHours <= 24;
@@ -880,6 +930,7 @@ export function isRecentlyAdded(createdAt?: string): boolean {
     return false;
   }
 }
+
 
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return 'tr***@gmail.com';

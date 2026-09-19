@@ -24,7 +24,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded } from '@/lib/store';
+import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending } from '@/lib/store';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 
 declare global {
@@ -154,14 +154,7 @@ export default function HomePage() {
         // 3. API server posts (takes highest priority)
         apiPosts.forEach(p => postMap.set(p.id, p));
 
-        const all = Array.from(postMap.values());
-
-        // Sort descending: newest created posts first
-        all.sort((a, b) => {
-          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return timeB - timeA;
-        });
+        const all = sortPostsDescending(Array.from(postMap.values()));
 
         if (all.length > 0) {
           setVaultCharts(all.slice(0, 6)); // Display top 6 newest charts on homepage
@@ -179,12 +172,7 @@ export default function HomePage() {
           }
         } catch (e) {}
 
-        const fallback = Array.from(postMap.values());
-        fallback.sort((a, b) => {
-          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return timeB - timeA;
-        });
+        const fallback = sortPostsDescending(Array.from(postMap.values()));
         setVaultCharts(fallback.slice(0, 6));
       });
   }, []);
@@ -923,15 +911,15 @@ export default function HomePage() {
                     position: 'absolute',
                     top: '10px',
                     left: '10px',
-                    backgroundColor: isRecentlyAdded(item.createdAt) ? '#5624d0' : '#eceb98',
-                    color: isRecentlyAdded(item.createdAt) ? '#ffffff' : '#3d3c0a',
+                    backgroundColor: isRecentlyAdded(item.createdAt, item.id) ? '#5624d0' : '#eceb98',
+                    color: isRecentlyAdded(item.createdAt, item.id) ? '#ffffff' : '#3d3c0a',
                     padding: '3px 8px',
                     borderRadius: '4px',
                     fontSize: '10.5px',
                     fontWeight: '800',
-                    boxShadow: isRecentlyAdded(item.createdAt) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
+                    boxShadow: isRecentlyAdded(item.createdAt, item.id) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
                   }}>
-                    {isRecentlyAdded(item.createdAt) ? '✨ Recently Added' : 'Bestseller'}
+                    {isRecentlyAdded(item.createdAt, item.id) ? '✨ Recently Added' : 'Bestseller'}
                   </div>
                 </div>
 
