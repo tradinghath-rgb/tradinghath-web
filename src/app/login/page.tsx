@@ -168,12 +168,8 @@ export default function LoginPage() {
         if (isRealAdmin) {
           router.push('/admin');
         } else {
-          // If pro user, go directly to vault dashboard; otherwise go explore homepage
-          if (data.isPro) {
-            router.push('/dashboard');
-          } else {
-            router.push('/');
-          }
+          // Send all regular users (pro or standard) to home page ('/') so they can navigate manually
+          router.push('/');
         }
 
       } else {
