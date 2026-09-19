@@ -299,49 +299,52 @@ export default function AdminPage() {
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState('');
 
-  // Automatically optimize image uploads so they fit cleanly in database and load fast for all members
+  // Compress image to guarantee it fits within Redis limits (target: under 480KB base64)
+  // Iteratively reduces quality until small enough — works for any image size from any device.
   const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = document.createElement('img');
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
       reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const MAX_BYTES = 480 * 1024; // 480 KB limit (safe margin under 700KB Redis limit)
+          const MAX_DIM = 1200; // max width/height for chart images
+
+          // Step 1: Resize if needed
+          let { width, height } = img;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('Canvas not supported')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Step 2: Iteratively reduce JPEG quality until under size limit
+          let quality = 0.82;
+          let result = canvas.toDataURL('image/jpeg', quality);
+
+          // Use string length as byte estimate (base64 chars are all ASCII = 1 byte each)
+          while (result.length > MAX_BYTES && quality > 0.3) {
+            quality -= 0.08;
+            result = canvas.toDataURL('image/jpeg', Math.max(quality, 0.3));
+          }
+
+          resolve(result);
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
         img.src = e.target?.result as string;
       };
-
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        const maxDimension = 1440;
-
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.85);
-          resolve(compressed);
-        } else {
-          resolve(img.src);
-        }
-      };
-
-      img.onerror = () => {
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-      };
-
+      reader.onerror = () => reject(new Error('File read failed'));
       reader.readAsDataURL(file);
     });
   };
@@ -354,22 +357,25 @@ export default function AdminPage() {
 
     if (file.type.startsWith('image/')) {
       try {
-        const compressedBase64 = await compressImage(file);
-        setUploadPreview(compressedBase64);
-        setChartUrl(compressedBase64);
+        const compressed = await compressImage(file);
+        // Only set preview for display — do NOT put base64 in chartUrl.
+        // The actual upload to the server happens in handleCreatePost via /api/upload.
+        setUploadPreview(compressed);
+        setChartUrl(''); // clear any stale URL — the upload will set the real URL
       } catch (err) {
+        // Fallback: read raw (may be large, but handleCreatePost will still try to upload)
         const reader = new FileReader();
-        reader.onload = (event) => {
-          const result = event.target?.result as string;
-          setUploadPreview(result);
-          setChartUrl(result);
+        reader.onload = (ev) => {
+          setUploadPreview(ev.target?.result as string);
+          setChartUrl('');
         };
         reader.readAsDataURL(file);
       }
     } else {
+      // Video file
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
+      reader.onload = (ev) => {
+        const result = ev.target?.result as string;
         setUploadPreview(result);
         setVideoUrl(result);
       };
