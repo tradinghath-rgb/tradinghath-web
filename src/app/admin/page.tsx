@@ -297,6 +297,7 @@ export default function AdminPage() {
 
 
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadPreviews, setUploadPreviews] = useState<string[]>([]);
   const [selectedFileName, setSelectedFileName] = useState('');
 
   // Compress image to guarantee it fits within Redis limits (target: under 480KB base64)
@@ -330,7 +331,7 @@ export default function AdminPage() {
           ctx.drawImage(img, 0, 0, width, height);
 
           // Step 2: Iteratively reduce JPEG quality until under size limit
-          let quality = 0.82;
+          let quality = 0.85;
           let result = canvas.toDataURL('image/jpeg', quality);
 
           // Use string length as byte estimate (base64 chars are all ASCII = 1 byte each)
@@ -350,33 +351,45 @@ export default function AdminPage() {
   };
 
   const handleFileSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    setSelectedFileName(file.name);
+    if (postType === 'chart') {
+      const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+      if (imageFiles.length === 0) return;
 
-    if (file.type.startsWith('image/')) {
-      try {
-        const compressed = await compressImage(file);
-        // Only set preview for display — do NOT put base64 in chartUrl.
-        // The actual upload to the server happens in handleCreatePost via /api/upload.
-        setUploadPreview(compressed);
-        setChartUrl(''); // clear any stale URL — the upload will set the real URL
-      } catch (err) {
-        // Fallback: read raw (may be large, but handleCreatePost will still try to upload)
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setUploadPreview(ev.target?.result as string);
-          setChartUrl('');
-        };
-        reader.readAsDataURL(file);
+      setSelectedFileName(imageFiles.length > 1 ? `${imageFiles.length} charts selected` : imageFiles[0].name);
+
+      const processedImages: string[] = [];
+      for (const file of imageFiles) {
+        try {
+          const compressed = await compressImage(file);
+          processedImages.push(compressed);
+        } catch {
+          await new Promise<void>((res) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              if (ev.target?.result) processedImages.push(ev.target.result as string);
+              res();
+            };
+            reader.onerror = () => res();
+            reader.readAsDataURL(file);
+          });
+        }
       }
+
+      setUploadPreviews(processedImages);
+      setUploadPreview(processedImages[0] || null);
+      setChartUrl('');
     } else {
       // Video file
+      const file = files[0];
+      setSelectedFileName(file.name);
       const reader = new FileReader();
       reader.onload = (ev) => {
         const result = ev.target?.result as string;
         setUploadPreview(result);
+        setUploadPreviews([result]);
         setVideoUrl(result);
       };
       reader.readAsDataURL(file);
@@ -392,6 +405,7 @@ export default function AdminPage() {
     }
 
     const isChart = postType === 'chart';
+    let effectiveChartUrls: string[] = [];
     let effectiveChartUrl = chartUrl || (isChart ? uploadPreview || undefined : undefined);
     let effectiveVideoUrl = videoUrl || (!isChart ? uploadPreview || undefined : undefined);
 
@@ -405,34 +419,40 @@ export default function AdminPage() {
     const isScheduled = effectiveScheduleDateTime && new Date(effectiveScheduleDateTime) > new Date();
     const newPostId = `post_${Date.now()}`;
 
-    // If there is a base64 image, upload it to the server to get a persistent public URL
-    // that is visible to ALL users on ALL devices (not just this browser/device).
-    if (uploadPreview && uploadPreview.startsWith('data:image/') && isChart) {
-      // Also save to IndexedDB so admin sees it instantly while upload is in flight
-      try {
-        await saveMediaFile(newPostId, uploadPreview);
-        effectiveChartUrl = `indexeddb://${newPostId}`; // local admin fallback
-      } catch (e) {}
+    // If images were selected, upload each to the server to get a persistent URL
+    if (isChart && uploadPreviews.length > 0) {
+      for (let i = 0; i < uploadPreviews.length; i++) {
+        const previewItem = uploadPreviews[i];
+        if (previewItem.startsWith('data:image/')) {
+          const imgSubId = `${newPostId}_${i}`;
+          try {
+            await saveMediaFile(imgSubId, previewItem);
+          } catch (e) {}
 
-      try {
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: newPostId, dataUrl: uploadPreview })
-        });
-        const uploadData = await uploadRes.json();
-        if (uploadData.success && uploadData.url) {
-          // Got a real server URL — use it instead of the indexeddb:// reference
-          effectiveChartUrl = uploadData.url;
+          try {
+            const uploadRes = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: imgSubId, dataUrl: previewItem })
+            });
+            const uploadData = await uploadRes.json();
+            if (uploadData.success && uploadData.url) {
+              effectiveChartUrls.push(uploadData.url);
+            } else {
+              effectiveChartUrls.push(previewItem);
+            }
+          } catch (uploadErr) {
+            effectiveChartUrls.push(previewItem);
+          }
         } else {
-          console.warn('[upload] Server rejected image:', uploadData.error);
-          // Fall back to raw base64 so at least the server post has an image
-          effectiveChartUrl = uploadPreview;
+          effectiveChartUrls.push(previewItem);
         }
-      } catch (uploadErr) {
-        console.warn('[upload] Could not upload image to server, using base64:', uploadErr);
-        effectiveChartUrl = uploadPreview;
       }
+      if (effectiveChartUrls.length > 0) {
+        effectiveChartUrl = effectiveChartUrls[0];
+      }
+    } else if (chartUrl) {
+      effectiveChartUrls = [chartUrl];
     }
 
     const newPostPayload: PostItem = {
@@ -441,11 +461,12 @@ export default function AdminPage() {
       description: postDesc ? postDesc.trim() : '',
       type: postType,
       language: postLanguage,
-      chartUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      chartUrl: isChart ? (effectiveChartUrl || '/charts/reel-1chart-1.jpg') : undefined,
+      chartUrls: isChart && effectiveChartUrls.length > 0 ? effectiveChartUrls : undefined,
       videoUrl: effectiveVideoUrl || undefined,
       videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
       videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
-      downloadUrl: isChart ? (effectiveChartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      downloadUrl: isChart ? (effectiveChartUrl || '/charts/reel-1chart-1.jpg') : undefined,
       scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()
@@ -465,10 +486,12 @@ export default function AdminPage() {
       setPosts(prev => [newPostPayload, ...prev.filter(p => p.id !== newPostId)]);
 
       // 2. Publish to backend server API
-      // IMPORTANT: Never send indexeddb:// references to the server — they are browser-local only.
-      // If effectiveChartUrl is still indexeddb:// (upload failed), fall back to the raw base64 data.
       const safeServerChartUrl = isChart
         ? (effectiveChartUrl?.startsWith('indexeddb://') ? (uploadPreview || undefined) : effectiveChartUrl)
+        : undefined;
+
+      const safeServerChartUrls = isChart && effectiveChartUrls.length > 0
+        ? effectiveChartUrls.map(u => u?.startsWith('indexeddb://') ? (uploadPreview || undefined) : u).filter(Boolean)
         : undefined;
 
       const serverPayload = {
@@ -478,6 +501,7 @@ export default function AdminPage() {
         type: postType,
         language: postLanguage,
         chartUrl: safeServerChartUrl,
+        chartUrls: safeServerChartUrls,
         downloadUrl: safeServerChartUrl,
         videoUrl: effectiveVideoUrl || undefined,
         videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
@@ -502,6 +526,7 @@ export default function AdminPage() {
       setChartUrl('');
       setVideoUrl('');
       setUploadPreview(null);
+      setUploadPreviews([]);
       setSelectedFileName('');
       setScheduleDate('');
       setScheduleTime('');
@@ -1283,7 +1308,8 @@ export default function AdminPage() {
                     type="file"
                     style={{ display: 'none' }}
                     id="admin-file-input"
-                    accept="image/*,video/*"
+                    accept={postType === 'chart' ? "image/*" : "image/*,video/*"}
+                    multiple={postType === 'chart'}
                     onChange={handleFileSelection}
                   />
                   <div>
@@ -1302,24 +1328,40 @@ export default function AdminPage() {
                         boxShadow: '0 2px 4px rgba(86, 36, 208, 0.2)'
                       }}
                     >
-                      Open Phone Gallery
+                      {postType === 'chart' ? 'Open Phone Gallery (Select 1 or Multiple Charts)' : 'Open Phone Gallery'}
                     </label>
                   </div>
 
-                  {uploadPreview && (
-                    <div style={{ marginTop: '14px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #d1d7dc', backgroundColor: '#000', maxHeight: '200px' }}>
+                  {uploadPreviews && uploadPreviews.length > 0 && (
+                    <div style={{ marginTop: '14px' }}>
                       {postType === 'chart' ? (
-                        <img
-                          src={uploadPreview}
-                          alt="Upload preview"
-                          style={{ width: '100%', maxHeight: '200px', objectFit: 'contain' }}
-                        />
+                        <div>
+                          <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#1c1d1f', marginBottom: '6px' }}>
+                            Selected Chart Blueprints ({uploadPreviews.length}):
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+                            {uploadPreviews.map((prevImg, idx) => (
+                              <div key={idx} style={{ position: 'relative', flexShrink: 0, width: '110px', height: '80px', borderRadius: '6px', overflow: 'hidden', border: '1.5px solid #5624d0', backgroundColor: '#000' }}>
+                                <img
+                                  src={prevImg}
+                                  alt={`Chart ${idx + 1}`}
+                                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                                <div style={{ position: 'absolute', bottom: '2px', right: '4px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', fontWeight: '700' }}>
+                                  #{idx + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       ) : (
-                        <video
-                          src={uploadPreview}
-                          controls
-                          style={{ width: '100%', maxHeight: '200px' }}
-                        />
+                        <div style={{ borderRadius: '6px', overflow: 'hidden', border: '1px solid #d1d7dc', backgroundColor: '#000', maxHeight: '200px' }}>
+                          <video
+                            src={uploadPreview || ''}
+                            controls
+                            style={{ width: '100%', maxHeight: '200px' }}
+                          />
+                        </div>
                       )}
                     </div>
                   )}
@@ -1905,6 +1947,7 @@ export default function AdminPage() {
                 {previewPostModal.type === 'chart' ? (
                   <UnifiedChartImage
                     src={previewPostModal.chartUrl}
+                    chartUrls={previewPostModal.chartUrls}
                     alt={previewPostModal.title}
                     style={{ maxHeight: '420px', objectFit: 'contain' }}
                   />

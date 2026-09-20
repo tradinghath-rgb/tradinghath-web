@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       type, 
       language, 
       chartUrl, 
+      chartUrls,
       videoUrl, 
       videoUrlTelugu,
       videoUrlEnglish,
@@ -58,17 +59,22 @@ export async function POST(req: Request) {
     const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
     const targetId = id || postId || `post_${Date.now()}`;
 
+    const effectiveChartUrls = Array.isArray(chartUrls) && chartUrls.length > 0 
+      ? chartUrls 
+      : (chartUrl ? [chartUrl] : undefined);
+
     const newPost: PostItem = {
       id: targetId,
       title: title.trim(),
       description: description ? description.trim() : '',
       type: type || 'chart',
       language: language || 'both',
-      chartUrl: isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined,
+      chartUrl: isChart ? (chartUrl || effectiveChartUrls?.[0] || '/charts/reel-1chart-1.jpg') : undefined,
+      chartUrls: isChart ? effectiveChartUrls : undefined,
       videoUrl: videoUrl || (!isChart ? 'https://www.youtube.com/embed/ss24aZbCsYs?autoplay=0' : undefined),
       videoUrlTelugu: videoUrlTelugu || (language === 'telugu' || language === 'both' ? videoUrl : undefined),
       videoUrlEnglish: videoUrlEnglish || (language === 'english' || language === 'both' ? videoUrl : undefined),
-      downloadUrl: downloadUrl || (isChart ? (chartUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80') : undefined),
+      downloadUrl: downloadUrl || (isChart ? (chartUrl || effectiveChartUrls?.[0] || '/charts/reel-1chart-1.jpg') : undefined),
       scheduledAt: scheduledAt || undefined,
       published: !isScheduled,
       createdAt: new Date().toISOString()

@@ -132,14 +132,21 @@ export default function HomePage() {
       })
       .catch(console.error);
 
-    const DEFAULT_CHART = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+    const DEFAULT_CHART = '/charts/reel-1chart-1.jpg';
 
     // Sanitize a post's chartUrl — remove browser-local or broken references
     const sanitizePost = (p: PostItem): PostItem => {
-      if (!p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/')) {
-        return { ...p, chartUrl: DEFAULT_CHART, downloadUrl: DEFAULT_CHART };
-      }
-      return p;
+      const hasBadChartUrl = !p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/');
+      const safeChartUrl = hasBadChartUrl ? (p.chartUrls?.[0] || DEFAULT_CHART) : p.chartUrl;
+      const safeChartUrls = Array.isArray(p.chartUrls) && p.chartUrls.length > 0 
+        ? p.chartUrls.map(u => (!u || u.startsWith('indexeddb://') || u.startsWith('data:image/')) ? DEFAULT_CHART : u)
+        : [safeChartUrl];
+      return {
+        ...p,
+        chartUrl: safeChartUrl,
+        chartUrls: safeChartUrls,
+        downloadUrl: p.downloadUrl || safeChartUrl
+      };
     };
 
     // Function to load and sync all live charts in descending order so new charts appear first on the homepage
@@ -928,7 +935,9 @@ export default function HomePage() {
                 <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa', overflow: 'hidden' }}>
                   <UnifiedChartImage
                     src={item.chartUrl}
+                    chartUrls={item.chartUrls}
                     alt={item.title}
+                    showNavigationControls={false}
                     style={{
                       height: '170px',
                       objectFit: 'cover',

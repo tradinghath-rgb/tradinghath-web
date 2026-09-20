@@ -72,6 +72,7 @@ export default function DashboardPage() {
   });
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
   const [isChartExpanded, setIsChartExpanded] = useState(false);
+  const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [activeVideoModal, setActiveVideoModal] = useState<string | null>(null);
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [pdfProgress, setPdfProgress] = useState('');
@@ -183,10 +184,20 @@ export default function DashboardPage() {
     }
 
     // Function to load and sync all published posts (from API, local storage fallback, and INITIAL_POSTS)
-    const DEFAULT_CHART_URL = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80';
+    const DEFAULT_CHART_URL = '/charts/reel-1chart-1.jpg';
     const sanitizePost = (p: PostItem): PostItem => {
-      if (p.type === 'chart' && (!p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/'))) {
-        return { ...p, chartUrl: DEFAULT_CHART_URL, downloadUrl: DEFAULT_CHART_URL };
+      if (p.type === 'chart') {
+        const hasBadChartUrl = !p.chartUrl || p.chartUrl.startsWith('indexeddb://') || p.chartUrl.startsWith('data:image/');
+        const safeChartUrl = hasBadChartUrl ? (p.chartUrls?.[0] || DEFAULT_CHART_URL) : p.chartUrl;
+        const safeChartUrls = Array.isArray(p.chartUrls) && p.chartUrls.length > 0 
+          ? p.chartUrls.map(u => (!u || u.startsWith('indexeddb://') || u.startsWith('data:image/')) ? DEFAULT_CHART_URL : u)
+          : [safeChartUrl];
+        return {
+          ...p,
+          chartUrl: safeChartUrl,
+          chartUrls: safeChartUrls,
+          downloadUrl: p.downloadUrl || safeChartUrl
+        };
       }
       return p;
     };
@@ -1271,7 +1282,15 @@ export default function DashboardPage() {
                     {/* Chart Download Action */}
                     <button
                       type="button"
-                      onClick={(e) => handleDownloadChart(e, selectedChart.downloadUrl || selectedChart.chartUrl || '', selectedChart.title)}
+                      onClick={(e) => {
+                        const targetImg = (selectedChart.chartUrls && selectedChart.chartUrls[activeChartIndex]) 
+                          ? selectedChart.chartUrls[activeChartIndex] 
+                          : (selectedChart.downloadUrl || selectedChart.chartUrl || '');
+                        const targetTitle = (selectedChart.chartUrls && selectedChart.chartUrls.length > 1) 
+                          ? `${selectedChart.title} - Chart ${activeChartIndex + 1}` 
+                          : selectedChart.title;
+                        handleDownloadChart(e, targetImg, targetTitle);
+                      }}
                       className="btn-trading-glow"
                       style={{ fontSize: '13px', padding: '9px 18px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
@@ -1342,7 +1361,9 @@ export default function DashboardPage() {
                     >
                       <UnifiedChartImage
                         src={selectedChart.chartUrl}
+                        chartUrls={selectedChart.chartUrls}
                         alt={selectedChart.title}
+                        onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
                         style={{ maxHeight: '380px', objectFit: 'contain' }}
                       />
                       <div style={{
@@ -2162,7 +2183,9 @@ export default function DashboardPage() {
             >
               <UnifiedChartImage
                 src={selectedChart.chartUrl}
+                chartUrls={selectedChart.chartUrls}
                 alt={selectedChart.title}
+                onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
                 style={{ maxHeight: 'calc(100vh - 130px)', objectFit: 'contain' }}
               />
             </div>

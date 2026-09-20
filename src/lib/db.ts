@@ -295,6 +295,9 @@ export async function dbSaveAllPosts(posts: PostItem[]): Promise<void> {
       if (updated.downloadUrl?.startsWith('data:image/')) {
         updated.downloadUrl = DEFAULT_CHART_FALLBACK;
       }
+      if (Array.isArray(updated.chartUrls)) {
+        updated.chartUrls = updated.chartUrls.map(u => u?.startsWith('data:image/') ? DEFAULT_CHART_FALLBACK : u);
+      }
       return updated;
     });
     await redis.set(KV_POSTS_KEY, sanitized);

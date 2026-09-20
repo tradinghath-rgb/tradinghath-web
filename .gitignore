@@ -5,3 +5,7 @@ node_modules
 
 .vercel
 .env*
+charts images/
+english/
+telugu/
+*.mp4
