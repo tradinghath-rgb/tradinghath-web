@@ -87,9 +87,9 @@ export default function UnifiedChartImage({
 
           return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : fallbackSrc;
         } else if (imgSrc.startsWith('/charts/')) {
-          // If in production or cloud, or if local file is missing, GitHub raw repository serves the permanent copy
+          // Stream charts from Cloudflare R2 bucket with 10GB free space and zero bandwidth fees
           if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('192.168.')) {
-            return `https://raw.githubusercontent.com/tradinghath-rgb/tradinghath-web/main/public${imgSrc}`;
+            return `https://pub-a24748b3261241fa82743833742388ea.r2.dev${imgSrc}`;
           }
         }
         return imgSrc;
@@ -181,10 +181,18 @@ export default function UnifiedChartImage({
         }}
         onError={(e) => {
           const currentUrl = e.currentTarget.src;
-          if (currentUrl.includes('/charts/') && !currentUrl.includes('raw.githubusercontent.com')) {
+          // Failover from Cloudflare R2 to GitHub raw repository
+          if (currentUrl.includes('pub-a24748b3261241fa82743833742388ea.r2.dev')) {
             const chartPath = currentUrl.split('/charts/')[1];
             if (chartPath) {
               e.currentTarget.src = `https://raw.githubusercontent.com/tradinghath-rgb/tradinghath-web/main/public/charts/${chartPath}`;
+              return;
+            }
+          }
+          if (currentUrl.includes('/charts/') && !currentUrl.includes('pub-a24748b3261241fa82743833742388ea.r2.dev')) {
+            const chartPath = currentUrl.split('/charts/')[1];
+            if (chartPath) {
+              e.currentTarget.src = `https://pub-a24748b3261241fa82743833742388ea.r2.dev/charts/${chartPath}`;
               return;
             }
           }

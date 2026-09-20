@@ -17,20 +17,22 @@ const s3 = new S3Client({
   }
 });
 
-async function uploadFolder(localDir, s3Prefix) {
+async function uploadFolder(localDir, s3Prefix, allowedExtensions = ['.mp4']) {
   const files = fs.readdirSync(localDir);
   for (const file of files) {
     const fullPath = path.join(localDir, file);
     const stat = fs.statSync(fullPath);
-    if (stat.isFile() && file.endsWith('.mp4')) {
+    const ext = path.extname(file).toLowerCase();
+    if (stat.isFile() && allowedExtensions.includes(ext)) {
       const s3Key = `${s3Prefix}/${file}`;
       console.log(`Uploading: ${s3Key} (${(stat.size / 1024 / 1024).toFixed(2)} MB)...`);
       const fileStream = fs.createReadStream(fullPath);
+      const contentType = ext === '.mp4' ? 'video/mp4' : (ext === '.png' ? 'image/png' : 'image/jpeg');
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: s3Key,
         Body: fileStream,
-        ContentType: 'video/mp4'
+        ContentType: contentType
       });
       try {
         await s3.send(command);
@@ -43,24 +45,25 @@ async function uploadFolder(localDir, s3Prefix) {
 }
 
 async function main() {
-  console.log('--- Starting Cloudflare R2 Video Sync ---');
+  console.log('--- Starting Cloudflare R2 Media Sync ---');
   const projectRoot = path.resolve(__dirname, '..');
+  const chartsDir = path.join(projectRoot, 'public', 'charts');
   const teluguDir = path.join(projectRoot, 'public', 'videos', 'telugu');
   const englishDir = path.join(projectRoot, 'public', 'videos', 'english');
 
-  console.log('Looking for Telugu videos in:', teluguDir);
-  console.log('Looking for English videos in:', englishDir);
+  if (fs.existsSync(chartsDir)) {
+    console.log('\n--- Uploading Charts to Cloudflare R2 ---');
+    await uploadFolder(chartsDir, 'charts', ['.jpg', '.jpeg', '.png', '.webp']);
+  }
 
   if (fs.existsSync(teluguDir)) {
     console.log('\n--- Uploading Telugu Videos ---');
-    await uploadFolder(teluguDir, 'videos/telugu');
-  } else {
-    console.warn('Telugu dir not found!');
+    await uploadFolder(teluguDir, 'videos/telugu', ['.mp4']);
   }
 
   if (fs.existsSync(englishDir)) {
     console.log('\n--- Uploading English Videos ---');
-    await uploadFolder(englishDir, 'videos/english');
+    await uploadFolder(englishDir, 'videos/english', ['.mp4']);
   } else {
     console.warn('English dir not found!');
   }
