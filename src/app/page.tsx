@@ -208,10 +208,10 @@ export default function HomePage() {
     const handleWindowFocus = () => loadCharts();
     window.addEventListener('focus', handleWindowFocus);
 
-    // Rotate reviews every 12 hours while page is open
+    // Rotate reviews automatically every 2 hours while page is open
     const reviewsInterval = setInterval(() => {
       setReviews(getRotatingReviews());
-    }, 12 * 60 * 60 * 1000);
+    }, 2 * 60 * 60 * 1000);
 
     return () => {
       clearInterval(chartsInterval);

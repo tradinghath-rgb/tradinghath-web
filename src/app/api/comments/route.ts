@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_REVIEWS, ReviewItem, maskEmail } from '@/lib/store';
+import { getRotatingReviews, ReviewItem, maskEmail } from '@/lib/store';
 import { dbGetAllComments, dbAddComment, dbDeleteComment, dbGetAllUsersRaw, CommentRecord } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -7,10 +7,11 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const dbComments = await dbGetAllComments();
+    const currentRotatingSeed = getRotatingReviews();
     
-    // Combine persistent database comments with initial seed reviews
+    // Combine persistent database comments with the 2-hour rotating reviews
     const existingIds = new Set(dbComments.map(c => c.id));
-    const seedReviews = INITIAL_REVIEWS.filter(r => !existingIds.has(r.id));
+    const seedReviews = currentRotatingSeed.filter(r => !existingIds.has(r.id));
     const allReviews = [...dbComments, ...seedReviews];
 
     return NextResponse.json({
@@ -18,7 +19,7 @@ export async function GET() {
       reviews: allReviews
     });
   } catch (err: any) {
-    return NextResponse.json({ success: true, reviews: INITIAL_REVIEWS });
+    return NextResponse.json({ success: true, reviews: getRotatingReviews() });
   }
 }
 
