@@ -1020,8 +1020,56 @@ export const ALL_REVIEWS: ReviewItem[] = [
   { id: 'r36', userMasked: 'al****ok@gmail.com',   rating: 5, comment: 'The master PDF download worked like magic! Got all charts organized sequentially in high resolution. Best ₹399 decision of my trading career.', date: '4 days ago', verified: true }
 ];
 
+// Formats genuine timestamps for real user comments based on actual createdAt
+export function formatRealTimestamp(createdAt?: string): string {
+  if (!createdAt) return 'Recently';
+  try {
+    const postTime = new Date(createdAt).getTime();
+    if (isNaN(postTime)) return 'Recently';
+    const now = Date.now();
+    const diffMs = now - postTime;
+    if (diffMs < 0) return 'Just now';
+
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSeconds < 60) {
+      return 'Just now';
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} ${diffMinutes === 1 ? 'min' : 'mins'} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    }
+  } catch {
+    return 'Recently';
+  }
+}
+
+// Relative dynamic time offsets within a 2-hour rotation window for generated reviews
+const GENERATED_TIME_OFFSETS = [
+  '8 mins ago',
+  '24 mins ago',
+  '45 mins ago',
+  '1 hour ago',
+  '1 hour ago',
+  '2 hours ago'
+];
+
 // Returns 6 different reviews every 2 hours — deterministic so all users across devices see a fresh, synchronized set of high-hype reviews!
 // Dynamically cycles through Hindi, Hinglish, and English reviews praising charts and Telugu/English videos.
+// Also calculates fresh dynamic relative timings for the generated reviews based on the current 2-hour slot.
 export function getRotatingReviews(): ReviewItem[] {
   const INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours
   const BATCH_SIZE = 6;
@@ -1029,8 +1077,15 @@ export function getRotatingReviews(): ReviewItem[] {
   const total = ALL_REVIEWS.length;
   const startIndex = (slot * BATCH_SIZE) % total;
   const result: ReviewItem[] = [];
+
   for (let i = 0; i < BATCH_SIZE; i++) {
-    result.push(ALL_REVIEWS[(startIndex + i) % total]);
+    const original = ALL_REVIEWS[(startIndex + i) % total];
+    // Dynamic freshness for generated reviews:
+    const dynamicDate = GENERATED_TIME_OFFSETS[i % GENERATED_TIME_OFFSETS.length];
+    result.push({
+      ...original,
+      date: dynamicDate
+    });
   }
   return result;
 }

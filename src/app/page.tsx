@@ -210,7 +210,14 @@ export default function HomePage() {
 
     // Rotate reviews automatically every 2 hours while page is open
     const reviewsInterval = setInterval(() => {
-      setReviews(getRotatingReviews());
+      fetch('/api/comments')
+        .then(res => res.json())
+        .then(data => {
+          if (data.reviews) setReviews(data.reviews);
+        })
+        .catch(() => {
+          setReviews(getRotatingReviews());
+        });
     }, 2 * 60 * 60 * 1000);
 
     return () => {
