@@ -251,20 +251,14 @@ export default function DashboardPage() {
                 }
               }
 
-              const topChart = allPosts.find(p => p.type === 'chart');
-              if (!topChart) return prev;
-
-              // If currently selected chart is not in allPosts, or is a default baseline chart (e.g. chart_24 or chart_1),
-              // or user hasn't explicitly clicked a different chart yet:
-              // always show the newest top chart (like the newly uploaded admin chart).
-              if (!prev || prev.id.startsWith('chart_')) {
-                return topChart;
+              // If user has already selected a chart (e.g. clicked Reel 15, Reel 3, etc.),
+              // KEEP their selection intact across background sync refreshes!
+              if (prev && allPosts.some(p => p.id === prev.id)) {
+                return allPosts.find(p => p.id === prev.id) || prev;
               }
 
-              // If user selected a specific custom post that still exists, keep it
-              if (allPosts.some(p => p.id === prev.id)) return prev;
-
-              return topChart;
+              const topChart = allPosts.find(p => p.type === 'chart');
+              return topChart || prev;
             });
           }
         })
@@ -296,15 +290,12 @@ export default function DashboardPage() {
               }
             }
 
-            const topChart = combined.find(p => p.type === 'chart');
-            if (!topChart) return prev;
-
-            if (!prev || prev.id.startsWith('chart_')) {
-              return topChart;
+            if (prev && combined.some(p => p.id === prev.id)) {
+              return combined.find(p => p.id === prev.id) || prev;
             }
 
-            if (combined.some(p => p.id === prev.id)) return prev;
-            return topChart;
+            const topChart = combined.find(p => p.type === 'chart');
+            return topChart || prev;
           });
         });
     };
@@ -1583,6 +1574,10 @@ export default function DashboardPage() {
                     key={post.id}
                     onClick={() => {
                       setSelectedChart(post);
+                      setActiveChartIndex(0);
+                      try {
+                        safeStorage.setItem('tradinghath_selected_chart', post.id);
+                      } catch (e) {}
                       window.scrollTo({ top: 120, behavior: 'smooth' });
                     }}
                     style={{
