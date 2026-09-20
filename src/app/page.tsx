@@ -1041,18 +1041,15 @@ export default function HomePage() {
 
       </section>
 
-      {/* Community Comments & Star-Masked Reviews Section */}
+      {/* Community Comments & Reviews Section */}
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '50px 16px', borderTop: '1px solid #d1d7dc' }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <span style={{ fontSize: '11px', color: '#5624d0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
             Verified Community Feedback
           </span>
           <h2 style={{ fontSize: '28px', fontWeight: '800', marginTop: '6px', color: '#1c1d1f' }}>
-            What Traders Are Saying (Privacy Protected)
+            What Traders Are Saying
           </h2>
-          <p style={{ fontSize: '13px', color: '#6a6f73', marginTop: '6px' }}>
-            To safeguard member privacy, all emails are automatically masked (e.g. <code>tr*****th@gmail.com</code>).
-          </p>
         </div>
 
         {/* Review Cards Grid */}
@@ -1090,12 +1087,9 @@ export default function HomePage() {
           padding: '28px',
           boxShadow: '0 2px 10px rgba(0,0,0,0.08)'
         }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '6px', color: '#1c1d1f' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: '#1c1d1f' }}>
             Share Your Experience
           </h3>
-          <p style={{ fontSize: '12.5px', color: '#6a6f73', marginBottom: '18px' }}>
-            Your email is encrypted and starred. No personal credentials are ever exposed.
-          </p>
 
           {commentError && (
             <div style={{ backgroundColor: '#fce8e6', border: '1px solid #fad2cf', color: '#c5221f', padding: '10px 14px', borderRadius: '6px', fontSize: '12.5px', marginBottom: '14px', fontWeight: '600' }}>
