@@ -401,9 +401,72 @@ export default function DashboardPage() {
       return;
     }
 
-    const allCharts = posts.filter(p => p.type === 'chart');
-    if (allCharts.length === 0) {
+    // 1. Sort all charts systematically in ascending numerical order (Chart 1 -> Chart 24 -> additional charts)
+    const extractChartNumber = (item: PostItem): number => {
+      // Try to match 'Chart X' or 'Reel X' or 'chart_X'
+      const titleMatch = item.title.match(/(?:Chart|Reel)\s*#?\s*(\d+)/i);
+      if (titleMatch) return parseInt(titleMatch[1], 10);
+      const idMatch = item.id.match(/chart_(\d+)/i);
+      if (idMatch) return parseInt(idMatch[1], 10);
+      return 99999;
+    };
+
+    const rawCharts = posts.filter(p => p.type === 'chart' && p.published !== false);
+    if (rawCharts.length === 0) {
       alert('No charts currently available to compile.');
+      return;
+    }
+
+    const sortedPosts = [...rawCharts].sort((a, b) => {
+      const numA = extractChartNumber(a);
+      const numB = extractChartNumber(b);
+      if (numA !== numB) return numA - numB;
+      return new Date(a.createdAt || '').getTime() - new Date(b.createdAt || '').getTime();
+    });
+
+    // 2. Expand all chart items into individual PDF pages (handling multi-chart setups like Reel 1 and Reel 15)
+    interface PdfChartPage {
+      chartNumber: number;
+      chartNumberLabel: string;
+      title: string;
+      description: string;
+      imgUrl: string;
+      subIndex: number;
+      subTotal: number;
+    }
+
+    const pdfPages: PdfChartPage[] = [];
+    sortedPosts.forEach((post) => {
+      const chartNum = extractChartNumber(post);
+      const urls = (Array.isArray(post.chartUrls) && post.chartUrls.length > 0)
+        ? post.chartUrls
+        : [post.chartUrl || post.downloadUrl || ''];
+
+      urls.forEach((url, idx) => {
+        if (!url) return;
+        const isMulti = urls.length > 1;
+        const numLabel = chartNum < 99999 
+          ? (isMulti ? `CHART #${chartNum} (Part ${idx + 1} of ${urls.length})` : `CHART #${chartNum}`)
+          : `CHART SETUP`;
+
+        const titleText = isMulti 
+          ? `${post.title} — Part ${idx + 1}`
+          : post.title;
+
+        pdfPages.push({
+          chartNumber: chartNum,
+          chartNumberLabel: numLabel,
+          title: titleText,
+          description: post.description || 'Master institutional price action & liquidity blueprint.',
+          imgUrl: url,
+          subIndex: idx + 1,
+          subTotal: urls.length
+        });
+      });
+    });
+
+    if (pdfPages.length === 0) {
+      alert('No valid chart images found to build PDF.');
       return;
     }
 
@@ -448,14 +511,14 @@ export default function DashboardPage() {
                 return;
               }
               ctx.drawImage(img, 0, 0);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
               resolve({ dataUrl, width: canvas.width, height: canvas.height });
             } catch (err) {
               resolve(null);
             }
           };
           img.onerror = () => resolve(null);
-          img.src = imgUrl;
+          img.src = finalUrl;
         });
       };
 
@@ -480,29 +543,29 @@ export default function DashboardPage() {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(148, 163, 184);
-      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide', 36, 70);
+      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide (Chart 1 to 24+)', 36, 70);
 
       // Metadata Box
       doc.setFillColor(17, 23, 38);
-      doc.roundedRect(36, 85, pageWidth - 60, 48, 4, 4, 'F');
+      doc.roundedRect(36, 85, pageWidth - 60, 52, 4, 4, 'F');
 
       doc.setFontSize(11);
       doc.setTextColor(255, 255, 255);
-      doc.text(`Total Setups Included: ${allCharts.length} Blueprints`, 44, 98);
-      doc.text(`Edition / Download Date: ${currentDate}`, 44, 108);
-      doc.text(`Licensed To: ${user?.email || 'Pro Member'} (${user?.username || 'Trader'})`, 44, 118);
-      doc.setTextColor(0, 230, 118);
-      doc.text(`Status: Verified Lifetime Pro Vault Access`, 44, 126);
+      doc.text(`Total Chart Pages: ${pdfPages.length} Blueprints (${sortedPosts.length} Setups Included)`, 44, 98);
+      doc.text(`Ordering: Systematic Numerical Ascending Order (Chart 1 to ${Math.max(...pdfPages.map(p => p.chartNumber < 99999 ? p.chartNumber : 0))})`, 44, 108);
+      doc.text(`Edition / Download Date: ${currentDate}`, 44, 118);
+      doc.text(`Licensed To: ${user?.email || 'Pro Member'} (${user?.username || 'Trader'})`, 44, 128);
 
       // Footer note
       doc.setFontSize(9);
       doc.setTextColor(100, 116, 139);
-      doc.text('Confidential & Proprietary. Created by TradingHath (tradinghath@gmail.com). All rights reserved.', 36, pageHeight - 20);
+      doc.text('Confidential & Proprietary. Created by TradingHath (tradinghath@gmail.com). All rights reserved.', 36, pageHeight - 16);
 
-      // 2. CHART PAGES
-      for (let i = 0; i < allCharts.length; i++) {
-        const chart = allCharts[i];
-        setPdfProgress(`Adding chart ${i + 1} of ${allCharts.length}: ${chart.title.slice(0, 25)}...`);
+      // 2. CHART PAGES (Systematic ascending order)
+      const totalPages = pdfPages.length;
+      for (let i = 0; i < totalPages; i++) {
+        const item = pdfPages[i];
+        setPdfProgress(`Adding page ${i + 1} of ${totalPages}: ${item.title.slice(0, 30)}...`);
 
         doc.addPage('a4', 'landscape');
 
@@ -515,29 +578,28 @@ export default function DashboardPage() {
         doc.rect(0, 0, pageWidth, 22, 'F');
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
+        doc.setFontSize(11);
         doc.setTextColor(0, 229, 255);
-        doc.text(`CHART #${i + 1}`, 14, 14);
+        doc.text(item.chartNumberLabel, 14, 14);
 
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(13);
-        const titleTrimmed = chart.title.length > 55 ? `${chart.title.slice(0, 55)}...` : chart.title;
-        doc.text(titleTrimmed, 46, 14);
+        doc.setFontSize(12);
+        const titleTrimmed = item.title.length > 55 ? `${item.title.slice(0, 55)}...` : item.title;
+        doc.text(titleTrimmed, 75, 14);
 
         doc.setFontSize(10);
         doc.setTextColor(148, 163, 184);
         doc.text(`TradingHath Vault`, pageWidth - 45, 14);
 
         // Chart Image Processing
-        const imgUrl = chart.chartUrl || chart.downloadUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200';
-        const imgResult = await loadImageDataUrl(imgUrl);
+        const imgResult = await loadImageDataUrl(item.imgUrl);
 
         const imgX = 14;
-        const imgY = 28;
+        const imgY = 26;
         const maxImgWidth = pageWidth - 28;
-        const maxImgHeight = pageHeight - 65;
+        const maxImgHeight = pageHeight - 64;
 
-        if (imgResult) {
+        if (imgResult && imgResult.width > 0 && imgResult.height > 0) {
           let renderW = maxImgWidth;
           let renderH = (imgResult.height / imgResult.width) * renderW;
           if (renderH > maxImgHeight) {
@@ -545,38 +607,39 @@ export default function DashboardPage() {
             renderW = (imgResult.width / imgResult.height) * renderH;
           }
           const centeredX = imgX + (maxImgWidth - renderW) / 2;
-          doc.addImage(imgResult.dataUrl, 'JPEG', centeredX, imgY, renderW, renderH, undefined, 'FAST');
+          const centeredY = imgY + (maxImgHeight - renderH) / 2;
+          doc.addImage(imgResult.dataUrl, 'JPEG', centeredX, centeredY, renderW, renderH, undefined, 'FAST');
         } else {
           // Fallback placeholder box
           doc.setFillColor(20, 28, 45);
           doc.rect(imgX, imgY, maxImgWidth, maxImgHeight, 'F');
           doc.setTextColor(148, 163, 184);
           doc.setFontSize(12);
-          doc.text(`[${chart.title}]`, pageWidth / 2, imgY + maxImgHeight / 2, { align: 'center' });
+          doc.text(`[${item.title}]`, pageWidth / 2, imgY + maxImgHeight / 2, { align: 'center' });
         }
 
         // Bottom Description Box
-        const descBoxY = pageHeight - 32;
+        const descBoxY = pageHeight - 34;
         doc.setFillColor(15, 20, 32);
-        doc.roundedRect(14, descBoxY, pageWidth - 28, 24, 3, 3, 'F');
+        doc.roundedRect(14, descBoxY, pageWidth - 28, 26, 3, 3, 'F');
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9.5);
         doc.setTextColor(0, 229, 255);
-        doc.text('Key Strategy Rule:', 18, descBoxY + 7);
+        doc.text('Key Strategy Rule:', 18, descBoxY + 8);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(226, 232, 240);
-        const cleanDesc = (chart.description || 'Master level price action setup and trade management rules.')
+        const cleanDesc = (item.description || 'Master level price action setup and trade management rules.')
           .replace(/\r?\n|\r/g, ' ');
-        const wrappedDesc = doc.splitTextToSize(cleanDesc, pageWidth - 65);
-        doc.text(wrappedDesc.slice(0, 2), 18, descBoxY + 14);
+        const wrappedDesc = doc.splitTextToSize(cleanDesc, pageWidth - 70);
+        doc.text(wrappedDesc.slice(0, 2), 18, descBoxY + 16);
 
         // Page Number
         doc.setFontSize(8.5);
         doc.setTextColor(100, 116, 139);
-        doc.text(`Page ${i + 2} of ${allCharts.length + 1}`, pageWidth - 36, descBoxY + 14);
+        doc.text(`Page ${i + 2} of ${totalPages + 1}`, pageWidth - 38, descBoxY + 16);
       }
 
       setPdfProgress('Finalizing and saving PDF...');
