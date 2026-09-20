@@ -21,7 +21,8 @@ import {
   AlertCircle,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Eye
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
 import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending, getRotatingReviews } from '@/lib/store';
@@ -599,6 +600,25 @@ export default function HomePage() {
             ) : (
               <>
                 <Link
+                  href="/dashboard"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#5624d0',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    border: '1px solid #d8b4fe',
+                    backgroundColor: '#f3ecfc',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  <Eye size={14} /> Explore Vault
+                </Link>
+
+                <Link
                   href="/login"
                   style={{
                     fontSize: '13px',
@@ -909,15 +929,13 @@ export default function HomePage() {
               <div
                 key={item.id || idx}
                 onClick={() => {
-                  if (isPro || isAdmin) {
-                    if (item.id) {
+                  if (item.id) {
+                    try {
                       safeStorage.setItem('tradinghath_selected_chart', item.id);
-                      router.push(`/dashboard?chart=${encodeURIComponent(item.id)}`);
-                    } else {
-                      router.push('/dashboard');
-                    }
+                    } catch (e) {}
+                    router.push(`/dashboard?chart=${encodeURIComponent(item.id)}`);
                   } else {
-                    scrollToPricing();
+                    router.push('/dashboard');
                   }
                 }}
                 style={{

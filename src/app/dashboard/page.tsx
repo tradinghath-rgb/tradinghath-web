@@ -82,6 +82,8 @@ export default function DashboardPage() {
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockModalTitle, setUnlockModalTitle] = useState('Exclusive Member Content');
 
   useEffect(() => {
     let verifyIntervalId: NodeJS.Timeout | null = null;
@@ -349,6 +351,12 @@ export default function DashboardPage() {
     e.preventDefault();
     e.stopPropagation();
 
+    if (!isPro) {
+      setUnlockModalTitle(`Download "${title || 'Chart Blueprint'}"`);
+      setShowUnlockModal(true);
+      return;
+    }
+
     const cleanTitle = (title || 'TradingHath_Chart').replace(/[^a-zA-Z0-9_-]/g, '_');
     const filename = `${cleanTitle}.jpg`;
 
@@ -397,7 +405,8 @@ export default function DashboardPage() {
   // 1-Click "Download All Charts as PDF" for Lifetime Pro Users
   const handleDownloadAllChartsPdf = async () => {
     if (!isPro) {
-      alert('This exclusive master PDF bundle is reserved for Lifetime Pro members.');
+      setUnlockModalTitle('Download All 24+ Chart Blueprints in 1 Master PDF');
+      setShowUnlockModal(true);
       return;
     }
 
@@ -662,91 +671,8 @@ export default function DashboardPage() {
     );
   }
 
-  // STRICT PAYWALL: If user is not Pro, block all charts and videos completely!
-  if (!isPro) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f7f9fa', color: '#1c1d1f', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '12px', padding: '36px 28px', maxWidth: '440px', width: '100%', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-          <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#f3ecfc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
-            <Lock size={30} color="#5624d0" />
-          </div>
-          <span style={{ fontSize: '11px', color: '#5624d0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Membership Required
-          </span>
-          <h2 style={{ fontSize: '22px', fontWeight: '800', marginTop: '6px', marginBottom: '8px', color: '#1c1d1f' }}>
-            Vault Access Locked
-          </h2>
-          <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.5', marginBottom: '24px' }}>
-            Hello <b>{user?.username || 'Trader'}</b>! Hand-made charts and side-by-side video explanations require verified <b>₹399 Lifetime Access</b>.
-          </p>
-
-          <a
-            href="https://rzp.io/rzp/2a3h6cU"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-trading-glow"
-            style={{ width: '100%', padding: '14px', fontSize: '14px', textDecoration: 'none', display: 'block', marginBottom: '12px', borderRadius: '6px' }}
-          >
-            Pay ₹399 via UPI / Razorpay
-          </a>
-
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              width: '100%',
-              backgroundColor: '#f7f9fa',
-              border: '1px solid #d1d7dc',
-              color: '#1c1d1f',
-              padding: '12px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: '700',
-              textDecoration: 'none',
-              marginBottom: '10px'
-            }}
-          >
-            <ArrowLeft size={16} /> Back to Homepage
-          </Link>
-
-          <Link
-            href="/"
-            style={{
-              display: 'block',
-              width: '100%',
-              backgroundColor: 'transparent',
-              border: '1px solid #d1d7dc',
-              color: '#6a6f73',
-              padding: '10px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              textDecoration: 'none'
-            }}
-          >
-            Submit UTR ID on Homepage
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#c02424',
-              cursor: 'pointer',
-              marginTop: '16px',
-              fontSize: '12px',
-              fontWeight: '600'
-            }}
-          >
-            Log Out
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Non-pro users are allowed inside the vault to browse all charts & catalog!
+  // Videos and full charts are blurred with upgrade overlays so they experience what is inside and are motivated to pay.
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f7f9fa', color: '#1c1d1f' }}>
@@ -982,6 +908,28 @@ export default function DashboardPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {!isPro && (
+                <button
+                  onClick={() => {
+                    setUnlockModalTitle('Unlock Full Lifetime Pro Vault Access');
+                    setShowUnlockModal(true);
+                  }}
+                  className="btn-trading-glow"
+                  style={{
+                    padding: '8px 18px',
+                    fontSize: '13px',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <Sparkles size={15} /> Unlock Full Vault ₹399
+                </button>
+              )}
+
               {isAdmin && (
                 <Link
                   href="/admin"
@@ -1381,11 +1329,20 @@ export default function DashboardPage() {
                       <span style={{ fontWeight: '700', color: '#1c1d1f' }}>Hand-Made Setup Blueprint</span>
                       <button
                         type="button"
-                        onClick={() => setIsChartExpanded(true)}
+                        onClick={() => {
+                          if (!isPro) {
+                            setUnlockModalTitle(`Unlock Fullscreen & Download for ${selectedChart.title}`);
+                            setShowUnlockModal(true);
+                          } else {
+                            setIsChartExpanded(true);
+                          }
+                        }}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#5624d0',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #d1d7dc',
+                          color: '#2d2f31',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
@@ -1398,45 +1355,111 @@ export default function DashboardPage() {
                       </button>
                     </div>
 
-                    {/* Visual Chart with Click-to-Expand */}
+                    {/* Visual Chart with Click-to-Expand (Blurred for Non-Pro) */}
                     <div 
-                      onClick={() => setIsChartExpanded(true)}
+                      onClick={() => {
+                        if (!isPro) {
+                          setUnlockModalTitle(`Unlock ${selectedChart.title}`);
+                          setShowUnlockModal(true);
+                        } else {
+                          setIsChartExpanded(true);
+                        }
+                      }}
                       style={{ 
                         position: 'relative', 
                         height: '380px', 
                         width: '100%', 
-                        backgroundColor: '#f7f9fa',
-                        cursor: 'zoom-in',
+                        backgroundColor: '#0d1117',
+                        cursor: isPro ? 'zoom-in' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        overflow: 'hidden'
                       }}
-                      title="Click to expand chart fullscreen"
+                      title={isPro ? "Click to expand chart fullscreen" : "Locked: Click to unlock Lifetime Pro (₹399)"}
                     >
-                      <UnifiedChartImage
-                        src={selectedChart.chartUrl}
-                        chartUrls={selectedChart.chartUrls}
-                        alt={selectedChart.title}
-                        onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
-                        style={{ maxHeight: '380px', objectFit: 'contain' }}
-                      />
                       <div style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        left: '10px',
-                        backgroundColor: 'rgba(28, 29, 31, 0.85)',
-                        backdropFilter: 'blur(6px)',
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: '#ffffff',
-                        fontWeight: '700',
+                        width: '100%',
+                        height: '100%',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '5px'
+                        justifyContent: 'center',
+                        filter: isPro ? 'none' : 'blur(12px)',
+                        transform: isPro ? 'none' : 'scale(1.04)',
+                        userSelect: 'none',
+                        pointerEvents: isPro ? 'auto' : 'none'
                       }}>
-                        <Eye size={13} /> Tap to Zoom / View Full Dimensions
+                        <UnifiedChartImage
+                          src={selectedChart.chartUrl}
+                          chartUrls={selectedChart.chartUrls}
+                          alt={selectedChart.title}
+                          onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
+                          style={{ maxHeight: '380px', objectFit: 'contain' }}
+                        />
                       </div>
+
+                      {/* Locked Overlay for Non-Pro Users */}
+                      {!isPro ? (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: 'rgba(9, 13, 22, 0.65)',
+                          backdropFilter: 'blur(3px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '20px',
+                          textAlign: 'center',
+                          zIndex: 10
+                        }}>
+                          <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(86, 36, 208, 0.25)',
+                            border: '1px solid rgba(167, 139, 250, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '12px',
+                            boxShadow: '0 0 20px rgba(86, 36, 208, 0.4)'
+                          }}>
+                            <Lock size={26} color="#00e5ff" />
+                          </div>
+                          <span style={{ color: '#ffffff', fontWeight: '800', fontSize: '16px', letterSpacing: '0.3px', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+                            Blueprint Chart Blurred
+                          </span>
+                          <p style={{ color: '#d1d5db', fontSize: '12.5px', maxWidth: '320px', margin: '6px 0 14px 0', lineHeight: '1.4' }}>
+                            Full HD chart setup & order-flow footprint locked for Free accounts.
+                          </p>
+                          <button
+                            type="button"
+                            className="btn-trading-glow"
+                            style={{ padding: '8px 20px', fontSize: '12.5px', borderRadius: '6px', fontWeight: '800' }}
+                          >
+                            Unlock HD Blueprint for ₹399
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          left: '10px',
+                          backgroundColor: 'rgba(28, 29, 31, 0.85)',
+                          backdropFilter: 'blur(6px)',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          color: '#ffffff',
+                          fontWeight: '700',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}>
+                          <Eye size={13} /> Tap to Zoom / View Full Dimensions
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1471,8 +1494,8 @@ export default function DashboardPage() {
                             backgroundColor: chartLanguage === 'telugu' ? '#5624d0' : '#ffffff',
                             color: chartLanguage === 'telugu' ? '#ffffff' : '#2d2f31',
                             border: chartLanguage === 'telugu' ? '1px solid #5624d0' : '1px solid #d1d7dc',
-                            padding: '4px 12px',
-                            borderRadius: '6px',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
                             fontSize: '11.5px',
                             fontWeight: '800',
                             cursor: 'pointer'
@@ -1487,8 +1510,8 @@ export default function DashboardPage() {
                             backgroundColor: chartLanguage === 'english' ? '#5624d0' : '#ffffff',
                             color: chartLanguage === 'english' ? '#ffffff' : '#2d2f31',
                             border: chartLanguage === 'english' ? '1px solid #5624d0' : '1px solid #d1d7dc',
-                            padding: '4px 12px',
-                            borderRadius: '6px',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
                             fontSize: '11.5px',
                             fontWeight: '800',
                             cursor: 'pointer'
@@ -1499,18 +1522,68 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Responsive Video Player Playing the Chosen Language Video */}
+                    {/* Responsive Video Player or Locked Overlay */}
                     <div style={{ position: 'relative', height: '380px', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <UnifiedVideoPlayer
-                        key={`${selectedChart.id}_${chartLanguage}`}
-                        src={
-                          chartLanguage === 'english'
-                            ? (selectedChart.videoUrlEnglish || (selectedChart.language === 'english' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
-                            : (selectedChart.videoUrlTelugu || (selectedChart.language === 'telugu' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
-                        }
-                        title={`${selectedChart.title} (${chartLanguage})`}
-                        maxHeight="380px"
-                      />
+                      {!isPro ? (
+                        <div
+                          onClick={() => {
+                            setUnlockModalTitle(`Unlock Video Breakdown for ${selectedChart.title}`);
+                            setShowUnlockModal(true);
+                          }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: '#090d16',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '24px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            background: 'radial-gradient(circle at center, #17102e 0%, #090d16 100%)'
+                          }}
+                        >
+                          <div style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(86, 36, 208, 0.25)',
+                            border: '1px solid rgba(167, 139, 250, 0.4)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '14px',
+                            boxShadow: '0 0 24px rgba(86, 36, 208, 0.35)'
+                          }}>
+                            <Lock size={28} color="#a78bfa" />
+                          </div>
+                          <span style={{ color: '#ffffff', fontWeight: '800', fontSize: '16px' }}>
+                            Video Reel Breakdown Locked
+                          </span>
+                          <p style={{ color: '#9ca3af', fontSize: '12.5px', maxWidth: '300px', margin: '6px 0 16px 0', lineHeight: '1.4' }}>
+                            Watch the actual real-time execution in <b>Telugu & English</b>. Available for Pro Members.
+                          </p>
+                          <button
+                            type="button"
+                            className="btn-trading-glow"
+                            style={{ padding: '8px 20px', fontSize: '12.5px', borderRadius: '6px', fontWeight: '800' }}
+                          >
+                            Unlock All Video Lessons (₹399)
+                          </button>
+                        </div>
+                      ) : (
+                        <UnifiedVideoPlayer
+                          key={`${selectedChart.id}_${chartLanguage}`}
+                          src={
+                            chartLanguage === 'english'
+                              ? (selectedChart.videoUrlEnglish || (selectedChart.language === 'english' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
+                              : (selectedChart.videoUrlTelugu || (selectedChart.language === 'telugu' || selectedChart.language === 'both' ? selectedChart.videoUrl : ''))
+                          }
+                          title={`${selectedChart.title} (${chartLanguage})`}
+                          maxHeight="380px"
+                        />
+                      )}
                     </div>
 
                     <div style={{
@@ -1653,12 +1726,39 @@ export default function DashboardPage() {
                       boxShadow: selectedChart?.id === post.id ? '0 4px 12px rgba(86, 36, 208, 0.15)' : '0 1px 4px rgba(0,0,0,0.06)'
                     }}
                   >
-                    <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#f7f9fa', overflow: 'hidden' }}>
-                      <UnifiedChartImage
-                        src={post.chartUrl}
-                        alt={post.title}
-                        style={{ height: '170px', objectFit: 'cover' }}
-                      />
+                    <div style={{ position: 'relative', height: '170px', width: '100%', backgroundColor: '#0d1117', overflow: 'hidden' }}>
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        filter: isPro ? 'none' : 'blur(6px)',
+                        transform: isPro ? 'none' : 'scale(1.05)',
+                        pointerEvents: 'none'
+                      }}>
+                        <UnifiedChartImage
+                          src={post.chartUrl}
+                          alt={post.title}
+                          style={{ height: '170px', objectFit: 'cover' }}
+                        />
+                      </div>
+
+                      {!isPro && (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: 'rgba(9, 13, 22, 0.45)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          color: '#ffffff',
+                          fontSize: '11.5px',
+                          fontWeight: '800'
+                        }}>
+                          <Lock size={14} color="#00e5ff" />
+                          <span>Locked Blueprint</span>
+                        </div>
+                      )}
+
                       <div style={{
                         position: 'absolute',
                         top: '10px',
@@ -1669,7 +1769,8 @@ export default function DashboardPage() {
                         borderRadius: '4px',
                         fontSize: '10.5px',
                         fontWeight: '800',
-                        boxShadow: isRecentlyAdded(post.createdAt, post.id) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none'
+                        boxShadow: isRecentlyAdded(post.createdAt, post.id) ? '0 2px 4px rgba(86, 36, 208, 0.3)' : 'none',
+                        zIndex: 2
                       }}>
                         {isRecentlyAdded(post.createdAt, post.id) ? '✨ Recently Added' : 'Bestseller'}
                       </div>
@@ -1783,12 +1884,60 @@ export default function DashboardPage() {
                     }}
                   >
                     {/* Protected Video Element Supporting IndexedDB & Local Uploads */}
-                    <div style={{ position: 'relative', height: '220px', backgroundColor: '#000000' }}>
-                      <UnifiedVideoPlayer
-                        src={item.videoUrl}
-                        title={item.title}
-                        maxHeight="220px"
-                      />
+                    <div 
+                      onClick={() => {
+                        if (!isPro) {
+                          setUnlockModalTitle(`Unlock Video Breakdown for ${item.title}`);
+                          setShowUnlockModal(true);
+                        }
+                      }}
+                      style={{ 
+                        position: 'relative', 
+                        height: '220px', 
+                        backgroundColor: '#000000',
+                        cursor: isPro ? 'default' : 'pointer'
+                      }}
+                    >
+                      {!isPro ? (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#090d16',
+                          background: 'radial-gradient(circle at center, #17102e 0%, #090d16 100%)',
+                          padding: '16px',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(86, 36, 208, 0.25)',
+                            border: '1px solid rgba(167, 139, 250, 0.4)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '10px'
+                          }}>
+                            <Lock size={22} color="#a78bfa" />
+                          </div>
+                          <span style={{ color: '#ffffff', fontWeight: '800', fontSize: '13.5px' }}>
+                            Video Locked (Free Member)
+                          </span>
+                          <span style={{ color: '#9ca3af', fontSize: '11px', marginTop: '4px' }}>
+                            Tap to Unlock Lifetime Pro
+                          </span>
+                        </div>
+                      ) : (
+                        <UnifiedVideoPlayer
+                          src={item.videoUrl}
+                          title={item.title}
+                          maxHeight="220px"
+                        />
+                      )}
                       <div style={{
                         position: 'absolute',
                         top: '8px',
@@ -2239,13 +2388,236 @@ export default function DashboardPage() {
                 overflow: 'hidden'
               }}
             >
-              <UnifiedChartImage
-                src={selectedChart.chartUrl}
-                chartUrls={selectedChart.chartUrls}
-                alt={selectedChart.title}
-                onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
-                style={{ maxHeight: 'calc(100vh - 130px)', objectFit: 'contain' }}
-              />
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                filter: isPro ? 'none' : 'blur(16px)',
+                transform: isPro ? 'none' : 'scale(1.05)',
+                userSelect: 'none',
+                pointerEvents: isPro ? 'auto' : 'none'
+              }}>
+                <UnifiedChartImage
+                  src={selectedChart.chartUrl}
+                  chartUrls={selectedChart.chartUrls}
+                  alt={selectedChart.title}
+                  onActiveIndexChange={(idx) => setActiveChartIndex(idx)}
+                  style={{ maxHeight: 'calc(100vh - 130px)', objectFit: 'contain' }}
+                />
+              </div>
+
+              {!isPro && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(9, 13, 22, 0.75)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '24px',
+                  textAlign: 'center',
+                  zIndex: 10
+                }}>
+                  <div style={{
+                    width: '68px',
+                    height: '68px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(86, 36, 208, 0.25)',
+                    border: '1px solid rgba(167, 139, 250, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '14px',
+                    boxShadow: '0 0 30px rgba(86, 36, 208, 0.5)'
+                  }}>
+                    <Lock size={32} color="#00e5ff" />
+                  </div>
+                  <h4 style={{ color: '#ffffff', fontSize: '20px', fontWeight: '800', margin: '0 0 6px 0' }}>
+                    Full HD Setup Locked
+                  </h4>
+                  <p style={{ color: '#d1d5db', fontSize: '13px', maxWidth: '360px', margin: '0 0 18px 0', lineHeight: '1.4' }}>
+                    Unlock sharp full-dimension charts, Telugu & English video reels, and instant device downloads for only ₹399.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsChartExpanded(false);
+                      setUnlockModalTitle(`Unlock ${selectedChart.title}`);
+                      setShowUnlockModal(true);
+                    }}
+                    className="btn-trading-glow"
+                    style={{ padding: '10px 24px', fontSize: '13.5px', borderRadius: '6px', fontWeight: '800' }}
+                  >
+                    Unlock Lifetime Pro (₹399)
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4: PRO UPGRADE & UNLOCK MODAL FOR NON-PRO MEMBERS */}
+        {showUnlockModal && (
+          <div 
+            onClick={() => setShowUnlockModal(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(28, 29, 31, 0.75)',
+              backdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999999,
+              padding: '16px',
+              cursor: 'pointer'
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #d1d7dc',
+                borderRadius: '12px',
+                maxWidth: '460px',
+                width: '100%',
+                padding: '28px 24px',
+                cursor: 'default',
+                boxShadow: '0 12px 36px rgba(0, 0, 0, 0.2)',
+                textAlign: 'center',
+                position: 'relative'
+              }}
+            >
+              <button
+                onClick={() => setShowUnlockModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#6a6f73',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                ✕
+              </button>
+
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                backgroundColor: '#f3ecfc',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                border: '1px solid #e9d5ff'
+              }}>
+                <Lock size={28} color="#5624d0" />
+              </div>
+
+              <span style={{ fontSize: '11px', color: '#5624d0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Lifetime Pro Membership
+              </span>
+              <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '6px', marginBottom: '8px', color: '#1c1d1f' }}>
+                Unlock Complete Vault Access
+              </h3>
+              <p style={{ fontSize: '13px', color: '#6a6f73', lineHeight: '1.5', marginBottom: '20px' }}>
+                You are currently previewing the vault as a Free Member. Pay <b>₹399 (one-time)</b> to unblur all charts, unlock high-resolution gallery downloads, and play all Telugu & English video breakdowns.
+              </p>
+
+              {/* Feature Highlights */}
+              <div style={{
+                backgroundColor: '#f7f9fa',
+                borderRadius: '8px',
+                border: '1px solid #d1d7dc',
+                padding: '14px',
+                textAlign: 'left',
+                marginBottom: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontSize: '12.5px',
+                color: '#2d2f31'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle2 size={15} color="#137333" />
+                  <span>Unblur all 24+ hand-made institutional trading charts</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle2 size={15} color="#137333" />
+                  <span>Play all side-by-side Telugu & English video lessons</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle2 size={15} color="#137333" />
+                  <span>Download single charts & complete 1-Click Master PDF</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle2 size={15} color="#137333" />
+                  <span>Lifetime access with 0 monthly or renewal charges</span>
+                </div>
+              </div>
+
+              <a
+                href="https://rzp.io/rzp/2a3h6cU"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-trading-glow"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '13px',
+                  fontSize: '14px',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  marginBottom: '10px'
+                }}
+              >
+                Pay ₹399 via UPI / Razorpay (Instant Access)
+              </a>
+
+              <Link
+                href="/"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  backgroundColor: '#f7f9fa',
+                  border: '1px solid #d1d7dc',
+                  color: '#1c1d1f',
+                  padding: '11px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  textDecoration: 'none',
+                  marginBottom: '8px'
+                }}
+              >
+                Submit UTR ID on Homepage
+              </Link>
+
+              <button
+                onClick={() => setShowUnlockModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#6a6f73',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginTop: '4px'
+                }}
+              >
+                Continue Browsing Blurred Vault Preview
+              </button>
             </div>
           </div>
         )}
