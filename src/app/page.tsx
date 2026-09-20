@@ -57,7 +57,22 @@ export default function HomePage() {
   const [utrEmail, setUtrEmail] = useState('');
   const [utrStatus, setUtrStatus] = useState('');
   const [termsModal, setTermsModal] = useState(false);
-  const [vaultCharts, setVaultCharts] = useState<PostItem[]>([]);
+  const [vaultCharts, setVaultCharts] = useState<PostItem[]>(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
+      let combined = [...INITIAL_POSTS];
+      if (stored) {
+        const localPosts: PostItem[] = JSON.parse(stored);
+        const map = new Map<string, PostItem>();
+        combined.forEach(p => map.set(p.id, p));
+        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        combined = Array.from(map.values());
+      }
+      return sortPostsDescending(combined.filter(p => p.type === 'chart')).slice(0, 6);
+    } catch {
+      return sortPostsDescending(INITIAL_POSTS.filter(p => p.type === 'chart')).slice(0, 6);
+    }
+  });
 
   useEffect(() => {
     // Check if user is logged in

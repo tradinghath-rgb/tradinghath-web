@@ -41,6 +41,11 @@ export default function UnifiedChartImage({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [resolvedUrls, setResolvedUrls] = useState<string[]>(imagesList);
 
+  // Synchronize resolvedUrls immediately if imagesList changes to avoid stale renders
+  useEffect(() => {
+    setResolvedUrls(imagesList);
+  }, [imagesList]);
+
   // Touch handling for swipe gestures
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);

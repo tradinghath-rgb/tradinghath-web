@@ -45,13 +45,28 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'charts' | 'videos'>('charts');
   const [languageFilter, setLanguageFilter] = useState<'english' | 'telugu'>('telugu');
   const [searchQuery, setSearchQuery] = useState('');
-  const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
-  const [selectedChart, setSelectedChart] = useState<PostItem | null>(() => {
-    if (typeof window === 'undefined') return INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null;
+  const [posts, setPosts] = useState<PostItem[]>(() => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const targetId = urlParams.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
-      const stored = safeStorage.getItem('tradinghath_dynamic_posts');
+      const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
+      let combined = [...INITIAL_POSTS];
+      if (stored) {
+        const localPosts: PostItem[] = JSON.parse(stored);
+        const map = new Map<string, PostItem>();
+        combined.forEach(p => map.set(p.id, p));
+        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        combined = Array.from(map.values());
+      }
+      return sortPostsDescending(combined);
+    } catch {
+      return sortPostsDescending(INITIAL_POSTS);
+    }
+  });
+
+  const [selectedChart, setSelectedChart] = useState<PostItem | null>(() => {
+    try {
+      const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const targetId = urlParams?.get('chart') || (typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_selected_chart') : null);
+      const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
       let combined = [...INITIAL_POSTS];
       if (stored) {
         const localPosts: PostItem[] = JSON.parse(stored);
@@ -67,7 +82,7 @@ export default function DashboardPage() {
       }
       return sorted.find(p => p.type === 'chart') || null;
     } catch (e) {
-      return INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null;
+      return sortPostsDescending(INITIAL_POSTS).find(p => p.type === 'chart') || null;
     }
   });
 
