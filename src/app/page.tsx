@@ -44,10 +44,59 @@ export default function HomePage() {
   const [commentSuccess, setCommentSuccess] = useState('');
   const [commentError, setCommentError] = useState('');
 
-  // Auth & Profile states
-  const [user, setUser] = useState<any>(null);
-  const [isPro, setIsPro] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Auth & Profile states - initialized synchronously to prevent flashing non-pro UI on refresh
+  const [user, setUser] = useState<any>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = safeStorage.getItem('tradinghath_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const storedUser = safeStorage.getItem('tradinghath_user');
+      const role = safeStorage.getItem('tradinghath_role');
+      if (!storedUser) return role === 'admin';
+      const parsed = JSON.parse(storedUser);
+      const emailLower = (parsed?.email || '').toLowerCase();
+      const userLower = (parsed?.username || '').toLowerCase();
+      const isOwnerAdmin = userLower === 'tradinghath' || emailLower === 'tradinghath@gmail.com';
+      return isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
+    } catch {
+      return false;
+    }
+  });
+
+  const [isPro, setIsPro] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const storedUser = safeStorage.getItem('tradinghath_user');
+      const role = safeStorage.getItem('tradinghath_role');
+      const proStatus = safeStorage.getItem('tradinghath_isPro');
+      if (!storedUser && role !== 'admin') return false;
+      const parsed = storedUser ? JSON.parse(storedUser) : null;
+      const emailLower = (parsed?.email || '').toLowerCase();
+      const userLower = (parsed?.username || '').toLowerCase();
+      const isOwnerAdmin = userLower === 'tradinghath' || emailLower === 'tradinghath@gmail.com';
+      const adminCheck = isOwnerAdmin && (role === 'admin' || parsed?.role === 'admin');
+      if (adminCheck) return true;
+      if (proStatus === 'true') return true;
+      const storedOverrides = safeStorage.getItem('tradinghath_pro_overrides');
+      if (storedOverrides && parsed) {
+        const overrides = JSON.parse(storedOverrides);
+        if (overrides[parsed.id] === true || (parsed.email && overrides[parsed.email.toLowerCase()] === true)) return true;
+        if (overrides[parsed.id] === false || (parsed.email && overrides[parsed.email.toLowerCase()] === false)) return false;
+      }
+      return parsed?.isPro === true;
+    } catch {
+      return false;
+    }
+  });
+
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   // Payment states
