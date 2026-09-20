@@ -54,7 +54,7 @@ export default function UnifiedVideoPlayer({
         // stream from GitHub Media LFS CDN directly so Vercel doesn't serve the 134-byte LFS text pointer!
         if (targetUrl.startsWith('/videos/')) {
           if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('192.168.')) {
-            targetUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/main/public${targetUrl}`;
+            targetUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/refs/heads/main/public${targetUrl}`;
           }
         }
 
@@ -317,7 +317,7 @@ export default function UnifiedVideoPlayer({
         onError={(e) => {
           // If local video fails because files were moved/deleted locally, fall back to GitHub CDN
           if (resolvedSrc && resolvedSrc.startsWith('/videos/')) {
-            const cdnUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/main/public${resolvedSrc}`;
+            const cdnUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/refs/heads/main/public${resolvedSrc}`;
             setResolvedSrc(cdnUrl);
             return;
           }
