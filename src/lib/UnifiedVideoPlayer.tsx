@@ -50,11 +50,10 @@ export default function UnifiedVideoPlayer({
       try {
         let targetUrl = src;
         
-        // If relative /videos/ path and running in cloud/production (or not localhost),
-        // stream from GitHub Media LFS CDN directly so Vercel doesn't serve the 134-byte LFS text pointer!
+        // Stream from Cloudflare R2 (100% Free Egress, Unlimited Bandwidth, High Performance CDN)
         if (targetUrl.startsWith('/videos/')) {
           if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('192.168.')) {
-            targetUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/refs/heads/main/public${targetUrl}`;
+            targetUrl = `https://pub-a24748b3261241fa82743833742388ea.r2.dev${targetUrl}`;
           }
         }
 
@@ -315,10 +314,19 @@ export default function UnifiedVideoPlayer({
         src={resolvedSrc}
         type="video/mp4"
         onError={(e) => {
-          // If local video fails because files were moved/deleted locally, fall back to GitHub CDN
+          // If R2 CDN link ever fails, immediately fall back to GitHub CDN mirror
+          if (resolvedSrc && resolvedSrc.includes('pub-a24748b3261241fa82743833742388ea.r2.dev')) {
+            const relativePath = resolvedSrc.split('.r2.dev')[1];
+            if (relativePath) {
+              const gitHubMirror = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/refs/heads/main/public${relativePath}`;
+              setResolvedSrc(gitHubMirror);
+              return;
+            }
+          }
+          // If relative path fails, fall back to R2 CDN
           if (resolvedSrc && resolvedSrc.startsWith('/videos/')) {
-            const cdnUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/refs/heads/main/public${resolvedSrc}`;
-            setResolvedSrc(cdnUrl);
+            const r2Url = `https://pub-a24748b3261241fa82743833742388ea.r2.dev${resolvedSrc}`;
+            setResolvedSrc(r2Url);
             return;
           }
           console.warn('Video source error on:', resolvedSrc, e);
