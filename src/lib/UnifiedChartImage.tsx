@@ -81,6 +81,11 @@ export default function UnifiedChartImage({
           else if (imgSrc.includes('/shorts/')) videoId = imgSrc.split('/shorts/')[1]?.split('?')[0] || '';
 
           return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : fallbackSrc;
+        } else if (imgSrc.startsWith('/charts/')) {
+          // If in production or cloud, or if local file is missing, GitHub raw repository serves the permanent copy
+          if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('192.168.')) {
+            return `https://raw.githubusercontent.com/tradinghath-rgb/tradinghath-web/main/public${imgSrc}`;
+          }
         }
         return imgSrc;
       })
@@ -170,6 +175,14 @@ export default function UnifiedChartImage({
           ...style
         }}
         onError={(e) => {
+          const currentUrl = e.currentTarget.src;
+          if (currentUrl.includes('/charts/') && !currentUrl.includes('raw.githubusercontent.com')) {
+            const chartPath = currentUrl.split('/charts/')[1];
+            if (chartPath) {
+              e.currentTarget.src = `https://raw.githubusercontent.com/tradinghath-rgb/tradinghath-web/main/public/charts/${chartPath}`;
+              return;
+            }
+          }
           if (e.currentTarget.src !== fallbackSrc) {
             e.currentTarget.src = fallbackSrc;
           }

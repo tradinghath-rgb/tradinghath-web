@@ -315,7 +315,12 @@ export default function UnifiedVideoPlayer({
         src={resolvedSrc}
         type="video/mp4"
         onError={(e) => {
-          // Only flag error if there's a real failure loading
+          // If local video fails because files were moved/deleted locally, fall back to GitHub CDN
+          if (resolvedSrc && resolvedSrc.startsWith('/videos/')) {
+            const cdnUrl = `https://media.githubusercontent.com/media/tradinghath-rgb/tradinghath-web/main/public${resolvedSrc}`;
+            setResolvedSrc(cdnUrl);
+            return;
+          }
           console.warn('Video source error on:', resolvedSrc, e);
         }}
       />
