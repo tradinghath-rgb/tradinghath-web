@@ -70,6 +70,27 @@ export default function DashboardPage() {
       return INITIAL_POSTS.filter(p => p.type === 'chart')[0] || null;
     }
   });
+
+  // Persistent reference to the user's explicit selection so mobile background syncs NEVER override it!
+  const userSelectedChartIdRef = React.useRef<string | null>(null);
+
+  // Helper to change selected chart cleanly without background overwrite
+  const handleSelectChart = (post: PostItem | null) => {
+    if (post) {
+      userSelectedChartIdRef.current = post.id;
+      try {
+        safeStorage.setItem('tradinghath_selected_chart', post.id);
+      } catch (e) {}
+    } else {
+      userSelectedChartIdRef.current = null;
+      try {
+        safeStorage.removeItem('tradinghath_selected_chart');
+      } catch (e) {}
+    }
+    setSelectedChart(post);
+    setActiveChartIndex(0);
+  };
+
   const [chartLanguage, setChartLanguage] = useState<'telugu' | 'english'>('telugu');
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const [activeChartIndex, setActiveChartIndex] = useState(0);
@@ -242,21 +263,23 @@ export default function DashboardPage() {
           if (allPosts.length > 0) {
             setPosts(allPosts);
             setSelectedChart(prev => {
+              // Priority 1: User's explicitly chosen chart in the current session
+              const activeId = userSelectedChartIdRef.current || prev?.id;
+              if (activeId) {
+                const matched = allPosts.find(p => p.id === activeId);
+                if (matched) return matched;
+              }
+
+              // Priority 2: Deep-link or storage target
               const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
               const targetId = urlParams?.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
 
               if (targetId) {
                 const targetPost = allPosts.find(p => p.id === targetId && p.type === 'chart');
                 if (targetPost) {
-                  safeStorage.removeItem('tradinghath_selected_chart');
+                  userSelectedChartIdRef.current = targetPost.id;
                   return targetPost;
                 }
-              }
-
-              // If user has already selected a chart (e.g. clicked Reel 15, Reel 3, etc.),
-              // KEEP their selection intact across background sync refreshes!
-              if (prev && allPosts.some(p => p.id === prev.id)) {
-                return allPosts.find(p => p.id === prev.id) || prev;
               }
 
               const topChart = allPosts.find(p => p.type === 'chart');
@@ -281,19 +304,21 @@ export default function DashboardPage() {
 
           setPosts(combined);
           setSelectedChart(prev => {
+            const activeId = userSelectedChartIdRef.current || prev?.id;
+            if (activeId) {
+              const matched = combined.find(p => p.id === activeId);
+              if (matched) return matched;
+            }
+
             const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
             const targetId = urlParams?.get('chart') || safeStorage.getItem('tradinghath_selected_chart');
 
             if (targetId) {
               const targetPost = combined.find(p => p.id === targetId && p.type === 'chart');
               if (targetPost) {
-                safeStorage.removeItem('tradinghath_selected_chart');
+                userSelectedChartIdRef.current = targetPost.id;
                 return targetPost;
               }
-            }
-
-            if (prev && combined.some(p => p.id === prev.id)) {
-              return combined.find(p => p.id === prev.id) || prev;
             }
 
             const topChart = combined.find(p => p.type === 'chart');
@@ -1234,7 +1259,7 @@ export default function DashboardPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedChart(null);
+                        handleSelectChart(null);
                         const gridElem = document.getElementById('charts-grid-section');
                         if (gridElem) {
                           gridElem.scrollIntoView({ behavior: 'smooth' });
@@ -1751,11 +1776,7 @@ export default function DashboardPage() {
                   <div
                     key={post.id}
                     onClick={() => {
-                      setSelectedChart(post);
-                      setActiveChartIndex(0);
-                      try {
-                        safeStorage.setItem('tradinghath_selected_chart', post.id);
-                      } catch (e) {}
+                      handleSelectChart(post);
                       window.scrollTo({ top: 120, behavior: 'smooth' });
                     }}
                     style={{

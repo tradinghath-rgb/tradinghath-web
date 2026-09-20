@@ -45,7 +45,12 @@ export default function UnifiedChartImage({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Keep index within bounds if images change
+  // Keep index within bounds and reset to 0 when new chart/reel is loaded
+  useEffect(() => {
+    setCurrentIndex(0);
+    onActiveIndexChange?.(0);
+  }, [src, chartUrls]);
+
   useEffect(() => {
     if (currentIndex >= imagesList.length) {
       setCurrentIndex(0);
