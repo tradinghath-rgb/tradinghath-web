@@ -417,12 +417,12 @@ export const DEFAULT_CHARTS: PostItem[] = [
     description: 'Master XAUUSD / Gold institutional price action, volatility cycles, and high-probability session setups.',
     type: 'chart',
     language: 'both',
-    chartUrl: '/charts/reel-24chart.jpg',
-    chartUrls: ['/charts/reel-24chart.jpg'],
+    chartUrl: '/charts/reel-25chart.png',
+    chartUrls: ['/charts/reel-25chart.png'],
     videoUrl: '/videos/telugu/REEL-25(GOLD BEHAVIOUR).mp4',
     videoUrlTelugu: '/videos/telugu/REEL-25(GOLD BEHAVIOUR).mp4',
     videoUrlEnglish: '/videos/english/REEL-25(GOLD BEHAVIOUR).mp4',
-    downloadUrl: '/charts/reel-24chart.jpg',
+    downloadUrl: '/charts/reel-25chart.png',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   }
