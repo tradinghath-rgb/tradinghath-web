@@ -1527,7 +1527,7 @@ export default function DashboardPage() {
                             className="btn-trading-glow"
                             style={{ padding: '8px 20px', fontSize: '12.5px', borderRadius: '6px', fontWeight: '800' }}
                           >
-                            Unlock HD Blueprint for ₹399
+                            Unlock HD Blueprint
                           </button>
                         </div>
                       ) : (
@@ -1658,7 +1658,7 @@ export default function DashboardPage() {
                             className="btn-trading-glow"
                             style={{ padding: '8px 20px', fontSize: '12.5px', borderRadius: '6px', fontWeight: '800' }}
                           >
-                            Unlock All Video Lessons (₹399)
+                            Unlock All Video Lessons
                           </button>
                         </div>
                       ) : (
