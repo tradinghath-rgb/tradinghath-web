@@ -410,6 +410,21 @@ export const DEFAULT_CHARTS: PostItem[] = [
     downloadUrl: '/charts/reel-24chart.jpg',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_25',
+    title: 'Chart 25: Gold Behaviour & Institutional Mechanics (Reel 25)',
+    description: 'Master XAUUSD / Gold institutional price action, volatility cycles, and high-probability session setups.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-24chart.jpg',
+    chartUrls: ['/charts/reel-24chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-25(GOLD BEHAVIOUR).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-25(GOLD BEHAVIOUR).mp4',
+    videoUrlEnglish: '/videos/english/REEL-25(GOLD BEHAVIOUR).mp4',
+    downloadUrl: '/charts/reel-24chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
   }
 ];
 
@@ -656,6 +671,16 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   },
+  {
+    id: 'vid_te_25',
+    title: 'Reel 25: Gold Behaviour & Institutional Mechanics (Telugu)',
+    description: 'Master XAUUSD / Gold institutional price action and session execution.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-25(GOLD BEHAVIOUR).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
 
   // --- ENGLISH REELS (All 23 Lessons) ---
   {
@@ -885,6 +910,16 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     type: 'video',
     language: 'english',
     videoUrl: '/videos/english/REE;-24(LQT SETUP).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_25',
+    title: 'Reel 25: Gold Behaviour & Institutional Mechanics (English)',
+    description: 'Master XAUUSD / Gold institutional price action and session execution in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-25(GOLD BEHAVIOUR).mp4',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   }
