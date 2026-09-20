@@ -932,13 +932,35 @@ export default function HomePage() {
                 <CheckCircle2 size={15} color="#ffffff" /> Payment Already Done • Open Vault
               </Link>
             ) : (
-              <button
-                onClick={scrollToPricing}
-                className="btn-trading-glow"
-                style={{ fontSize: '13px', padding: '10px 20px', borderRadius: '6px' }}
-              >
-                <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <Link
+                  href="/dashboard"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#5624d0',
+                    padding: '10px 18px',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    border: '1.5px solid #d8b4fe',
+                    backgroundColor: '#f3ecfc',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Eye size={15} /> Open Vault
+                </Link>
+
+                <button
+                  onClick={scrollToPricing}
+                  className="btn-trading-glow"
+                  style={{ fontSize: '13px', padding: '10px 20px', borderRadius: '6px' }}
+                >
+                  <Lock size={14} /> Unlock All Content Together (One-Time ₹399)
+                </button>
+              </div>
             )}
           </div>
 
