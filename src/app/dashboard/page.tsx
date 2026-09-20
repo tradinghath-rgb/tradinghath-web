@@ -1281,7 +1281,7 @@ export default function DashboardPage() {
                       <Maximize2 size={15} /> Expand Fullscreen
                     </button>
 
-                    {/* Chart Download Action */}
+                    {/* Single Chart Download Action */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -1293,10 +1293,52 @@ export default function DashboardPage() {
                           : selectedChart.title;
                         handleDownloadChart(e, targetImg, targetTitle);
                       }}
-                      className="btn-trading-glow"
-                      style={{ fontSize: '13px', padding: '9px 18px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      style={{
+                        backgroundColor: '#f7f9fa',
+                        border: '1px solid #d1d7dc',
+                        color: '#1c1d1f',
+                        padding: '9px 15px',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease'
+                      }}
                     >
                       <Download size={16} /> Save Chart to Gallery
+                    </button>
+
+                    {/* Download All Charts in 1 PDF Button */}
+                    <button
+                      type="button"
+                      onClick={handleDownloadAllChartsPdf}
+                      disabled={pdfDownloading}
+                      className="btn-trading-glow"
+                      style={{
+                        fontSize: '13px',
+                        padding: '9px 18px',
+                        cursor: pdfDownloading ? 'wait' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        borderRadius: '6px'
+                      }}
+                      title="Download complete collection of institutional charts in 1 PDF document"
+                    >
+                      {pdfDownloading ? (
+                        <>
+                          <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                          <span>{pdfProgress || 'Building PDF...'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileText size={16} />
+                          <span>Download All Charts in 1 PDF</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
