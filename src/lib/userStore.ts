@@ -25,6 +25,16 @@ export const INITIAL_REGISTERED_USERS: UserAdminType[] = [
     createdAt: new Date().toISOString()
   },
   {
+    id: 'user_razorpay_test',
+    username: 'razorpaytest',
+    email: 'razorpaytest@tradinghath.com',
+    password: 'Password@123',
+    phone: '+91 9390123456',
+    isPro: false,
+    amount: 0,
+    createdAt: new Date().toISOString()
+  },
+  {
     id: 'user_abhishek_01',
     username: 'abhisheknaidu',
     email: 'abhisheknaidu2005@gmail.com',
