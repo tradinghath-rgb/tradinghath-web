@@ -617,7 +617,132 @@ export default function DashboardPage() {
       doc.setTextColor(100, 116, 139);
       doc.text('Confidential & Proprietary. Created by TradingHath (tradinghath@gmail.com). All rights reserved.', 36, pageHeight - 16);
 
-      // 2. CHART PAGES (Systematic ascending order)
+      // 2. DYNAMIC TABLE OF CONTENTS (INDEX)
+      // Clean topic title helper: removes 'Chart X:' or redundant prefix to display clean topic
+      const cleanTopicTitle = (rawTitle: string): string => {
+        let t = rawTitle.replace(/^Chart\s*#?\d+\s*:\s*/i, '').trim();
+        t = t.replace(/\s*\(Reel\s*#?\d+\)/i, '').trim();
+        return t || rawTitle;
+      };
+
+      // In landscape A4 (pageHeight = 210mm), with header & footer, we can fit 16 items per TOC page cleanly
+      const ITEMS_PER_TOC_PAGE = 15;
+      const tocPageCount = Math.max(1, Math.ceil(pdfPages.length / ITEMS_PER_TOC_PAGE));
+      
+      // Page 1 is Cover. Next `tocPageCount` pages are TOC pages.
+      // First chart blueprint starts right after the TOC pages.
+      const firstChartPageNum = 1 + tocPageCount + 1;
+      const grandTotalPages = 1 + tocPageCount + pdfPages.length;
+
+      for (let tocIndex = 0; tocIndex < tocPageCount; tocIndex++) {
+        doc.addPage('a4', 'landscape');
+
+        // Dark background matching book theme
+        doc.setFillColor(9, 13, 22);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Cyan Top Accent Strip
+        doc.setFillColor(0, 229, 255);
+        doc.rect(0, 0, pageWidth, 4, 'F');
+
+        // Header Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text('Table of Contents', 20, 22);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Institutional Smart Money Blueprints Index (Index ${tocIndex + 1} of ${tocPageCount})`, 20, 29);
+
+        // Current overall page indicator top-right
+        const currentTocOverallPage = 2 + tocIndex;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(0, 229, 255);
+        doc.text(`${currentTocOverallPage} / ${grandTotalPages}`, pageWidth - 20, 22, { align: 'right' });
+
+        // Table Header Card
+        const tableTopY = 36;
+        doc.setFillColor(17, 24, 39);
+        doc.roundedRect(18, tableTopY, pageWidth - 36, 12, 2, 2, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(0, 229, 255);
+        doc.text('S.No', 26, tableTopY + 8);
+        doc.text('Topics', 54, tableTopY + 8);
+        doc.text('Page no', pageWidth - 28, tableTopY + 8, { align: 'right' });
+
+        // Rows for this TOC page
+        const startItemIdx = tocIndex * ITEMS_PER_TOC_PAGE;
+        const endItemIdx = Math.min(startItemIdx + ITEMS_PER_TOC_PAGE, pdfPages.length);
+        const rowHeight = 9.4;
+
+        for (let rowIdx = startItemIdx; rowIdx < endItemIdx; rowIdx++) {
+          const item = pdfPages[rowIdx];
+          const yPos = tableTopY + 20 + (rowIdx - startItemIdx) * rowHeight;
+          const assignedChartPage = firstChartPageNum + rowIdx;
+
+          // Alternating subtle row stripe for enhanced readability
+          if ((rowIdx - startItemIdx) % 2 === 1) {
+            doc.setFillColor(13, 18, 30);
+            doc.rect(18, yPos - 6.5, pageWidth - 36, rowHeight, 'F');
+          }
+
+          // S.No
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(203, 213, 225);
+          doc.text(`${rowIdx + 1}.`, 26, yPos);
+
+          // Topic Name
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(10);
+          doc.setTextColor(255, 255, 255);
+          const cleanTitle = cleanTopicTitle(item.title);
+          const topicPrefix = item.chartNumber < 99999 ? `Chart #${item.chartNumber}: ` : '';
+          const fullTopicName = `${topicPrefix}${cleanTitle}`;
+          const maxTopicChars = 68;
+          const trimmedTopic = fullTopicName.length > maxTopicChars 
+            ? `${fullTopicName.slice(0, maxTopicChars - 3)}...` 
+            : fullTopicName;
+          doc.text(trimmedTopic, 54, yPos);
+
+          // Dotted Leader line connecting topic to page number
+          const topicWidth = doc.getTextWidth(trimmedTopic);
+          const leaderStartX = 54 + topicWidth + 4;
+          const leaderEndX = pageWidth - 46;
+
+          if (leaderEndX > leaderStartX) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(71, 85, 105);
+            // Build dot sequence dynamically to fill space
+            const dotStep = 3.5;
+            let currentX = leaderStartX;
+            while (currentX < leaderEndX) {
+              doc.text('.', currentX, yPos - 0.5);
+              currentX += dotStep;
+            }
+          }
+
+          // Page Number
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(0, 229, 255);
+          doc.text(`${assignedChartPage}`, pageWidth - 28, yPos, { align: 'right' });
+        }
+
+        // Table Bottom Footer Note
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text('Note: Page numbers in this Table of Contents correspond to the sequential blueprint pages below.', 20, pageHeight - 8);
+      }
+
+      // 3. CHART PAGES (Systematic ascending order)
       const totalPages = pdfPages.length;
       for (let i = 0; i < totalPages; i++) {
         const item = pdfPages[i];
@@ -692,10 +817,11 @@ export default function DashboardPage() {
         const wrappedDesc = doc.splitTextToSize(cleanDesc, pageWidth - 70);
         doc.text(wrappedDesc.slice(0, 2), 18, descBoxY + 16);
 
-        // Page Number
+        // Page Number (Aligned with Table of Contents Index)
+        const currentChartPage = firstChartPageNum + i;
         doc.setFontSize(8.5);
         doc.setTextColor(100, 116, 139);
-        doc.text(`Page ${i + 2} of ${totalPages + 1}`, pageWidth - 38, descBoxY + 16);
+        doc.text(`Page ${currentChartPage} of ${grandTotalPages}`, pageWidth - 38, descBoxY + 16);
       }
 
       setPdfProgress('Finalizing and saving PDF...');
