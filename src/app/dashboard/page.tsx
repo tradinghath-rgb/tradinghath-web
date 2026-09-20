@@ -114,18 +114,24 @@ export default function DashboardPage() {
       const role = safeStorage.getItem('tradinghath_role');
 
       if (!stored && role !== 'admin') {
-        // Not logged in at all, redirect to login
-        window.location.href = '/login';
-        return;
-      }
-
-      let currentUser: any = null;
-      if (stored) {
-        try {
-          currentUser = JSON.parse(stored);
-          setUser(currentUser);
-        } catch (e) {}
-      }
+        // Not logged in: allow guest/free visitor to explore vault preview with blurred charts & locked videos
+        setUser({
+          username: 'Guest Trader',
+          email: 'Free Preview Mode',
+          isPro: false,
+          role: 'user'
+        });
+        setIsPro(false);
+        setIsAdmin(false);
+        setCheckingAccess(false);
+      } else {
+        let currentUser: any = null;
+        if (stored) {
+          try {
+            currentUser = JSON.parse(stored);
+            setUser(currentUser);
+          } catch (e) {}
+        }
 
       // Strictly only tradinghath is the administrator!
       const emailLower = (currentUser?.email || '').toLowerCase();
@@ -199,6 +205,7 @@ export default function DashboardPage() {
       let verifyIntervalId: NodeJS.Timeout | null = null;
       if (!adminRole) {
         verifyIntervalId = setInterval(verifyWithServer, 4000);
+      }
       }
     } catch (err) {
       console.error('Auth check error:', err);
