@@ -452,12 +452,12 @@ export default function DashboardPage() {
   // 1-Click "Download All Charts as PDF" for Lifetime Pro Users
   const handleDownloadAllChartsPdf = async () => {
     if (!isPro) {
-      setUnlockModalTitle('Download All 24+ Chart Blueprints in 1 Master PDF');
+      setUnlockModalTitle('Download All 31+ Chart Blueprints in 1 Master PDF');
       setShowUnlockModal(true);
       return;
     }
 
-    // 1. Sort all charts systematically in ascending numerical order (Chart 1 -> Chart 24 -> additional charts)
+    // 1. Sort all charts systematically in ascending numerical order (Chart 1 -> Chart 31 -> additional charts)
     const extractChartNumber = (item: PostItem): number => {
       // Try to match 'Chart X' or 'Reel X' or 'chart_X'
       const titleMatch = item.title.match(/(?:Chart|Reel)\s*#?\s*(\d+)/i);
@@ -599,7 +599,7 @@ export default function DashboardPage() {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(148, 163, 184);
-      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide (Chart 1 to 24+)', 36, 70);
+      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide (Chart 1 to 31+)', 36, 70);
 
       // Metadata Box
       doc.setFillColor(17, 23, 38);
@@ -2762,7 +2762,7 @@ export default function DashboardPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CheckCircle2 size={15} color="#137333" />
-                  <span>Unblur all 24+ hand-made institutional trading charts</span>
+                  <span>Unblur all 31+ hand-made institutional trading charts</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CheckCircle2 size={15} color="#137333" />

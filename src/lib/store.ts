@@ -425,6 +425,96 @@ export const DEFAULT_CHARTS: PostItem[] = [
     downloadUrl: '/charts/reel-25chart.png',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_26',
+    title: 'Chart 26: Identify Real Breakout vs Fakeout (Reel 26)',
+    description: 'Institutional volume and candle body closure confirmation rules for genuine breakouts.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-26chart.jpg',
+    chartUrls: ['/charts/reel-26chart.jpg'],
+    videoUrl: '/videos/telugu/reel-26(IDENTIFY REAL BREAKOUT).mp4',
+    videoUrlTelugu: '/videos/telugu/reel-26(IDENTIFY REAL BREAKOUT).mp4',
+    videoUrlEnglish: '/videos/english/reel-26(IDENTIFY REAL BREAKOUT).mp4',
+    downloadUrl: '/charts/reel-26chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_27',
+    title: 'Chart 27: Candle Wick Secrets & Liquidity Sweeps (Reel 27)',
+    description: 'Decoding long wick rejection signals and institutional liquidity collection.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-27chart.jpg',
+    chartUrls: ['/charts/reel-27chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-27(CANDEL WICK SECERT).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-27(CANDEL WICK SECERT).mp4',
+    videoUrlEnglish: '/videos/english/REEL-27(CANDEL WICK SECERT).mp4',
+    downloadUrl: '/charts/reel-27chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_28',
+    title: 'Chart 28: Master Bullish Engulfing Pattern (Reel 28)',
+    description: 'High win-rate institutional bullish engulfing setups at key demand zones.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-28chart.jpg',
+    chartUrls: ['/charts/reel-28chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-28(MASTE BULLISH ENGULFING).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-28(MASTE BULLISH ENGULFING).mp4',
+    videoUrlEnglish: '/videos/english/REEL-28(MASTE BULLISH ENGULFING).mp4',
+    downloadUrl: '/charts/reel-28chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_29',
+    title: 'Chart 29: Multi-Time Frame Combination Strategy (Reel 29)',
+    description: 'Higher time-frame trend alignment combined with lower time-frame sniper executions.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-29chart.jpg',
+    chartUrls: ['/charts/reel-29chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-29(TIME FRAME COMBO).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-29(TIME FRAME COMBO).mp4',
+    videoUrlEnglish: '/videos/english/REEL-29(TIME FRAME COMBO).mp4',
+    downloadUrl: '/charts/reel-29chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_30',
+    title: 'Chart 30: Why Order Block Fails & Mitigation (Reel 30)',
+    description: 'Avoid retail order block traps and understand true order block mitigation.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-30chart.jpg',
+    chartUrls: ['/charts/reel-30chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-30(WHY ORDER BLOCK FAILS ).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-30(WHY ORDER BLOCK FAILS ).mp4',
+    videoUrlEnglish: '/videos/english/REEL-30(WHY ORDER BLOCK FAILS ).mp4',
+    downloadUrl: '/charts/reel-30chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'chart_31',
+    title: 'Chart 31: Market Reactions at Support & Resistance (Reel 31)',
+    description: 'Pinpoint exact reaction points and institutional order flow at major structural levels.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-31chart.jpg',
+    chartUrls: ['/charts/reel-31chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
+    videoUrlEnglish: '/videos/english/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
+    downloadUrl: '/charts/reel-31chart.jpg',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
   }
 ];
 
@@ -681,8 +771,68 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   },
+  {
+    id: 'vid_te_26',
+    title: 'Reel 26: Identify Real Breakout vs Fakeout (Telugu)',
+    description: 'Institutional volume and candle body closure confirmation rules for genuine breakouts.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/reel-26(IDENTIFY REAL BREAKOUT).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_27',
+    title: 'Reel 27: Candle Wick Secrets & Liquidity Sweeps (Telugu)',
+    description: 'Decoding long wick rejection signals and institutional liquidity collection.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-27(CANDEL WICK SECERT).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_28',
+    title: 'Reel 28: Master Bullish Engulfing Pattern (Telugu)',
+    description: 'High win-rate institutional bullish engulfing setups at key demand zones.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-28(MASTE BULLISH ENGULFING).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_29',
+    title: 'Reel 29: Multi-Time Frame Combination Strategy (Telugu)',
+    description: 'Higher time-frame trend alignment combined with lower time-frame sniper executions.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-29(TIME FRAME COMBO).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_30',
+    title: 'Reel 30: Why Order Block Fails & Mitigation (Telugu)',
+    description: 'Avoid retail order block traps and understand true order block mitigation.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-30(WHY ORDER BLOCK FAILS ).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_31',
+    title: 'Reel 31: Market Reactions at Support & Resistance (Telugu)',
+    description: 'Pinpoint exact reaction points and institutional order flow at major structural levels.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
 
-  // --- ENGLISH REELS (All 23 Lessons) ---
+  // --- ENGLISH REELS (All 29 Lessons) ---
   {
     id: 'vid_en_1',
     title: 'Reel 1: Volume Secret Formula (English)',
@@ -920,6 +1070,66 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     type: 'video',
     language: 'english',
     videoUrl: '/videos/english/REEL-25(GOLD BEHAVIOUR).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_26',
+    title: 'Reel 26: Identify Real Breakout vs Fakeout (English)',
+    description: 'Institutional volume and candle body closure confirmation rules for genuine breakouts.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/reel-26(IDENTIFY REAL BREAKOUT).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_27',
+    title: 'Reel 27: Candle Wick Secrets & Liquidity Sweeps (English)',
+    description: 'Decoding long wick rejection signals and institutional liquidity collection in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-27(CANDEL WICK SECERT).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_28',
+    title: 'Reel 28: Master Bullish Engulfing Pattern (English)',
+    description: 'High win-rate institutional bullish engulfing setups at key demand zones in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-28(MASTE BULLISH ENGULFING).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_29',
+    title: 'Reel 29: Multi-Time Frame Combination Strategy (English)',
+    description: 'Higher time-frame trend alignment combined with lower time-frame sniper executions in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-29(TIME FRAME COMBO).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_30',
+    title: 'Reel 30: Why Order Block Fails & Mitigation (English)',
+    description: 'Avoid retail order block traps and understand true order block mitigation in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-30(WHY ORDER BLOCK FAILS ).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_31',
+    title: 'Reel 31: Market Reactions at Support & Resistance (English)',
+    description: 'Pinpoint exact reaction points and institutional order flow at major structural levels in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   }
