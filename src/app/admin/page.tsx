@@ -904,20 +904,35 @@ export default function AdminPage() {
               ₹{users.filter(u => u.isPro).length * 399}
             </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #fde68a', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '11.5px', color: '#b45309', fontWeight: '800' }}>📊 Total Charts</span>
+          <div style={{ backgroundColor: '#ffffff', border: '1.5px solid #fde68a', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#b45309', fontWeight: '800' }}>📊 Total Charts</span>
+              <span style={{ fontSize: '10px', backgroundColor: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
+                {posts.filter(p => p.type === 'chart' && p.published && (!p.scheduledAt || new Date(p.scheduledAt) <= new Date())).length} Live
+              </span>
+            </div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#b45309', marginTop: '4px' }}>
               {posts.filter(p => p.type === 'chart').length}
             </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #fed7aa', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '11.5px', color: '#c2410c', fontWeight: '800' }}>🇮🇳 Telugu Videos</span>
+          <div style={{ backgroundColor: '#ffffff', border: '1.5px solid #fed7aa', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#c2410c', fontWeight: '800' }}>🇮🇳 Telugu Videos</span>
+              <span style={{ fontSize: '10px', backgroundColor: '#ffedd5', color: '#c2410c', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
+                {posts.filter(p => (p.type === 'video' ? p.language === 'telugu' : (p.videoUrlTelugu || p.language === 'telugu' || p.language === 'both')) && p.published && (!p.scheduledAt || new Date(p.scheduledAt) <= new Date())).length} Live
+              </span>
+            </div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#c2410c', marginTop: '4px' }}>
               {posts.filter(p => p.type === 'video' ? p.language === 'telugu' : (p.videoUrlTelugu || p.language === 'telugu' || p.language === 'both')).length}
             </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '11.5px', color: '#1d4ed8', fontWeight: '800' }}>🌐 English Videos</span>
+          <div style={{ backgroundColor: '#ffffff', border: '1.5px solid #bfdbfe', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#1d4ed8', fontWeight: '800' }}>🌐 English Videos</span>
+              <span style={{ fontSize: '10px', backgroundColor: '#dbeafe', color: '#1d4ed8', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
+                {posts.filter(p => (p.type === 'video' ? p.language === 'english' : (p.videoUrlEnglish || p.language === 'english' || p.language === 'both')) && p.published && (!p.scheduledAt || new Date(p.scheduledAt) <= new Date())).length} Live
+              </span>
+            </div>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1d4ed8', marginTop: '4px' }}>
               {posts.filter(p => p.type === 'video' ? p.language === 'english' : (p.videoUrlEnglish || p.language === 'english' || p.language === 'both')).length}
             </div>
