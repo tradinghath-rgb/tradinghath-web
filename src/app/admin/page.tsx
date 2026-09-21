@@ -881,32 +881,46 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Metrics Overview Cards - Udemy Clean Metrics */}
+        {/* Metrics Overview Cards - Detailed Content Breakdown */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: '14px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))',
+          gap: '12px',
           marginBottom: '24px'
         }}>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '12px', color: '#6a6f73', fontWeight: '600' }}>Total Registered</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#1c1d1f', marginTop: '4px' }}>{users.length}</div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#6a6f73', fontWeight: '600' }}>Total Registered</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1c1d1f', marginTop: '4px' }}>{users.length}</div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '700' }}>Lifetime Pro (₹399)</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#5624d0', marginTop: '4px' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#5624d0', fontWeight: '700' }}>Lifetime Pro (₹399)</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#5624d0', marginTop: '4px' }}>
               {users.filter(u => u.isPro).length}
             </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '12px', color: '#137333', fontWeight: '700' }}>Total Revenue</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#137333', marginTop: '4px' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#137333', fontWeight: '700' }}>Total Revenue</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#137333', marginTop: '4px' }}>
               ₹{users.filter(u => u.isPro).length * 399}
             </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #d1d7dc', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '12px', color: '#b4690e', fontWeight: '700' }}>Vault Blueprints</span>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#b4690e', marginTop: '4px' }}>{posts.length}</div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #fde68a', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#b45309', fontWeight: '800' }}>📊 Total Charts</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#b45309', marginTop: '4px' }}>
+              {posts.filter(p => p.type === 'chart').length}
+            </div>
+          </div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #fed7aa', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#c2410c', fontWeight: '800' }}>🇮🇳 Telugu Videos</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#c2410c', marginTop: '4px' }}>
+              {posts.filter(p => p.type === 'video' ? p.language === 'telugu' : (p.videoUrlTelugu || p.language === 'telugu' || p.language === 'both')).length}
+            </div>
+          </div>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '11.5px', color: '#1d4ed8', fontWeight: '800' }}>🌐 English Videos</span>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1d4ed8', marginTop: '4px' }}>
+              {posts.filter(p => p.type === 'video' ? p.language === 'english' : (p.videoUrlEnglish || p.language === 'english' || p.language === 'both')).length}
+            </div>
           </div>
         </div>
 
