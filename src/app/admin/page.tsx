@@ -55,6 +55,12 @@ export default function AdminPage() {
   const [scheduleTime, setScheduleTime] = useState('');
   const [chartUrl, setChartUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [videoUrlTelugu, setVideoUrlTelugu] = useState('');
+  const [videoUrlEnglish, setVideoUrlEnglish] = useState('');
+  const [teluguVideoPreview, setTeluguVideoPreview] = useState<string | null>(null);
+  const [englishVideoPreview, setEnglishVideoPreview] = useState<string | null>(null);
+  const [teluguFileName, setTeluguFileName] = useState('');
+  const [englishFileName, setEnglishFileName] = useState('');
   const [postFilter, setPostFilter] = useState<'all' | 'scheduled' | 'live'>('all');
 
   // Drag and drop indicator
@@ -378,11 +384,13 @@ export default function AdminPage() {
         }
       }
 
-      setUploadPreviews(processedImages);
-      setUploadPreview(processedImages[0] || null);
+      setUploadPreviews(prev => [...prev, ...processedImages]);
+      if (!uploadPreview && processedImages.length > 0) {
+        setUploadPreview(processedImages[0]);
+      }
       setChartUrl('');
     } else {
-      // Video file
+      // General video file
       const file = files[0];
       setSelectedFileName(file.name);
       const reader = new FileReader();
@@ -394,6 +402,46 @@ export default function AdminPage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleTeluguVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setTeluguFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string;
+      setTeluguVideoPreview(result);
+      setVideoUrlTelugu(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEnglishVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEnglishFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string;
+      setEnglishVideoPreview(result);
+      setVideoUrlEnglish(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveChartPreview = (indexToRemove: number) => {
+    setUploadPreviews(prev => {
+      const updated = prev.filter((_, idx) => idx !== indexToRemove);
+      if (updated.length === 0) {
+        setUploadPreview(null);
+        setSelectedFileName('');
+      } else {
+        setUploadPreview(updated[0]);
+        setSelectedFileName(`${updated.length} charts selected`);
+      }
+      return updated;
+    });
   };
 
 
@@ -455,6 +503,9 @@ export default function AdminPage() {
       effectiveChartUrls = [chartUrl];
     }
 
+    const effectiveTeluguUrl = videoUrlTelugu || (postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined);
+    const effectiveEnglishUrl = videoUrlEnglish || (postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined);
+
     const newPostPayload: PostItem = {
       id: newPostId,
       title: postTitle.trim(),
@@ -463,9 +514,9 @@ export default function AdminPage() {
       language: postLanguage,
       chartUrl: isChart ? (effectiveChartUrl || '/charts/reel-1chart-1.jpg') : undefined,
       chartUrls: isChart && effectiveChartUrls.length > 0 ? effectiveChartUrls : undefined,
-      videoUrl: effectiveVideoUrl || undefined,
-      videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
-      videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
+      videoUrl: effectiveVideoUrl || effectiveTeluguUrl || effectiveEnglishUrl || undefined,
+      videoUrlTelugu: effectiveTeluguUrl,
+      videoUrlEnglish: effectiveEnglishUrl,
       downloadUrl: isChart ? (effectiveChartUrl || '/charts/reel-1chart-1.jpg') : undefined,
       scheduledAt: effectiveScheduleDateTime || undefined,
       published: !isScheduled,
@@ -503,9 +554,9 @@ export default function AdminPage() {
         chartUrl: safeServerChartUrl,
         chartUrls: safeServerChartUrls,
         downloadUrl: safeServerChartUrl,
-        videoUrl: effectiveVideoUrl || undefined,
-        videoUrlTelugu: postLanguage === 'telugu' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
-        videoUrlEnglish: postLanguage === 'english' || postLanguage === 'both' ? effectiveVideoUrl : undefined,
+        videoUrl: effectiveVideoUrl || effectiveTeluguUrl || effectiveEnglishUrl || undefined,
+        videoUrlTelugu: effectiveTeluguUrl,
+        videoUrlEnglish: effectiveEnglishUrl,
         scheduledAt: effectiveScheduleDateTime || undefined
       };
 
@@ -525,6 +576,12 @@ export default function AdminPage() {
       setPostDesc('');
       setChartUrl('');
       setVideoUrl('');
+      setVideoUrlTelugu('');
+      setVideoUrlEnglish('');
+      setTeluguVideoPreview(null);
+      setEnglishVideoPreview(null);
+      setTeluguFileName('');
+      setEnglishFileName('');
       setUploadPreview(null);
       setUploadPreviews([]);
       setSelectedFileName('');
@@ -1336,20 +1393,58 @@ export default function AdminPage() {
                     <div style={{ marginTop: '14px' }}>
                       {postType === 'chart' ? (
                         <div>
-                          <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#1c1d1f', marginBottom: '6px' }}>
-                            Selected Chart Blueprints ({uploadPreviews.length}):
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#1c1d1f' }}>
+                              Selected Chart Blueprints ({uploadPreviews.length}):
+                            </div>
+                            <label
+                              htmlFor="admin-file-input"
+                              style={{
+                                fontSize: '11.5px',
+                                color: '#5624d0',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                textDecoration: 'underline'
+                              }}
+                            >
+                              + Add More Charts
+                            </label>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
                             {uploadPreviews.map((prevImg, idx) => (
-                              <div key={idx} style={{ position: 'relative', flexShrink: 0, width: '110px', height: '80px', borderRadius: '6px', overflow: 'hidden', border: '1.5px solid #5624d0', backgroundColor: '#000' }}>
+                              <div key={idx} style={{ position: 'relative', flexShrink: 0, width: '120px', height: '85px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #5624d0', backgroundColor: '#000' }}>
                                 <img
                                   src={prevImg}
                                   alt={`Chart ${idx + 1}`}
                                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                 />
-                                <div style={{ position: 'absolute', bottom: '2px', right: '4px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', fontWeight: '700' }}>
+                                <div style={{ position: 'absolute', bottom: '3px', left: '4px', backgroundColor: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', fontWeight: '700' }}>
                                   #{idx + 1}
                                 </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleRemoveChartPreview(idx); }}
+                                  style={{
+                                    position: 'absolute',
+                                    top: '3px',
+                                    right: '3px',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '18px',
+                                    height: '18px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '11px',
+                                    fontWeight: '800'
+                                  }}
+                                  title="Remove this chart"
+                                >
+                                  ×
+                                </button>
                               </div>
                             ))}
                           </div>
@@ -1430,40 +1525,124 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* Video URL / YouTube Link */}
-                <div>
-                  <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
-                    {postType === 'chart' 
-                      ? 'Attach YouTube Video Breakdown (Unlisted / Public Link)' 
-                      : 'Or Paste Video / YouTube Unlisted Link'}
-                  </label>
-                  <input
-                    type="url"
-                    placeholder={postType === 'chart' 
-                      ? 'https://youtube.com/watch?v=... or https://youtube.com/shorts/...' 
-                      : 'https://youtube.com/shorts/... or video link'}
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #d1d7dc',
-                      borderRadius: '6px',
-                      padding: '10px 12px',
-                      color: '#1c1d1f',
-                      fontSize: '13px',
-                      outline: 'none'
-                    }}
-                  />
-                  {postType === 'chart' ? (
-                    <span style={{ fontSize: '11px', color: '#6a6f73', display: 'block', marginTop: '4px' }}>
-                      💡 Paste any YouTube link here. It will automatically play right beside this chart setup in the member vault.
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: '11px', color: '#5624d0', display: 'block', marginTop: '4px', fontWeight: '600' }}>
-                      ⚡ Recommended: Paste a YouTube (Unlisted) link here. It publishes instantly to all users on every phone & PC with zero buffering!
-                    </span>
-                  )}
+                {/* Dual-Language Video Breakdown Inputs (Telugu & English) */}
+                <div style={{ backgroundColor: '#f0f5ff', border: '1.5px solid #bfdbfe', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#1e40af', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Play size={16} color="#2563eb" /> Dual Video Breakdowns (Telugu & English)
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '14px', lineHeight: '1.4' }}>
+                    Upload or attach video links for both languages at the same time. The member vault will allow users to toggle between both audio tracks seamlessly.
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    {/* Telugu Video Input */}
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#0f172a' }}>
+                          🇮🇳 Telugu Video
+                        </span>
+                        {teluguFileName && (
+                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Selected</span>
+                        )}
+                      </div>
+
+                      <input
+                        type="url"
+                        placeholder="Paste Telugu YouTube / Video Link"
+                        value={videoUrlTelugu}
+                        onChange={(e) => setVideoUrlTelugu(e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '8px 10px',
+                          color: '#1c1d1f',
+                          fontSize: '12px',
+                          outline: 'none',
+                          marginBottom: '8px'
+                        }}
+                      />
+
+                      <input
+                        type="file"
+                        id="admin-telugu-video-input"
+                        accept="video/*"
+                        style={{ display: 'none' }}
+                        onChange={handleTeluguVideoSelect}
+                      />
+                      <label
+                        htmlFor="admin-telugu-video-input"
+                        style={{
+                          display: 'inline-block',
+                          padding: '6px 12px',
+                          backgroundColor: '#2563eb',
+                          color: '#ffffff',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {teluguFileName ? `Change (${teluguFileName.slice(0, 18)}...)` : '📁 Upload Telugu Video File'}
+                      </label>
+                    </div>
+
+                    {/* English Video Input */}
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#0f172a' }}>
+                          🌐 English Video
+                        </span>
+                        {englishFileName && (
+                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Selected</span>
+                        )}
+                      </div>
+
+                      <input
+                        type="url"
+                        placeholder="Paste English YouTube / Video Link"
+                        value={videoUrlEnglish}
+                        onChange={(e) => setVideoUrlEnglish(e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '8px 10px',
+                          color: '#1c1d1f',
+                          fontSize: '12px',
+                          outline: 'none',
+                          marginBottom: '8px'
+                        }}
+                      />
+
+                      <input
+                        type="file"
+                        id="admin-english-video-input"
+                        accept="video/*"
+                        style={{ display: 'none' }}
+                        onChange={handleEnglishVideoSelect}
+                      />
+                      <label
+                        htmlFor="admin-english-video-input"
+                        style={{
+                          display: 'inline-block',
+                          padding: '6px 12px',
+                          backgroundColor: '#4338ca',
+                          color: '#ffffff',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {englishFileName ? `Change (${englishFileName.slice(0, 18)}...)` : '📁 Upload English Video File'}
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
 
