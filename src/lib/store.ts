@@ -1180,13 +1180,24 @@ export function sortPostsDescending(posts: PostItem[]): PostItem[] {
   });
 }
 
-// "Recently Added" badge ONLY for posts created within 24 hours of today, and NEVER for default baseline posts
+// "Recently Added" badge for newly added blueprints (Reels/Charts 25 to 31+) and any recently published dynamic posts
 export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
-  if (!createdAt) return false;
-  // Never badge default 24 hand-made charts and reels
-  if (id && (id.startsWith('chart_') || id.startsWith('vid_te_') || id.startsWith('vid_en_') || id === 'vid_1' || id === 'vid_2')) {
+  if (!id) return false;
+  
+  // Charts & Reels 25 to 31+ are the brand-new releases — always show 'Recently Added'
+  const match = id.match(/(?:chart|vid_te_|vid_en_)_?(\d+)/i);
+  if (match && match[1]) {
+    const num = parseInt(match[1], 10);
+    if (num >= 25) return true;
+  }
+
+  // Baseline 1-24 are original foundational setups
+  if (id.startsWith('chart_') || id.startsWith('vid_te_') || id.startsWith('vid_en_') || id === 'vid_1' || id === 'vid_2') {
     return false;
   }
+
+  // Dynamic admin-created posts within the last 7 days
+  if (!createdAt) return false;
   try {
     const postTime = new Date(createdAt).getTime();
     if (isNaN(postTime)) return false;
@@ -1194,8 +1205,8 @@ export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
     if (postTime <= baselineEpoch) return false;
 
     const now = Date.now();
-    const diffHours = (now - postTime) / (1000 * 60 * 60);
-    return diffHours >= 0 && diffHours <= 24;
+    const diffDays = (now - postTime) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= 7;
   } catch (e) {
     return false;
   }
