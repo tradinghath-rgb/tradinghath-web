@@ -1301,21 +1301,22 @@ export default function AdminPage() {
                       style={{
                         width: '100%',
                         backgroundColor: '#ffffff',
-                        border: '1px solid #d1d7dc',
+                        border: '1.5px solid #5624d0',
                         borderRadius: '6px',
                         padding: '10px 12px',
                         color: '#1c1d1f',
                         fontSize: '13px',
+                        fontWeight: '700',
                         outline: 'none'
                       }}
                     >
-                      <option value="chart">Hand-Made Chart (Downloadable)</option>
-                      <option value="video">Video Reel (Protected)</option>
+                      <option value="chart">📊 Chart + Dual Videos (Telugu & English)</option>
+                      <option value="video">🎥 Video Reel Only (Protected)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>Language</label>
+                    <label style={{ fontSize: '12px', color: '#6a6f73', display: 'block', marginBottom: '4px', fontWeight: '600' }}>Language Audio</label>
                     <select
                       value={postLanguage}
                       onChange={(e) => setPostLanguage(e.target.value as any)}
@@ -1330,14 +1331,37 @@ export default function AdminPage() {
                         outline: 'none'
                       }}
                     >
-                      <option value="both">Both (Telugu & English)</option>
-                      <option value="english">English</option>
-                      <option value="telugu">Telugu</option>
+                      <option value="both">Both (Telugu & English simultaneously)</option>
+                      <option value="telugu">Telugu Only</option>
+                      <option value="english">English Only</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Drag and Drop / Phone Gallery Picker */}
+                {/* All-in-One Publishing Notice */}
+                {postType === 'chart' && (
+                  <div style={{
+                    backgroundColor: '#f5f3ff',
+                    border: '1.5px solid #ddd6fe',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}>
+                    <span style={{ fontSize: '18px' }}>🚀</span>
+                    <div style={{ fontSize: '11.5px', color: '#5b21b6', lineHeight: '1.4' }}>
+                      <b>All-in-One Setup Enabled:</b> You can upload <b>1 or multiple Chart Blueprints</b> below AND attach <b>both Telugu + English explanatory videos</b> simultaneously in this same post!
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 1: Upload Hand-Made Chart(s) */}
+                <div style={{ fontSize: '13px', fontWeight: '800', color: '#1c1d1f', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ backgroundColor: '#5624d0', color: '#ffffff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>1</span>
+                  Step 1: Upload Chart Blueprint(s) (Images)
+                </div>
+
                 <div
                   onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                   onDragLeave={() => setIsDragging(false)}
@@ -1368,10 +1392,10 @@ export default function AdminPage() {
                 >
                   <UploadCloud size={32} color="#5624d0" style={{ margin: '0 auto 8px auto' }} />
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#1c1d1f' }}>
-                    Tap to Choose from Phone Gallery or Drag File
+                    Tap to Choose Chart Image(s) from Phone Gallery or Drag File
                   </div>
                   <div style={{ fontSize: '11.5px', color: '#6a6f73', marginTop: '4px' }}>
-                    Supports JPG, PNG, WEBP, MP4
+                    Select 1 or Multiple HD Chart Blueprints (JPG, PNG, WEBP)
                   </div>
 
                   {selectedFileName && (
@@ -1554,13 +1578,14 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* Dual-Language Video Breakdown Inputs (Telugu & English) */}
+                {/* Step 2: Dual-Language Video Breakdown Inputs (Telugu & English) */}
                 <div style={{ backgroundColor: '#f0f5ff', border: '1.5px solid #bfdbfe', borderRadius: '10px', padding: '16px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#1e40af', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Play size={16} color="#2563eb" /> Dual Video Breakdowns (Telugu & English)
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#1e40af', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ backgroundColor: '#2563eb', color: '#ffffff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>2</span>
+                    Step 2: Attach Explanatory Videos (Telugu & English simultaneously)
                   </div>
                   <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '14px', lineHeight: '1.4' }}>
-                    Upload or attach video links for both languages at the same time. The member vault will allow users to toggle between both audio tracks seamlessly.
+                    Upload video files or paste video links for <b>both languages together</b>. The member dashboard will display the chart alongside a one-tap language switcher for the videos.
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
@@ -1571,7 +1596,7 @@ export default function AdminPage() {
                           🇮🇳 Telugu Video
                         </span>
                         {teluguFileName && (
-                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Selected</span>
+                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Attached</span>
                         )}
                       </div>
 
@@ -1593,29 +1618,67 @@ export default function AdminPage() {
                         }}
                       />
 
-                      <input
-                        type="file"
-                        id="admin-telugu-video-input"
-                        accept="video/*"
-                        style={{ display: 'none' }}
-                        onChange={handleTeluguVideoSelect}
-                      />
-                      <label
-                        htmlFor="admin-telugu-video-input"
-                        style={{
-                          display: 'inline-block',
-                          padding: '6px 12px',
-                          backgroundColor: '#2563eb',
-                          color: '#ffffff',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          textAlign: 'center'
-                        }}
-                      >
-                        {teluguFileName ? `Change (${teluguFileName.slice(0, 18)}...)` : '📁 Upload Telugu Video File'}
-                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <input
+                          type="file"
+                          id="admin-telugu-video-input"
+                          accept="video/*"
+                          style={{ display: 'none' }}
+                          onChange={handleTeluguVideoSelect}
+                        />
+                        <label
+                          htmlFor="admin-telugu-video-input"
+                          style={{
+                            display: 'inline-block',
+                            padding: '6px 12px',
+                            backgroundColor: '#2563eb',
+                            color: '#ffffff',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {teluguFileName ? `Change Telugu Video` : '📁 Upload Telugu Video File'}
+                        </label>
+
+                        {(teluguVideoPreview || videoUrlTelugu) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTeluguVideoPreview(null);
+                              setVideoUrlTelugu('');
+                              setTeluguFileName('');
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#dc2626',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              textDecoration: 'underline'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Video Player Preview for Telugu */}
+                      {teluguVideoPreview && (
+                        <div style={{ marginTop: '10px', borderRadius: '6px', overflow: 'hidden', border: '1.5px solid #2563eb', backgroundColor: '#000' }}>
+                          <div style={{ fontSize: '10px', backgroundColor: '#2563eb', color: '#fff', padding: '3px 8px', fontWeight: '700' }}>
+                            ✓ Telugu Video Attached: {teluguFileName}
+                          </div>
+                          <video
+                            src={teluguVideoPreview}
+                            controls
+                            style={{ width: '100%', maxHeight: '160px', display: 'block' }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* English Video Input */}
@@ -1625,7 +1688,7 @@ export default function AdminPage() {
                           🌐 English Video
                         </span>
                         {englishFileName && (
-                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Selected</span>
+                          <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: '700' }}>✓ File Attached</span>
                         )}
                       </div>
 
@@ -1647,29 +1710,67 @@ export default function AdminPage() {
                         }}
                       />
 
-                      <input
-                        type="file"
-                        id="admin-english-video-input"
-                        accept="video/*"
-                        style={{ display: 'none' }}
-                        onChange={handleEnglishVideoSelect}
-                      />
-                      <label
-                        htmlFor="admin-english-video-input"
-                        style={{
-                          display: 'inline-block',
-                          padding: '6px 12px',
-                          backgroundColor: '#4338ca',
-                          color: '#ffffff',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          textAlign: 'center'
-                        }}
-                      >
-                        {englishFileName ? `Change (${englishFileName.slice(0, 18)}...)` : '📁 Upload English Video File'}
-                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <input
+                          type="file"
+                          id="admin-english-video-input"
+                          accept="video/*"
+                          style={{ display: 'none' }}
+                          onChange={handleEnglishVideoSelect}
+                        />
+                        <label
+                          htmlFor="admin-english-video-input"
+                          style={{
+                            display: 'inline-block',
+                            padding: '6px 12px',
+                            backgroundColor: '#4338ca',
+                            color: '#ffffff',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {englishFileName ? `Change English Video` : '📁 Upload English Video File'}
+                        </label>
+
+                        {(englishVideoPreview || videoUrlEnglish) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEnglishVideoPreview(null);
+                              setVideoUrlEnglish('');
+                              setEnglishFileName('');
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#dc2626',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              textDecoration: 'underline'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Video Player Preview for English */}
+                      {englishVideoPreview && (
+                        <div style={{ marginTop: '10px', borderRadius: '6px', overflow: 'hidden', border: '1.5px solid #4338ca', backgroundColor: '#000' }}>
+                          <div style={{ fontSize: '10px', backgroundColor: '#4338ca', color: '#fff', padding: '3px 8px', fontWeight: '700' }}>
+                            ✓ English Video Attached: {englishFileName}
+                          </div>
+                          <video
+                            src={englishVideoPreview}
+                            controls
+                            style={{ width: '100%', maxHeight: '160px', display: 'block' }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
