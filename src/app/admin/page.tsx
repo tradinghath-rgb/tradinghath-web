@@ -2294,51 +2294,86 @@ export default function AdminPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                { id: 'PAY_1', user: 'su******92@gmail.com', method: 'PhonePe / UPI', amount: 399, time: '10 mins ago', status: 'Captured (Auto)', rzpId: 'pay_P8xY9q1028' },
-                { id: 'PAY_2', user: 'pr****an@gmail.com', method: 'Google Pay UPI', amount: 399, time: '1 hour ago', status: 'Captured (Auto)', rzpId: 'pay_P8xK291823' },
-                { id: 'PAY_3', user: 'ka****sh@gmail.com', method: 'Paytm UPI', amount: 399, time: '3 hours ago', status: 'Captured (Auto)', rzpId: 'pay_P7mX091827' },
-                { id: 'PAY_4', user: 'vi****er@gmail.com', method: 'Direct UPI UTR', amount: 399, time: 'Yesterday', status: 'Verified UTR', utr: '425910283918' }
-              ].map((p, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e4e8eb',
-                    borderRadius: '10px',
-                    padding: '14px',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '10px'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: '700', fontSize: '14px', color: '#1c1d1f' }}>₹{p.amount}</span>
-                      <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '600' }}>via {p.method}</span>
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#6a6f73', marginTop: '2px' }}>
-                      User: {p.user} • Time: {p.time}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                      ID: {p.rzpId || `UTR ${p.utr}`}
-                    </div>
-                  </div>
+              {(() => {
+                // Filter users who have made real payments (either via Razorpay or submitted UTR)
+                const realPaidUsers = users.filter(u => u.isPro || u.utrId || (u.amount && u.amount > 0));
 
-                  <span style={{
-                    backgroundColor: '#e6f4ea',
-                    color: '#137333',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    fontWeight: '700'
-                  }}>
-                    {p.status}
-                  </span>
-                </div>
-              ))}
+                if (realPaidUsers.length === 0) {
+                  return (
+                    <div style={{
+                      backgroundColor: '#f8fafc',
+                      border: '1.5px dashed #cbd5e1',
+                      borderRadius: '10px',
+                      padding: '36px 20px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: '#e2e8f0',
+                        color: '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 12px auto'
+                      }}>
+                        <Shield size={24} />
+                      </div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b', marginBottom: '4px' }}>
+                        No Payments Recorded Yet
+                      </div>
+                      <p style={{ fontSize: '12.5px', color: '#64748b', maxWidth: '380px', margin: '0 auto', lineHeight: '1.5' }}>
+                        When a customer pays ₹399 via Razorpay UPI / Card or submits a UTR reference, their authentic verified payment record will appear here live in real time.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return realPaidUsers.map((u) => (
+                  <div
+                    key={u.id}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e4e8eb',
+                      borderRadius: '10px',
+                      padding: '14px',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#1c1d1f' }}>₹{u.amount || 399}</span>
+                        <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '600' }}>
+                          {u.utrId ? 'via UPI UTR Reference' : 'via Razorpay Gateway'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6a6f73', marginTop: '2px' }}>
+                        User: <b style={{ color: '#1c1d1f' }}>{u.email}</b> ({u.username})
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                        ID: {u.utrId ? `UTR ${u.utrId}` : (u.paymentId || `TXN_${u.id.slice(0, 12)}`)} • Date: {u.proGrantedAt ? new Date(u.proGrantedAt).toLocaleString() : (u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recent')}
+                      </div>
+                    </div>
+
+                    <span style={{
+                      backgroundColor: u.isPro ? '#e6f4ea' : '#fef3c7',
+                      color: u.isPro ? '#137333' : '#b45309',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      border: u.isPro ? '1px solid #ceead6' : '1px solid #fde68a'
+                    }}>
+                      {u.isPro ? 'Captured & Active' : 'Pending Verification'}
+                    </span>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         )}
