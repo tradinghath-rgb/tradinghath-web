@@ -83,16 +83,31 @@ export async function deletePost(postId: string): Promise<void> {
 }
 
 export async function publishPostNow(postId: string): Promise<void> {
+  // If post was from INITIAL_POSTS, ensure it is loaded into memory/db as published
+  const basePost = INITIAL_POSTS.find(p => p.id === postId);
+
   if (global.__TRADINGHATH_POSTS__) {
-    global.__TRADINGHATH_POSTS__ = global.__TRADINGHATH_POSTS__.map(p => {
-      if (p.id === postId) {
-        return { ...p, published: true, scheduledAt: undefined };
-      }
-      return p;
-    });
+    const exists = global.__TRADINGHATH_POSTS__.some(p => p.id === postId);
+    if (!exists && basePost) {
+      global.__TRADINGHATH_POSTS__.push({ ...basePost, published: true, scheduledAt: undefined });
+    } else {
+      global.__TRADINGHATH_POSTS__ = global.__TRADINGHATH_POSTS__.map(p => {
+        if (p.id === postId) {
+          return { ...p, published: true, scheduledAt: undefined };
+        }
+        return p;
+      });
+    }
   }
+
   try {
-    await dbPublishPostNow(postId);
+    const posts = await dbGetAllPosts();
+    const existsInDb = posts.some(p => p.id === postId);
+    if (!existsInDb && basePost) {
+      await dbAddPost({ ...basePost, published: true, scheduledAt: undefined });
+    } else {
+      await dbPublishPostNow(postId);
+    }
   } catch (e) {
     console.error('[postStore] dbPublishPostNow error:', e);
   }

@@ -527,9 +527,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-32chart.jpg',
     chartUrls: ['/charts/reel-32chart.jpg'],
     downloadUrl: '/charts/reel-32chart.jpg',
-    scheduledAt: '2026-09-24T09:30:00.000Z',
-    published: true, // Live immediately this morning
-    createdAt: '2026-09-24T09:30:00.000Z'
+    scheduledAt: '2026-09-24T04:00:00.000Z', // 9:30 AM IST (Live immediately this morning)
+    published: true,
+    createdAt: '2026-09-24T04:00:00.000Z'
   },
   {
     id: 'chart_33',
@@ -540,9 +540,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-33chart.jpg',
     chartUrls: ['/charts/reel-33chart.jpg'],
     downloadUrl: '/charts/reel-33chart.jpg',
-    scheduledAt: '2026-09-24T18:00:00.000Z',
-    published: false, // Scheduled for Day 1 Evening (6:00 PM IST)
-    createdAt: '2026-09-24T18:00:00.000Z'
+    scheduledAt: '2026-09-24T12:30:00.000Z', // 6:00 PM IST (Day 1 Evening)
+    published: false,
+    createdAt: '2026-09-24T12:30:00.000Z'
   },
   // Day 2: Tomorrow (2026-09-25)
   {
@@ -554,9 +554,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-34chart.jpg',
     chartUrls: ['/charts/reel-34chart.jpg'],
     downloadUrl: '/charts/reel-34chart.jpg',
-    scheduledAt: '2026-09-25T09:30:00.000Z',
-    published: false, // Scheduled for Day 2 Morning (9:30 AM IST)
-    createdAt: '2026-09-25T09:30:00.000Z'
+    scheduledAt: '2026-09-25T04:00:00.000Z', // 9:30 AM IST (Day 2 Morning)
+    published: false,
+    createdAt: '2026-09-25T04:00:00.000Z'
   },
   {
     id: 'chart_35',
@@ -567,9 +567,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-35chart.jpg',
     chartUrls: ['/charts/reel-35chart.jpg'],
     downloadUrl: '/charts/reel-35chart.jpg',
-    scheduledAt: '2026-09-25T18:00:00.000Z',
-    published: false, // Scheduled for Day 2 Evening (6:00 PM IST)
-    createdAt: '2026-09-25T18:00:00.000Z'
+    scheduledAt: '2026-09-25T12:30:00.000Z', // 6:00 PM IST (Day 2 Evening)
+    published: false,
+    createdAt: '2026-09-25T12:30:00.000Z'
   },
   // Day 3: Day After Tomorrow (2026-09-26)
   {
@@ -581,9 +581,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-36chart.jpg',
     chartUrls: ['/charts/reel-36chart.jpg'],
     downloadUrl: '/charts/reel-36chart.jpg',
-    scheduledAt: '2026-09-26T09:30:00.000Z',
-    published: false, // Scheduled for Day 3 Morning (9:30 AM IST)
-    createdAt: '2026-09-26T09:30:00.000Z'
+    scheduledAt: '2026-09-26T04:00:00.000Z', // 9:30 AM IST (Day 3 Morning)
+    published: false,
+    createdAt: '2026-09-26T04:00:00.000Z'
   },
   {
     id: 'chart_37',
@@ -594,9 +594,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-37chart.jpg',
     chartUrls: ['/charts/reel-37chart.jpg'],
     downloadUrl: '/charts/reel-37chart.jpg',
-    scheduledAt: '2026-09-26T18:00:00.000Z',
-    published: false, // Scheduled for Day 3 Evening (6:00 PM IST)
-    createdAt: '2026-09-26T18:00:00.000Z'
+    scheduledAt: '2026-09-26T12:30:00.000Z', // 6:00 PM IST (Day 3 Evening)
+    published: false,
+    createdAt: '2026-09-26T12:30:00.000Z'
   }
 ];
 
