@@ -527,9 +527,9 @@ export const DEFAULT_CHARTS: PostItem[] = [
     chartUrl: '/charts/reel-32chart.jpg',
     chartUrls: ['/charts/reel-32chart.jpg'],
     downloadUrl: '/charts/reel-32chart.jpg',
-    scheduledAt: '2026-09-24T04:00:00.000Z', // 9:30 AM IST (Live immediately this morning)
+    scheduledAt: undefined, // Released & LIVE immediately
     published: true,
-    createdAt: '2026-09-24T04:00:00.000Z'
+    createdAt: '2026-09-24T00:00:00.000Z'
   },
   {
     id: 'chart_33',
@@ -1230,43 +1230,32 @@ export function getPostOrderNumber(post: PostItem): number {
 }
 
 // Master descending sorting:
-// 1. Newly created admin posts (e.g. post_123456789 or ISO timestamp after 2025-01-01) appear first (newest on top)
-// 2. Default hand-made charts and reels appear in strict descending order: 24, 23, 22, ... down to 1 at the very bottom
+// 1. Any chart/reel with an order number (e.g. Chart 37, 36, 35, 34, 33, 32, 31 ... down to 1) is sorted strictly by numeric descending order.
+// 2. Custom admin-created dynamic posts without a chart/reel number are sorted by creation date (newest first).
 export function sortPostsDescending(posts: PostItem[]): PostItem[] {
-  const baselineEpoch = new Date('2025-01-02T00:00:00.000Z').getTime();
-
   return [...posts].sort((a, b) => {
-    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-
-    const isDynamicA = timeA > baselineEpoch || a.id.startsWith('post_');
-    const isDynamicB = timeB > baselineEpoch || b.id.startsWith('post_');
-
-    // Both are new dynamic uploads: sort newest created first
-    if (isDynamicA && isDynamicB) {
-      return timeB - timeA;
-    }
-    // Dynamic post always goes above default 24
-    if (isDynamicA && !isDynamicB) return -1;
-    if (!isDynamicA && isDynamicB) return 1;
-
-    // Both are default hand-made charts/reels: strict descending order 24, 23, 22 ... 3, 2, 1
     const orderA = getPostOrderNumber(a);
     const orderB = getPostOrderNumber(b);
 
-    if (orderA !== orderB && orderA > 0 && orderB > 0) {
-      return orderB - orderA; // 24 comes first, 1 comes last
+    // If both have an identified chart/reel number and they differ, higher number comes first!
+    if (orderA > 0 && orderB > 0 && orderA !== orderB) {
+      return orderB - orderA;
     }
+
+    // If one has a numbered blueprint and the other doesn't:
+    // Any newly created custom dynamic upload without a number goes above numbered presets only if it is newer
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
 
     return timeB - timeA;
   });
 }
 
-// "Recently Added" badge for newly added blueprints (Reels/Charts 25 to 31+) and any recently published dynamic posts
+// "Recently Added" badge for newly added blueprints (Reels/Charts 25 to 37+) and any recently published dynamic posts
 export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
   if (!id) return false;
   
-  // Charts & Reels 25 to 31+ are the brand-new releases — always show 'Recently Added'
+  // Charts & Reels 25 to 37+ are the brand-new releases — always show 'Recently Added'
   const match = id.match(/(?:chart|vid_te_|vid_en_)_?(\d+)/i);
   if (match && match[1]) {
     const num = parseInt(match[1], 10);
@@ -1297,16 +1286,20 @@ export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
 // Determines if a post is currently live and released to users (not an unreleased future schedule)
 export function isPostLive(post: PostItem, nowTime: number = Date.now()): boolean {
   if (!post) return false;
-  // If published is explicitly false, it is not live yet
-  if (!post.published) return false;
-  // If scheduled in the future, it is not live yet
+
+  // If a post has a scheduledAt date:
   if (post.scheduledAt) {
     const sched = new Date(post.scheduledAt).getTime();
+    // If the scheduled timestamp is in the future, it is definitely not live yet
     if (!isNaN(sched) && sched > nowTime) {
       return false;
     }
+    // If the scheduled timestamp has arrived/passed, it automatically unlocks!
+    return true;
   }
-  return true;
+
+  // If no scheduledAt date, respect the published flag
+  return !!post.published;
 }
 
 export function maskEmail(email: string): string {
