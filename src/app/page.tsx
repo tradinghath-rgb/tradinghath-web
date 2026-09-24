@@ -25,7 +25,7 @@ import {
   Eye
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending, getRotatingReviews } from '@/lib/store';
+import { INITIAL_REVIEWS, ReviewItem, PostItem, INITIAL_POSTS, isRecentlyAdded, sortPostsDescending, getRotatingReviews, isPostLive } from '@/lib/store';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 
 declare global {
@@ -109,17 +109,17 @@ export default function HomePage() {
   const [vaultCharts, setVaultCharts] = useState<PostItem[]>(() => {
     try {
       const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
-      let combined = [...INITIAL_POSTS];
+      let combined = INITIAL_POSTS.filter(p => isPostLive(p) && p.type === 'chart');
       if (stored) {
         const localPosts: PostItem[] = JSON.parse(stored);
         const map = new Map<string, PostItem>();
         combined.forEach(p => map.set(p.id, p));
-        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        localPosts.filter(p => isPostLive(p) && p.type === 'chart').forEach(p => map.set(p.id, p));
         combined = Array.from(map.values());
       }
-      return sortPostsDescending(combined.filter(p => p.type === 'chart')).slice(0, 6);
+      return sortPostsDescending(combined).slice(0, 6);
     } catch {
-      return sortPostsDescending(INITIAL_POSTS.filter(p => p.type === 'chart')).slice(0, 6);
+      return sortPostsDescending(INITIAL_POSTS.filter(p => isPostLive(p) && p.type === 'chart')).slice(0, 6);
     }
   });
 
@@ -219,11 +219,11 @@ export default function HomePage() {
       fetch('/api/admin/posts')
         .then(res => res.json())
         .then(data => {
-          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published && p.type === 'chart');
+          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => isPostLive(p) && p.type === 'chart');
           const postMap = new Map<string, PostItem>();
 
-          // 1. Defaults as base
-          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
+          // 1. Defaults as base (only live ones)
+          INITIAL_POSTS.filter(p => isPostLive(p) && p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           // 2. Local dynamic posts — sanitize broken URLs before merging
           try {
@@ -231,7 +231,7 @@ export default function HomePage() {
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
               localPosts
-                .filter(p => p.published && p.type === 'chart')
+                .filter(p => isPostLive(p) && p.type === 'chart')
                 .map(sanitizePost)
                 .forEach(p => postMap.set(p.id, p));
             }
@@ -248,14 +248,14 @@ export default function HomePage() {
         })
         .catch(() => {
           const postMap = new Map<string, PostItem>();
-          INITIAL_POSTS.filter(p => p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
+          INITIAL_POSTS.filter(p => isPostLive(p) && p.type === 'chart').forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
               localPosts
-                .filter(p => p.published && p.type === 'chart')
+                .filter(p => isPostLive(p) && p.type === 'chart')
                 .map(sanitizePost)
                 .forEach(p => postMap.set(p.id, p));
             }

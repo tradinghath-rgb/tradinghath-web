@@ -1294,6 +1294,20 @@ export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
   }
 }
 
+// Determines if a post is currently live and released to users (not an unreleased future schedule)
+export function isPostLive(post: PostItem, nowTime: number = Date.now()): boolean {
+  if (!post) return false;
+  // If published is explicitly false, it is not live yet
+  if (!post.published) return false;
+  // If scheduled in the future, it is not live yet
+  if (post.scheduledAt) {
+    const sched = new Date(post.scheduledAt).getTime();
+    if (!isNaN(sched) && sched > nowTime) {
+      return false;
+    }
+  }
+  return true;
+}
 
 export function maskEmail(email: string): string {
   if (!email || !email.includes('@')) return 'tr***@gmail.com';

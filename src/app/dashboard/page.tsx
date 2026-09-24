@@ -36,7 +36,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { safeStorage } from '@/lib/storage';
-import { INITIAL_POSTS, PostItem, isRecentlyAdded, sortPostsDescending } from '@/lib/store';
+import { INITIAL_POSTS, PostItem, isRecentlyAdded, sortPostsDescending, isPostLive } from '@/lib/store';
 import UnifiedVideoPlayer from '@/lib/UnifiedVideoPlayer';
 import UnifiedChartImage from '@/lib/UnifiedChartImage';
 import { resolveMediaUrl } from '@/lib/videoStorage';
@@ -48,17 +48,17 @@ export default function DashboardPage() {
   const [posts, setPosts] = useState<PostItem[]>(() => {
     try {
       const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
-      let combined = [...INITIAL_POSTS];
+      let combined = INITIAL_POSTS.filter(p => isPostLive(p));
       if (stored) {
         const localPosts: PostItem[] = JSON.parse(stored);
         const map = new Map<string, PostItem>();
         combined.forEach(p => map.set(p.id, p));
-        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        localPosts.filter(p => isPostLive(p)).forEach(p => map.set(p.id, p));
         combined = Array.from(map.values());
       }
       return sortPostsDescending(combined);
     } catch {
-      return sortPostsDescending(INITIAL_POSTS);
+      return sortPostsDescending(INITIAL_POSTS.filter(p => isPostLive(p)));
     }
   });
 
@@ -67,12 +67,12 @@ export default function DashboardPage() {
       const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
       const targetId = urlParams?.get('chart') || (typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_selected_chart') : null);
       const stored = typeof window !== 'undefined' ? safeStorage.getItem('tradinghath_dynamic_posts') : null;
-      let combined = [...INITIAL_POSTS];
+      let combined = INITIAL_POSTS.filter(p => isPostLive(p));
       if (stored) {
         const localPosts: PostItem[] = JSON.parse(stored);
         const map = new Map<string, PostItem>();
         combined.forEach(p => map.set(p.id, p));
-        localPosts.filter(p => p.published).forEach(p => map.set(p.id, p));
+        localPosts.filter(p => isPostLive(p)).forEach(p => map.set(p.id, p));
         combined = Array.from(map.values());
       }
       const sorted = sortPostsDescending(combined);
@@ -82,7 +82,7 @@ export default function DashboardPage() {
       }
       return sorted.find(p => p.type === 'chart') || null;
     } catch (e) {
-      return sortPostsDescending(INITIAL_POSTS).find(p => p.type === 'chart') || null;
+      return sortPostsDescending(INITIAL_POSTS.filter(p => isPostLive(p))).find(p => p.type === 'chart') || null;
     }
   });
 
@@ -251,18 +251,18 @@ export default function DashboardPage() {
       fetch('/api/admin/posts')
         .then(res => res.json())
         .then(data => {
-          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => p.published);
+          const apiPosts: PostItem[] = (data.posts || []).filter((p: PostItem) => isPostLive(p));
           const postMap = new Map<string, PostItem>();
 
-          // 1. Defaults as base
-          INITIAL_POSTS.forEach(p => postMap.set(p.id, sanitizePost(p)));
+          // 1. Defaults as base (only live ones)
+          INITIAL_POSTS.filter(p => isPostLive(p)).forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           // 2. Local dynamic posts — sanitize broken URLs before merging
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published).map(sanitizePost).forEach(p => postMap.set(p.id, p));
+              localPosts.filter(p => isPostLive(p)).map(sanitizePost).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 
@@ -312,13 +312,13 @@ export default function DashboardPage() {
         .catch(err => {
           console.error(err);
           const postMap = new Map<string, PostItem>();
-          INITIAL_POSTS.forEach(p => postMap.set(p.id, sanitizePost(p)));
+          INITIAL_POSTS.filter(p => isPostLive(p)).forEach(p => postMap.set(p.id, sanitizePost(p)));
 
           try {
             const stored = safeStorage.getItem('tradinghath_dynamic_posts');
             if (stored) {
               const localPosts: PostItem[] = JSON.parse(stored);
-              localPosts.filter(p => p.published).map(sanitizePost).forEach(p => postMap.set(p.id, p));
+              localPosts.filter(p => isPostLive(p)).map(sanitizePost).forEach(p => postMap.set(p.id, p));
             }
           } catch (e) {}
 
@@ -367,6 +367,9 @@ export default function DashboardPage() {
 
   const filteredPosts = sortPostsDescending(
     posts.filter(p => {
+      // Must be currently live and past scheduled time
+      if (!isPostLive(p)) return false;
+
       if (p.type !== (activeTab === 'charts' ? 'chart' : 'video')) return false;
       // Language filter applies specifically to video reels (Telugu vs English).
       // All hand-made charts are visual institutional blueprints and remain visible in the vault!
@@ -467,7 +470,7 @@ export default function DashboardPage() {
       return 99999;
     };
 
-    const rawCharts = posts.filter(p => p.type === 'chart' && p.published !== false);
+    const rawCharts = posts.filter(p => p.type === 'chart' && isPostLive(p));
     if (rawCharts.length === 0) {
       alert('No charts currently available to compile.');
       return;
@@ -1843,7 +1846,7 @@ export default function DashboardPage() {
                   All Hand-Made Trading Charts
                 </h3>
                 <span style={{ fontSize: '13px', color: '#6a6f73' }}>
-                  Total {posts.filter(p => p.type === 'chart').length} institutional price action blueprints currently in vault
+                  Total {posts.filter(p => p.type === 'chart' && isPostLive(p)).length} institutional price action blueprints currently in vault
                 </span>
               </div>
 
