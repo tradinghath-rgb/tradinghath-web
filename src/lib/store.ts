@@ -515,6 +515,88 @@ export const DEFAULT_CHARTS: PostItem[] = [
     downloadUrl: '/charts/reel-31chart.jpg',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  // --- NEW CHARTS 32 to 37 (Scheduled 2 by 2 by 2 across 3 days: Morning & Evening) ---
+  // Day 1: Today (2026-09-24)
+  {
+    id: 'chart_32',
+    title: 'Chart 32: Entry Setup & Timeframe Alignment (Reel 32)',
+    description: 'Master institutional entry trigger rules, high/low range boundaries, and 15-min confirmation setups.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-32chart.jpg',
+    chartUrls: ['/charts/reel-32chart.jpg'],
+    downloadUrl: '/charts/reel-32chart.jpg',
+    scheduledAt: '2026-09-24T09:30:00.000Z',
+    published: true, // Live immediately this morning
+    createdAt: '2026-09-24T09:30:00.000Z'
+  },
+  {
+    id: 'chart_33',
+    title: 'Chart 33: CRT Strategy & Liquidity + CHOCH (Reel 33)',
+    description: 'Candle Range Theory combined with liquidity sweep, breakdown validation, and CHOCH + FVG master entries.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-33chart.jpg',
+    chartUrls: ['/charts/reel-33chart.jpg'],
+    downloadUrl: '/charts/reel-33chart.jpg',
+    scheduledAt: '2026-09-24T18:00:00.000Z',
+    published: false, // Scheduled for Day 1 Evening (6:00 PM IST)
+    createdAt: '2026-09-24T18:00:00.000Z'
+  },
+  // Day 2: Tomorrow (2026-09-25)
+  {
+    id: 'chart_34',
+    title: 'Chart 34: Rejection Candle & Liquidity Sweep (Reel 34)',
+    description: 'Spot upper rejection wicks at major resistance zones, liquidity sweep execution, and FVG breakdown entries.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-34chart.jpg',
+    chartUrls: ['/charts/reel-34chart.jpg'],
+    downloadUrl: '/charts/reel-34chart.jpg',
+    scheduledAt: '2026-09-25T09:30:00.000Z',
+    published: false, // Scheduled for Day 2 Morning (9:30 AM IST)
+    createdAt: '2026-09-25T09:30:00.000Z'
+  },
+  {
+    id: 'chart_35',
+    title: 'Chart 35: Demand / Supply Zone Masterclass (Reel 35)',
+    description: 'Pinpoint precise institutional buy and sell blocks with fresh demand mitigation and stop-loss placement rules.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-35chart.jpg',
+    chartUrls: ['/charts/reel-35chart.jpg'],
+    downloadUrl: '/charts/reel-35chart.jpg',
+    scheduledAt: '2026-09-25T18:00:00.000Z',
+    published: false, // Scheduled for Day 2 Evening (6:00 PM IST)
+    createdAt: '2026-09-25T18:00:00.000Z'
+  },
+  // Day 3: Day After Tomorrow (2026-09-26)
+  {
+    id: 'chart_36',
+    title: 'Chart 36: Trade With Trendline & Smart Money Break (Reel 36)',
+    description: 'Overcome standard retail trendline traps. Execute clean retests, supply/demand confluence, and momentum continuation.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-36chart.jpg',
+    chartUrls: ['/charts/reel-36chart.jpg'],
+    downloadUrl: '/charts/reel-36chart.jpg',
+    scheduledAt: '2026-09-26T09:30:00.000Z',
+    published: false, // Scheduled for Day 3 Morning (9:30 AM IST)
+    createdAt: '2026-09-26T09:30:00.000Z'
+  },
+  {
+    id: 'chart_37',
+    title: 'Chart 37: Master CHOCH Reversal Architecture (Reel 37)',
+    description: 'Identify macro shifts from sellers to buyers (S>B), structural supply failure, and sniper Fair Value Gap entries.',
+    type: 'chart',
+    language: 'both',
+    chartUrl: '/charts/reel-37chart.jpg',
+    chartUrls: ['/charts/reel-37chart.jpg'],
+    downloadUrl: '/charts/reel-37chart.jpg',
+    scheduledAt: '2026-09-26T18:00:00.000Z',
+    published: false, // Scheduled for Day 3 Evening (6:00 PM IST)
+    createdAt: '2026-09-26T18:00:00.000Z'
   }
 ];
 

@@ -599,7 +599,7 @@ export default function DashboardPage() {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(148, 163, 184);
-      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide (Chart 1 to 31+)', 36, 70);
+      doc.text('Official Institutional Smart Money Price Action & Liquidity Guide (Chart 1 to 37+)', 36, 70);
 
       // Metadata Box
       doc.setFillColor(17, 23, 38);
