@@ -1251,36 +1251,28 @@ export function sortPostsDescending(posts: PostItem[]): PostItem[] {
   });
 }
 
-// "Recently Added" badge for newly added blueprints (Reels/Charts 25 to 37+) and any recently published dynamic posts
+// "Recently Added" badge for newly added blueprints (Reels/Charts) and dynamic posts.
+// The badge is displayed ONLY for 24 hours (1 day) after publication / release, then automatically disappears.
 export function isRecentlyAdded(createdAt?: string, id?: string): boolean {
   if (!id) return false;
-  
-  // Charts & Reels 25 to 37+ are the brand-new releases — always show 'Recently Added'
-  const match = id.match(/(?:chart|vid_te_|vid_en_)_?(\d+)/i);
-  if (match && match[1]) {
-    const num = parseInt(match[1], 10);
-    if (num >= 25) return true;
+
+  const now = Date.now();
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+  // If a valid creation / release timestamp exists, strictly check if within 24 hours
+  if (createdAt) {
+    try {
+      const postTime = new Date(createdAt).getTime();
+      if (!isNaN(postTime)) {
+        const diffMs = now - postTime;
+        // Show badge only if released in the past and less than 24 hours old
+        return diffMs >= 0 && diffMs <= TWENTY_FOUR_HOURS_MS;
+      }
+    } catch (e) {}
   }
 
-  // Baseline 1-24 are original foundational setups
-  if (id.startsWith('chart_') || id.startsWith('vid_te_') || id.startsWith('vid_en_') || id === 'vid_1' || id === 'vid_2') {
-    return false;
-  }
-
-  // Dynamic admin-created posts within the last 7 days
-  if (!createdAt) return false;
-  try {
-    const postTime = new Date(createdAt).getTime();
-    if (isNaN(postTime)) return false;
-    const baselineEpoch = new Date('2025-01-02T00:00:00.000Z').getTime();
-    if (postTime <= baselineEpoch) return false;
-
-    const now = Date.now();
-    const diffDays = (now - postTime) / (1000 * 60 * 60 * 24);
-    return diffDays >= 0 && diffDays <= 7;
-  } catch (e) {
-    return false;
-  }
+  // Baseline hand-made charts 1 to 31 were added earlier (or on baseline date) — do not show tag
+  return false;
 }
 
 // Determines if a post is currently live and released to users (not an unreleased future schedule)
