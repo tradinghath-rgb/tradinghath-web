@@ -37,8 +37,10 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'posts' | 'payments' | 'comments'>('users');
   const [previewPostModal, setPreviewPostModal] = useState<PostItem | null>(null);
   const [users, setUsers] = useState<any[]>([]);
+  const [utrLogs, setUtrLogs] = useState<any[]>([]);
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [previewScreenshotModal, setPreviewScreenshotModal] = useState<{ url: string; email: string; utr: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -131,6 +133,7 @@ export default function AdminPage() {
       // This prevents users from disappearing on server restart or browser changes
       const serverUsers = (usersData.users || []).filter((u: any) => !u.deleted);
       setUsers(serverUsers);
+      setUtrLogs(usersData.utrLogs || []);
 
       let serverPosts: PostItem[] = postsData.posts || [];
       try {
@@ -2332,10 +2335,53 @@ export default function AdminPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {(() => {
-                // Filter users who have made real payments (either via Razorpay or submitted UTR)
-                const realPaidUsers = users.filter(u => u.isPro || u.utrId || (u.amount && u.amount > 0));
+                // Combine user payments with all verified/pending UTR submissions
+                const combinedPayments: any[] = [];
+                const seenKeys = new Set<string>();
 
-                if (realPaidUsers.length === 0) {
+                // 1. From utrLogs (contains screenshots, UPI IDs, UTRs)
+                utrLogs.forEach((r: any) => {
+                  const key = (r.utrNumber || r.id).toLowerCase();
+                  seenKeys.add(key);
+                  combinedPayments.push({
+                    id: r.id,
+                    email: r.email,
+                    username: r.email?.split('@')[0] || 'User',
+                    amount: r.amount || 399,
+                    utrId: r.utrNumber,
+                    upiId: r.upiId,
+                    screenshotUrl: r.screenshotUrl,
+                    status: r.status,
+                    adminNotes: r.adminNotes,
+                    date: r.paymentDate ? `${r.paymentDate} ${r.paymentTime || ''}` : (r.createdAt ? new Date(r.createdAt).toLocaleString() : 'Recent'),
+                    source: 'UTR Submission'
+                  });
+                });
+
+                // 2. From users table (Razorpay or directly activated Pro users)
+                users.forEach((u: any) => {
+                  if (u.isPro || u.utrId || (u.amount && u.amount > 0)) {
+                    const key = (u.utrId || u.paymentId || u.id).toLowerCase();
+                    if (!seenKeys.has(key)) {
+                      seenKeys.add(key);
+                      combinedPayments.push({
+                        id: u.id,
+                        email: u.email,
+                        username: u.username,
+                        amount: u.amount || 399,
+                        utrId: u.utrId,
+                        upiId: u.upiId,
+                        paymentId: u.paymentId,
+                        screenshotUrl: u.screenshotUrl,
+                        status: u.isPro ? 'VERIFIED' : 'PENDING',
+                        date: u.proGrantedAt ? new Date(u.proGrantedAt).toLocaleString() : (u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recent'),
+                        source: u.paymentId ? 'Razorpay Auto' : 'System Pro'
+                      });
+                    }
+                  }
+                });
+
+                if (combinedPayments.length === 0) {
                   return (
                     <div style={{
                       backgroundColor: '#f8fafc',
@@ -2361,53 +2407,146 @@ export default function AdminPage() {
                         No Payments Recorded Yet
                       </div>
                       <p style={{ fontSize: '12.5px', color: '#64748b', maxWidth: '380px', margin: '0 auto', lineHeight: '1.5' }}>
-                        When a customer pays ₹399 via Razorpay UPI / Card or submits a UTR reference, their authentic verified payment record will appear here live in real time.
+                        When a customer pays ₹399 via Razorpay UPI or submits payment proof with screenshot, their verified record is saved permanently here.
                       </p>
                     </div>
                   );
                 }
 
-                return realPaidUsers.map((u) => (
+                return combinedPayments.map((p) => (
                   <div
-                    key={u.id}
+                    key={p.id}
                     style={{
                       backgroundColor: '#ffffff',
                       border: '1px solid #e4e8eb',
                       borderRadius: '10px',
-                      padding: '14px',
+                      padding: '16px',
                       display: 'flex',
                       flexWrap: 'wrap',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '10px'
+                      gap: '14px',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#1c1d1f' }}>₹{u.amount || 399}</span>
-                        <span style={{ fontSize: '12px', color: '#5624d0', fontWeight: '600' }}>
-                          {u.utrId ? 'via UPI UTR Reference' : 'via Razorpay Gateway'}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#6a6f73', marginTop: '2px' }}>
-                        User: <b style={{ color: '#1c1d1f' }}>{u.email}</b> ({u.username})
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                        ID: {u.utrId ? `UTR ${u.utrId}` : (u.paymentId || `TXN_${u.id.slice(0, 12)}`)} • Date: {u.proGrantedAt ? new Date(u.proGrantedAt).toLocaleString() : (u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recent')}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      {/* Photo Thumbnail if available */}
+                      {p.screenshotUrl ? (
+                        <div
+                          onClick={() => setPreviewScreenshotModal({ url: p.screenshotUrl, email: p.email, utr: p.utrId || '' })}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            border: '2px solid #5624d0',
+                            flexShrink: 0,
+                            cursor: 'pointer',
+                            backgroundColor: '#f1f5f9',
+                            position: 'relative'
+                          }}
+                          title="Click to view full payment photo"
+                        >
+                          <img
+                            src={p.screenshotUrl}
+                            alt="Receipt"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            color: '#fff',
+                            fontSize: '9px',
+                            textAlign: 'center',
+                            fontWeight: '700'
+                          }}>
+                            VIEW
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '8px',
+                          backgroundColor: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#94a3b8',
+                          flexShrink: 0
+                        }}>
+                          <Shield size={22} />
+                        </div>
+                      )}
+
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: '800', fontSize: '15px', color: '#1c1d1f' }}>₹{p.amount || 399}</span>
+                          <span style={{ fontSize: '11px', backgroundColor: '#f3ecfc', color: '#5624d0', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>
+                            {p.source}
+                          </span>
+                          <span style={{
+                            backgroundColor: p.status === 'VERIFIED' ? '#e6f4ea' : '#fef3c7',
+                            color: p.status === 'VERIFIED' ? '#137333' : '#b45309',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '700'
+                          }}>
+                            {p.status === 'VERIFIED' ? '✓ VERIFIED / ACTIVE' : 'PENDING REVIEW'}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: '13px', color: '#1c1d1f', marginTop: '4px' }}>
+                          User: <b style={{ color: '#5624d0' }}>{p.email}</b> {p.username ? `(${p.username})` : ''}
+                        </div>
+
+                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                          {p.utrId && (
+                            <span><b>UTR:</b> <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', color: '#0f172a' }}>{p.utrId}</code></span>
+                          )}
+                          {p.upiId && (
+                            <span><b>UPI ID:</b> <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', color: '#0f766e' }}>{p.upiId}</code></span>
+                          )}
+                          {p.paymentId && (
+                            <span><b>Razorpay:</b> <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', color: '#64748b' }}>{p.paymentId}</code></span>
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                          Recorded: {p.date} {p.adminNotes ? `• ${p.adminNotes}` : ''}
+                        </div>
                       </div>
                     </div>
 
-                    <span style={{
-                      backgroundColor: u.isPro ? '#e6f4ea' : '#fef3c7',
-                      color: u.isPro ? '#137333' : '#b45309',
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      fontWeight: '700',
-                      border: u.isPro ? '1px solid #ceead6' : '1px solid #fde68a'
-                    }}>
-                      {u.isPro ? 'Captured & Active' : 'Pending Verification'}
-                    </span>
+                    {/* Screenshot action button */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {p.screenshotUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewScreenshotModal({ url: p.screenshotUrl, email: p.email, utr: p.utrId || '' })}
+                          style={{
+                            backgroundColor: '#5624d0',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '7px 14px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          📸 Full Photo
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ));
               })()}
@@ -2475,6 +2614,117 @@ export default function AdminPage() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* FULL PAYMENT SCREENSHOT PHOTO MODAL FOR ADMIN */}
+        {previewScreenshotModal && (
+          <div
+            onClick={() => setPreviewScreenshotModal(null)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              zIndex: 999999
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #d1d7dc',
+                borderRadius: '12px',
+                padding: '20px',
+                maxWidth: '650px',
+                width: '100%',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#1c1d1f' }}>
+                    Payment Proof Receipt
+                  </h4>
+                  <div style={{ fontSize: '12px', color: '#5624d0', marginTop: '2px', fontWeight: '600' }}>
+                    {previewScreenshotModal.email} {previewScreenshotModal.utr ? `• UTR: ${previewScreenshotModal.utr}` : ''}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewScreenshotModal(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#64748b',
+                    fontSize: '22px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    padding: '4px 8px'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                backgroundColor: '#0f172a',
+                borderRadius: '8px',
+                padding: '10px',
+                textAlign: 'center'
+              }}>
+                <img
+                  src={previewScreenshotModal.url}
+                  alt="Customer Payment Receipt"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '65vh',
+                    objectFit: 'contain',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
+                <a
+                  href={previewScreenshotModal.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={`receipt_${previewScreenshotModal.utr || 'proof'}.jpg`}
+                  style={{
+                    fontSize: '12.5px',
+                    color: '#5624d0',
+                    textDecoration: 'none',
+                    fontWeight: '700',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  Open in New Tab / Download Full Image
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewScreenshotModal(null)}
+                  className="btn-trading-glow"
+                  style={{ padding: '8px 18px', fontSize: '12.5px', borderRadius: '6px' }}
+                >
+                  Close Receipt
+                </button>
+              </div>
             </div>
           </div>
         )}

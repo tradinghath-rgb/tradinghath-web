@@ -4,12 +4,16 @@ import {
   dbUpdateUserProStatus,
   dbSoftDeleteUser,
   dbChangeUserPassword,
+  dbGetAllUtr,
 } from '@/lib/db';
 
 export async function GET() {
   try {
-    const users = await dbGetAllUsers();
-    return NextResponse.json({ success: true, users });
+    const [users, utrLogs] = await Promise.all([
+      dbGetAllUsers(),
+      dbGetAllUtr()
+    ]);
+    return NextResponse.json({ success: true, users, utrLogs });
   } catch (err: any) {
     console.error('[ADMIN USERS GET]', err);
     return NextResponse.json({ success: false, error: 'Failed to fetch users' }, { status: 500 });
