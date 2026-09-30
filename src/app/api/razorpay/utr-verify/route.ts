@@ -6,17 +6,39 @@ export async function POST(req: Request) {
   try {
     const { utrId, email, upiId, screenshotUrl } = await req.json();
 
-    if (!utrId || utrId.trim().length < 8) {
+    const cleanUtr = (utrId || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanUpiId = (upiId || '').trim();
+    const cleanScreenshot = (screenshotUrl || '').trim();
+
+    if (!cleanUtr || cleanUtr.length < 8) {
       return NextResponse.json(
-        { success: false, error: 'Please enter a valid 12-digit UPI UTR transaction reference.' },
+        { success: false, error: 'Please enter your 12-digit UPI UTR / Reference ID.' },
         { status: 400 }
       );
     }
 
-    const cleanUtr = utrId.trim();
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const cleanUpiId = (upiId || '').trim();
-    const cleanScreenshot = (screenshotUrl || '').trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      return NextResponse.json(
+        { success: false, error: 'Please enter a valid registered email address for account activation.' },
+        { status: 400 }
+      );
+    }
+
+    if (!cleanUpiId || !cleanUpiId.includes('@') || cleanUpiId.length < 4) {
+      return NextResponse.json(
+        { success: false, error: 'UPI ID is mandatory. Please enter your valid UPI ID (e.g. username@okhdfcbank, mobile@ybl).' },
+        { status: 400 }
+      );
+    }
+
+    if (!cleanScreenshot) {
+      return NextResponse.json(
+        { success: false, error: 'Payment screenshot is mandatory. Please upload a clear photo/screenshot of your payment receipt.' },
+        { status: 400 }
+      );
+    }
 
     // 0. FIRST: Check database to see if this UTR has already been claimed by another user
     const [allUsers, allUtrs] = await Promise.all([

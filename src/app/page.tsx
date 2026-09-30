@@ -380,12 +380,35 @@ export default function HomePage() {
   // UTR ID Verification
   const handleUtrSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!utrInput.trim()) return;
+    const cleanUtr = utrInput.trim();
+    const cleanEmail = (utrEmail.trim() || user?.email || '').toLowerCase();
+    const cleanUpi = utrUpiId.trim();
+
+    if (!cleanUtr || cleanUtr.length < 8) {
+      setUtrStatus('⚠️ Please enter your valid 12-digit UPI UTR / Reference ID.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setUtrStatus('⚠️ Please enter your valid registered email address.');
+      return;
+    }
+
+    if (!cleanUpi || !cleanUpi.includes('@') || cleanUpi.length < 4) {
+      setUtrStatus('⚠️ UPI ID is mandatory. Please enter the UPI ID you paid from.');
+      return;
+    }
+
+    if (!utrScreenshot) {
+      setUtrStatus('⚠️ Payment screenshot is mandatory. Please attach a photo/screenshot of your payment receipt.');
+      return;
+    }
 
     setUtrStatus('Verifying transaction with Razorpay live records...');
     setUtrUploading(true);
     try {
-      const targetEmail = (utrEmail.trim() || user?.email || 'member@gmail.com').toLowerCase();
+      const targetEmail = cleanEmail;
 
       // If user attached screenshot, optionally upload to server media store
       let finalScreenshotUrl = utrScreenshot;
@@ -412,9 +435,9 @@ export default function HomePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          utrId: utrInput.trim(),
+          utrId: cleanUtr,
           email: targetEmail,
-          upiId: utrUpiId.trim(),
+          upiId: cleanUpi,
           screenshotUrl: finalScreenshotUrl
         })
       });
@@ -1439,10 +1462,10 @@ export default function HomePage() {
             boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
           }}>
             <h3 style={{ fontSize: '19px', fontWeight: '800', marginBottom: '6px', color: '#1c1d1f' }}>
-              Verify UPI UTR ID (₹399)
+              Verify Paid Order (₹399)
             </h3>
             <p style={{ fontSize: '13px', color: '#6a6f73', marginBottom: '18px', lineHeight: '1.5' }}>
-              If you paid via PhonePe, Google Pay, Paytm, or direct UPI, paste your 12-digit UTR reference ID below to activate instant access.
+              If you have already transferred ₹399 via PhonePe, Google Pay, Paytm, or UPI, please enter your UTR number, your UPI ID, your account email, and upload your payment receipt screenshot. All fields are mandatory to verify and activate your access.
             </p>
 
             {utrStatus && (
@@ -1461,64 +1484,81 @@ export default function HomePage() {
             )}
 
             <form onSubmit={handleUtrSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <input
-                type="text"
-                placeholder="12-digit UPI UTR / Reference ID"
-                value={utrInput}
-                onChange={(e) => setUtrInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #1c1d1f',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  color: '#1c1d1f',
-                  fontSize: '13px',
-                  outline: 'none'
-                }}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Your Email for access activation"
-                value={utrEmail}
-                onChange={(e) => setUtrEmail(e.target.value)}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #d1d7dc',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  color: '#1c1d1f',
-                  fontSize: '13px',
-                  outline: 'none'
-                }}
-                required
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#1c1d1f' }}>
+                  12-digit UTR / Reference ID <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter 12-digit UPI UTR number"
+                  value={utrInput}
+                  onChange={(e) => setUtrInput(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #1c1d1f',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    color: '#1c1d1f',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                  required
+                />
+              </div>
 
-              <input
-                type="text"
-                placeholder="UPI ID (Optional, e.g. 7660984586-2@ybl)"
-                value={utrUpiId}
-                onChange={(e) => setUtrUpiId(e.target.value)}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #d1d7dc',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  color: '#1c1d1f',
-                  fontSize: '13px',
-                  outline: 'none'
-                }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#1c1d1f' }}>
+                  Your Account Email <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="Your registered email address"
+                  value={utrEmail}
+                  onChange={(e) => setUtrEmail(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #d1d7dc',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    color: '#1c1d1f',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                  required
+                />
+              </div>
 
-              {/* Payment Screenshot Upload */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#1c1d1f' }}>
+                  Your Paid UPI ID <span style={{ color: '#ef4444' }}>* (Mandatory)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter UPI ID you paid from (e.g. yourname@upi)"
+                  value={utrUpiId}
+                  onChange={(e) => setUtrUpiId(e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #d1d7dc',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    color: '#1c1d1f',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Payment Screenshot Upload (Mandatory) */}
               <div style={{
-                border: '1.5px dashed #cbd5e1',
+                border: utrScreenshot ? '1.5px solid #10b981' : '1.5px dashed #5624d0',
                 borderRadius: '8px',
-                padding: '12px',
-                backgroundColor: '#f8fafc',
+                padding: '14px',
+                backgroundColor: utrScreenshot ? '#f0fdf4' : '#faf7fd',
                 textAlign: 'center'
               }}>
                 {utrScreenshot ? (
@@ -1527,10 +1567,10 @@ export default function HomePage() {
                       <img
                         src={utrScreenshot}
                         alt="Payment Screenshot Preview"
-                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d1d7dc' }}
+                        style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d1d7dc' }}
                       />
-                      <span style={{ fontSize: '12px', color: '#137333', fontWeight: '600', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                        ✓ Screenshot Attached
+                      <span style={{ fontSize: '12.5px', color: '#137333', fontWeight: '700', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        ✓ Payment Proof Attached
                       </span>
                     </div>
                     <button
@@ -1545,22 +1585,34 @@ export default function HomePage() {
                         fontWeight: '700'
                       }}
                     >
-                      Remove
+                      Change Photo
                     </button>
                   </div>
                 ) : (
                   <label style={{ display: 'block', cursor: 'pointer' }}>
-                    <div style={{ fontSize: '12.5px', color: '#5624d0', fontWeight: '700', marginBottom: '2px' }}>
-                      📸 Attach Payment Screenshot (Optional / Recommended)
+                    <div style={{ fontSize: '13px', color: '#5624d0', fontWeight: '800', marginBottom: '3px' }}>
+                      📸 Upload Payment Screenshot <span style={{ color: '#ef4444' }}>* (Mandatory)</span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>
-                      Upload Google Pay, PhonePe, Paytm, or Bank confirmation receipt
+                    <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '8px' }}>
+                      Click to upload your UPI / PhonePe / Google Pay / Paytm receipt photo
                     </div>
+                    <span style={{
+                      display: 'inline-block',
+                      backgroundColor: '#5624d0',
+                      color: '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      padding: '6px 14px',
+                      borderRadius: '4px'
+                    }}>
+                      Choose Photo / Screenshot
+                    </span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleScreenshotChange}
                       style={{ display: 'none' }}
+                      required
                     />
                   </label>
                 )}
