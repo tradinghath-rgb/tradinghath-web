@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+import { dbUpdateUserProStatus, dbSubmitUtr } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -13,18 +14,20 @@ export async function POST(req: Request) {
     }
 
     const cleanUtr = utrId.trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
 
     // Check Razorpay payments API strictly
     const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_live_TclwORJF0hO0sJ';
     const key_secret = process.env.RAZORPAY_KEY_SECRET || '5muzlTULoD2MTvD3Kyz8cHvC';
 
     let verifiedViaRzp = false;
+    let matchedPayment: any = null;
 
     try {
       const razorpay = new Razorpay({ key_id, key_secret });
       const recentPayments = await razorpay.payments.all({ count: 50 });
       
-      const matched = recentPayments.items.find((p: any) => {
+      matchedPayment = recentPayments.items.find((p: any) => {
         const acquirer = p.acquirer_data || {};
         return (
           p.status === 'captured' &&
@@ -38,33 +41,80 @@ export async function POST(req: Request) {
         );
       });
 
-      if (matched) {
+      if (matchedPayment) {
         verifiedViaRzp = true;
       }
     } catch (rzpErr) {
       console.warn('Razorpay UTR check error:', rzpErr);
     }
 
-    if (verifiedViaRzp) {
+    if (verifiedViaRzp && matchedPayment) {
+      const paymentId = matchedPayment.id;
+      const targetUser = cleanEmail || matchedPayment.email || 'member@gmail.com';
+
+      // 1. Permanently update database record to isPro: true
+      await dbUpdateUserProStatus(targetUser, true, {
+        paymentId,
+        utrId: cleanUtr,
+        amount: 399,
+      });
+
+      // 2. Also record verified UTR in admin log
+      try {
+        await dbSubmitUtr({
+          id: `utr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          email: targetUser,
+          utrNumber: cleanUtr,
+          paymentDate: new Date().toLocaleDateString('en-IN'),
+          paymentTime: new Date().toLocaleTimeString('en-IN'),
+          paymentMethod: matchedPayment.method || 'UPI',
+          amount: 399,
+          status: 'VERIFIED',
+          adminNotes: `Auto-verified via Razorpay payment ${paymentId}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (logErr) {
+        console.warn('Failed to record UTR log:', logErr);
+      }
+
       return NextResponse.json({
         success: true,
         status: 'verified',
         isPro: true,
-        message: 'Payment verified with Razorpay! Pro access unlocked.',
+        message: 'Payment verified with Razorpay! Pro lifetime access granted.',
         utrId: cleanUtr,
-        email
+        paymentId,
+        email: targetUser,
       });
     }
 
+    // Record submission for admin review
+    if (cleanEmail) {
+      try {
+        await dbSubmitUtr({
+          id: `utr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          email: cleanEmail,
+          utrNumber: cleanUtr,
+          paymentDate: new Date().toLocaleDateString('en-IN'),
+          paymentTime: new Date().toLocaleTimeString('en-IN'),
+          paymentMethod: 'UPI',
+          amount: 399,
+          status: 'PENDING',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (submitErr) {}
+    }
+
     // STRICT: If NOT found in Razorpay records, DO NOT GRANT ACCESS.
-    // Queue for Admin manual verification in Admin panel only!
     return NextResponse.json({
       success: true,
       status: 'pending_admin_approval',
       isPro: false, // STRICT: Access remains locked!
       message: 'UTR ID submitted. Your payment is pending verification by the admin. Access will be unlocked once admin verifies your ₹399 payment.',
       utrId: cleanUtr,
-      email
+      email: cleanEmail,
     });
   } catch (error: any) {
     return NextResponse.json(

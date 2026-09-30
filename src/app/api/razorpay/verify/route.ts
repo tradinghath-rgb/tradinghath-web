@@ -21,7 +21,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // In a production database like Supabase or MongoDB, we update the user record to isPro: true.
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (cleanEmail) {
+      const { dbUpdateUserProStatus } = await import('@/lib/db');
+      await dbUpdateUserProStatus(cleanEmail, true, {
+        paymentId: razorpay_payment_id,
+        amount: 399,
+      });
+    }
+
     // Returning pro credentials and session token
     return NextResponse.json({
       success: true,
@@ -29,7 +37,7 @@ export async function POST(req: Request) {
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
       isPro: true,
-      email
+      email: cleanEmail,
     });
   } catch (error: any) {
     console.error('Payment Verification Error:', error);

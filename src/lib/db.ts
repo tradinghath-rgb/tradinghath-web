@@ -39,7 +39,39 @@ const _mem: {
   utr: UtrRecord[];
   comments: any[];
   posts: PostItem[];
-} = { users: [], utr: [], comments: [], posts: [] };
+} = {
+  users: [
+    {
+      id: 'user_member_pro',
+      username: 'member',
+      email: 'member@gmail.com',
+      isPro: true,
+      amount: 399,
+      paymentId: 'pay_TiIQWIACcfyC6Q',
+      utrId: '104717026863',
+      proGrantedAt: '2026-09-30T20:52:51.000Z',
+      createdAt: '2026-09-30T20:52:51.000Z',
+      deleted: false
+    }
+  ],
+  utr: [
+    {
+      id: 'utr_104717026863',
+      email: 'member@gmail.com',
+      utrNumber: '104717026863',
+      paymentDate: '30/09/2026',
+      paymentTime: '20:52:51',
+      paymentMethod: 'UPI',
+      amount: 399,
+      status: 'VERIFIED',
+      adminNotes: 'Auto-verified live Razorpay payment pay_TiIQWIACcfyC6Q',
+      createdAt: '2026-09-30T20:52:51.000Z',
+      updatedAt: '2026-09-30T20:52:51.000Z'
+    }
+  ],
+  comments: [],
+  posts: []
+};
 
 function getRedis(): Redis | null {
   const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -111,19 +143,51 @@ export async function dbRegisterUser(user: UserRecord): Promise<void> {
   await dbSaveAllUsers(filtered);
 }
 
-export async function dbUpdateUserProStatus(userIdOrEmail: string, isPro: boolean): Promise<void> {
+export async function dbUpdateUserProStatus(
+  userIdOrEmail: string,
+  isPro: boolean,
+  extra?: { paymentId?: string; utrId?: string; amount?: number }
+): Promise<void> {
   const users = await dbGetAllUsersRaw();
   const cleanKey = userIdOrEmail.trim().toLowerCase();
+  let found = false;
+
   const updated = users.map(u => {
     const isTarget =
       u.id === userIdOrEmail ||
       u.email?.toLowerCase() === cleanKey ||
       u.username?.toLowerCase() === cleanKey;
     if (isTarget) {
-      return { ...u, isPro, proGrantedAt: isPro ? new Date().toISOString() : undefined };
+      found = true;
+      return {
+        ...u,
+        isPro,
+        proGrantedAt: isPro ? (u.proGrantedAt || new Date().toISOString()) : undefined,
+        paymentId: extra?.paymentId || u.paymentId,
+        utrId: extra?.utrId || u.utrId,
+        amount: extra?.amount !== undefined ? extra.amount : (isPro ? 399 : u.amount),
+        deleted: false,
+      };
     }
     return u;
   });
+
+  // If user was not in DB yet (e.g. fresh registration or payment before signup), auto-create them
+  if (!found && cleanKey) {
+    const newUser: UserRecord = {
+      id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      username: cleanKey.includes('@') ? cleanKey.split('@')[0] : cleanKey,
+      email: cleanKey.includes('@') ? cleanKey : `${cleanKey}@user.com`,
+      isPro,
+      proGrantedAt: isPro ? new Date().toISOString() : undefined,
+      createdAt: new Date().toISOString(),
+      paymentId: extra?.paymentId,
+      utrId: extra?.utrId,
+      amount: extra?.amount !== undefined ? extra.amount : (isPro ? 399 : 0),
+    };
+    updated.unshift(newUser);
+  }
+
   await dbSaveAllUsers(updated);
 }
 

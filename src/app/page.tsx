@@ -178,7 +178,7 @@ export default function HomePage() {
                   safeStorage.removeItem('tradinghath_isPro');
                   setUser(null);
                   setIsPro(false);
-                } else {
+                } else if (!data.notFound) {
                   const livePro = data.isPro === true;
                   setIsPro(livePro);
                   safeStorage.setItem('tradinghath_isPro', livePro ? 'true' : 'false');
@@ -354,28 +354,38 @@ export default function HomePage() {
     e.preventDefault();
     if (!utrInput.trim()) return;
 
-    setUtrStatus('Verifying UTR with Razorpay records...');
+    setUtrStatus('Verifying transaction with Razorpay live records...');
     try {
+      const targetEmail = (utrEmail.trim() || user?.email || 'member@gmail.com').toLowerCase();
       const res = await fetch('/api/razorpay/utr-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           utrId: utrInput.trim(),
-          email: utrEmail.trim() || 'member@gmail.com'
+          email: targetEmail
         })
       });
 
       const data = await res.json();
       if (data.success) {
         if (data.isPro) {
-          // Only if verified strictly by Razorpay
+          // Verified strictly by Razorpay live payment record
           safeStorage.setItem('tradinghath_isPro', 'true');
           safeStorage.setItem('tradinghath_utrId', utrInput.trim());
-          setUtrStatus('Payment verified via Razorpay! Redirecting to vault...');
+          if (data.paymentId) {
+            safeStorage.setItem('tradinghath_paymentId', data.paymentId);
+          }
+          setIsPro(true);
+          if (user) {
+            const updatedUser = { ...user, isPro: true, paymentId: data.paymentId || user.paymentId };
+            setUser(updatedUser);
+            safeStorage.setItem('tradinghath_user', JSON.stringify(updatedUser));
+          }
+          setUtrStatus('✓ Payment verified! Pro Lifetime Access unlocked. Redirecting to vault...');
           setTimeout(() => {
             setShowUtrModal(false);
             router.push('/dashboard');
-          }, 1500);
+          }, 1200);
         } else {
           // Fake / unverified UTR: DO NOT GRANT ACCESS
           safeStorage.setItem('tradinghath_isPro', 'false');
@@ -385,7 +395,7 @@ export default function HomePage() {
         setUtrStatus(data.error || 'Failed to verify UTR.');
       }
     } catch (err) {
-      setUtrStatus('Submission failed. Please try again.');
+      setUtrStatus('Submission failed. Please check your connection and try again.');
     }
   };
 
@@ -852,7 +862,12 @@ export default function HomePage() {
           {/* Already Paid / Fill UTR ID Button */}
           {!isPro && !isAdmin && (
             <button
-              onClick={() => setShowUtrModal(true)}
+              onClick={() => {
+                if (user?.email && !utrEmail) {
+                  setUtrEmail(user.email);
+                }
+                setShowUtrModal(true);
+              }}
               style={{
                 width: '100%',
                 marginTop: '10px',
