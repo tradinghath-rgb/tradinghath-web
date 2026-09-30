@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { dbUpdateUserProStatus, dbSubmitUtr, dbGetAllUsersRaw, dbGetAllUtr } from '@/lib/db';
+import { maskEmail } from '@/lib/store';
 
 export async function POST(req: Request) {
   try {
@@ -61,11 +62,12 @@ export async function POST(req: Request) {
     );
 
     if (claimedByUser || claimedInUtr) {
-      const originalOwner = claimedByUser?.email || claimedInUtr?.email;
+      const originalOwner = claimedByUser?.email || claimedInUtr?.email || 'another member';
+      const masked = originalOwner.includes('@') ? maskEmail(originalOwner) : originalOwner;
       return NextResponse.json(
         {
           success: false,
-          error: `SECURITY BLOCK: This UTR (${cleanUtr}) has already been claimed by account: ${originalOwner}. Each transaction can only be redeemed once!`
+          error: `SECURITY BLOCK: This UTR (${cleanUtr}) has already been claimed by account: ${masked}. Each transaction can only be redeemed once!`
         },
         { status: 400 }
       );
@@ -118,10 +120,11 @@ export async function POST(req: Request) {
       );
 
       if (paymentClaimedByUser) {
+        const maskedOwner = paymentClaimedByUser.email?.includes('@') ? maskEmail(paymentClaimedByUser.email) : paymentClaimedByUser.email;
         return NextResponse.json(
           {
             success: false,
-            error: `SECURITY BLOCK: This Razorpay payment (${paymentId}) has already been claimed by account: ${paymentClaimedByUser.email}. Each payment can only be redeemed once!`
+            error: `SECURITY BLOCK: This Razorpay payment (${paymentId}) has already been claimed by account: ${maskedOwner}. Each payment can only be redeemed once!`
           },
           { status: 400 }
         );

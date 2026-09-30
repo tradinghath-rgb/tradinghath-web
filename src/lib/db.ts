@@ -11,7 +11,7 @@
  */
 
 import { Redis } from '@upstash/redis';
-import { PostItem } from '@/lib/store';
+import { PostItem, maskEmail } from '@/lib/store';
 
 export interface UserRecord {
   id: string;
@@ -283,7 +283,7 @@ export async function dbSubmitUtr(record: UtrRecord): Promise<{ success: boolean
     if (duplicate.email && duplicate.email.toLowerCase() !== record.email.toLowerCase()) {
       return {
         success: false,
-        error: `This UTR reference has already been claimed by account: ${duplicate.email}. Each transaction reference can only be used once.`
+        error: `This UTR reference has already been claimed by account: ${maskEmail(duplicate.email)}. Each transaction reference can only be used once.`
       };
     }
     return { success: false, error: 'This UTR / Transaction ID has already been submitted.' };
