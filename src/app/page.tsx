@@ -358,9 +358,6 @@ export default function HomePage() {
 
   const [alreadyPaidNotice, setAlreadyPaidNotice] = useState(false);
 
-  // Razorpay Checkout Trigger (Direct UPI App link & Gateway)
-  const DIRECT_PAYMENT_LINK = 'https://rzp.io/rzp/2a3h6cU';
-
   const scrollToPricing = () => {
     if (isPro || isAdmin) {
       router.push('/dashboard');
@@ -392,29 +389,127 @@ export default function HomePage() {
       return;
     }
 
+    setPaymentLoading(true);
+
     // 3. Mark pending verification in local storage so when user switches back from UPI app, we auto-verify
     try {
       safeStorage.setItem('tradinghath_awaiting_payment', 'true');
       safeStorage.setItem('tradinghath_payment_timestamp', String(Date.now()));
     } catch (e) {}
 
-    // 4. Construct direct payment link with prefilled user details
-    let finalPaymentLink = DIRECT_PAYMENT_LINK;
     try {
-      const url = new URL(DIRECT_PAYMENT_LINK);
-      if (user.email) url.searchParams.set('email', user.email);
-      if (user.phone) url.searchParams.set('phone', user.phone);
-      if (user.username) url.searchParams.set('name', user.username);
-      finalPaymentLink = url.toString();
-    } catch (e) {
-      finalPaymentLink = DIRECT_PAYMENT_LINK;
-    }
+      // Step A: Attempt Standard Checkout (Opens PhonePe / GPay / Paytm / UPI apps modal)
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        const orderRes = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: 399,
+            currency: 'INR',
+            notes: { email: user.email, name: user.username }
+          })
+        });
+        const orderData = await orderRes.json();
 
-    // Opens PhonePe / GPay / Paytm on phones or Razorpay gateway
-    try {
-      window.open(finalPaymentLink, '_blank');
-    } catch (e) {
-      window.location.href = finalPaymentLink;
+        if (orderData.success && orderData.orderId) {
+          const rzp = new (window as any).Razorpay({
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency || 'INR',
+            name: 'TradingHath',
+            description: 'Lifetime Access (₹399) - Charts & Video Vault',
+            image: '/logo/general-profile-picture.png',
+            order_id: orderData.orderId,
+            prefill: {
+              name: user.username || '',
+              email: user.email || '',
+              contact: user.phone || ''
+            },
+            notes: {
+              email: user.email || '',
+              plan: 'TradingHath Lifetime Access 399'
+            },
+            theme: {
+              color: '#00e5ff'
+            },
+            modal: {
+              ondismiss: function () {
+                setPaymentLoading(false);
+              }
+            },
+            handler: async function (response: any) {
+              setPaymentLoading(true);
+              try {
+                const verifyRes = await fetch('/api/razorpay/verify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    email: user.email,
+                    phone: user.phone
+                  })
+                });
+                const verifyData = await verifyRes.json();
+
+                if (verifyData.success) {
+                  safeStorage.removeItem('tradinghath_awaiting_payment');
+                  safeStorage.removeItem('tradinghath_payment_timestamp');
+                  safeStorage.setItem('tradinghath_isPro', 'true');
+                  setIsPro(true);
+                  const updatedUser = { ...user, isPro: true, paymentId: response.razorpay_payment_id };
+                  setUser(updatedUser);
+                  safeStorage.setItem('tradinghath_user', JSON.stringify(updatedUser));
+                  alert('🎉 Payment Successful! Lifetime Pro Access activated.');
+                  router.push('/dashboard');
+                } else {
+                  alert(verifyData.error || 'Payment verification failed. Please contact support or enter UTR.');
+                }
+              } catch (verr) {
+                console.error('Verification error:', verr);
+                alert('Payment received! Verifying in background...');
+                router.push('/dashboard');
+              } finally {
+                setPaymentLoading(false);
+              }
+            }
+          });
+
+          rzp.on('payment.failed', function (resp: any) {
+            console.error('Razorpay payment failed:', resp.error);
+            alert(`Payment failed: ${resp.error.description || 'Transaction declined'}`);
+            setPaymentLoading(false);
+          });
+
+          rzp.open();
+          setPaymentLoading(false);
+          return;
+        }
+      }
+
+      // Step B: Fallback to Dynamic Payment Link if checkout SDK unavailable
+      const linkRes = await fetch('/api/razorpay/create-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          phone: user.phone,
+          name: user.username
+        })
+      });
+      const linkData = await linkRes.json();
+
+      if (linkData.success && linkData.paymentLink) {
+        window.location.href = linkData.paymentLink;
+      } else {
+        throw new Error(linkData.error || 'Could not generate dynamic payment link');
+      }
+    } catch (err: any) {
+      console.error('Payment initiation error:', err);
+      alert('Could not open payment checkout: ' + (err.message || 'Please try again'));
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
