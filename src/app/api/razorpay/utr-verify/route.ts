@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
-import { dbUpdateUserProStatus, dbSubmitUtr } from '@/lib/db';
+import { dbUpdateUserProStatus, dbSubmitUtr, dbGetAllUsersRaw, dbGetAllUtr } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +17,37 @@ export async function POST(req: Request) {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanUpiId = (upiId || '').trim();
     const cleanScreenshot = (screenshotUrl || '').trim();
+
+    // 0. FIRST: Check database to see if this UTR has already been claimed by another user
+    const [allUsers, allUtrs] = await Promise.all([
+      dbGetAllUsersRaw(),
+      dbGetAllUtr()
+    ]);
+
+    const claimedByUser = allUsers.find(
+      u => u.isPro &&
+           u.utrId &&
+           u.utrId.toLowerCase() === cleanUtr.toLowerCase() &&
+           u.email?.toLowerCase() !== cleanEmail
+    );
+
+    const claimedInUtr = allUtrs.find(
+      r => r.utrNumber &&
+           r.utrNumber.toLowerCase() === cleanUtr.toLowerCase() &&
+           r.status === 'VERIFIED' &&
+           r.email?.toLowerCase() !== cleanEmail
+    );
+
+    if (claimedByUser || claimedInUtr) {
+      const originalOwner = claimedByUser?.email || claimedInUtr?.email;
+      return NextResponse.json(
+        {
+          success: false,
+          error: `SECURITY BLOCK: This UTR (${cleanUtr}) has already been claimed by account: ${originalOwner}. Each transaction can only be redeemed once!`
+        },
+        { status: 400 }
+      );
+    }
 
     // Check Razorpay payments API strictly
     const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_live_TclwORJF0hO0sJ';
@@ -55,6 +86,24 @@ export async function POST(req: Request) {
       const paymentId = matchedPayment.id;
       const targetUser = cleanEmail || matchedPayment.email || 'member@gmail.com';
       const actualUpi = cleanUpiId || matchedPayment.vpa || matchedPayment.acquirer_data?.payer_account_type || '';
+
+      // Secondary check: verify if matched paymentId has already been claimed by another user
+      const paymentClaimedByUser = allUsers.find(
+        u => u.isPro &&
+             u.paymentId &&
+             u.paymentId.toLowerCase() === paymentId.toLowerCase() &&
+             u.email?.toLowerCase() !== targetUser.toLowerCase()
+      );
+
+      if (paymentClaimedByUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `SECURITY BLOCK: This Razorpay payment (${paymentId}) has already been claimed by account: ${paymentClaimedByUser.email}. Each payment can only be redeemed once!`
+          },
+          { status: 400 }
+        );
+      }
 
       // 1. Permanently update database record to isPro: true
       await dbUpdateUserProStatus(targetUser, true, {

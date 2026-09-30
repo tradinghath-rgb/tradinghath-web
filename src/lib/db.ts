@@ -55,6 +55,17 @@ const _mem: {
       proGrantedAt: '2026-09-30T20:52:51.000Z',
       createdAt: '2026-09-30T20:52:51.000Z',
       deleted: false
+    },
+    {
+      id: 'user_abhishek_01',
+      username: 'abhisheknaidu',
+      email: 'abhisheknaidu2005@gmail.com',
+      password: '22NE1A04E1',
+      phone: '+91 9390123456',
+      isPro: false,
+      amount: 0,
+      createdAt: '2026-09-30T21:00:00.000Z',
+      deleted: false
     }
   ],
   utr: [
@@ -166,11 +177,11 @@ export async function dbUpdateUserProStatus(
         ...u,
         isPro,
         proGrantedAt: isPro ? (u.proGrantedAt || new Date().toISOString()) : undefined,
-        paymentId: extra?.paymentId || u.paymentId,
-        utrId: extra?.utrId || u.utrId,
-        upiId: extra?.upiId || u.upiId,
-        screenshotUrl: extra?.screenshotUrl || u.screenshotUrl,
-        amount: extra?.amount !== undefined ? extra.amount : (isPro ? 399 : u.amount),
+        paymentId: isPro ? (extra?.paymentId || u.paymentId) : undefined,
+        utrId: isPro ? (extra?.utrId || u.utrId) : undefined,
+        upiId: isPro ? (extra?.upiId || u.upiId) : undefined,
+        screenshotUrl: isPro ? (extra?.screenshotUrl || u.screenshotUrl) : undefined,
+        amount: isPro ? (extra?.amount !== undefined ? extra.amount : (u.amount || 399)) : 0,
         deleted: false,
       };
     }
@@ -269,6 +280,12 @@ export async function dbSubmitUtr(record: UtrRecord): Promise<{ success: boolean
     r => r.utrNumber?.toLowerCase() === record.utrNumber?.toLowerCase()
   );
   if (duplicate) {
+    if (duplicate.email && duplicate.email.toLowerCase() !== record.email.toLowerCase()) {
+      return {
+        success: false,
+        error: `This UTR reference has already been claimed by account: ${duplicate.email}. Each transaction reference can only be used once.`
+      };
+    }
     return { success: false, error: 'This UTR / Transaction ID has already been submitted.' };
   }
   existing.unshift(record);
