@@ -104,6 +104,9 @@ export default function HomePage() {
   const [showUtrModal, setShowUtrModal] = useState(false);
   const [utrInput, setUtrInput] = useState('');
   const [utrEmail, setUtrEmail] = useState('');
+  const [utrUpiId, setUtrUpiId] = useState('');
+  const [utrScreenshot, setUtrScreenshot] = useState<string>('');
+  const [utrUploading, setUtrUploading] = useState(false);
   const [utrStatus, setUtrStatus] = useState('');
   const [termsModal, setTermsModal] = useState(false);
   const [vaultCharts, setVaultCharts] = useState<PostItem[]>(() => {
@@ -349,20 +352,70 @@ export default function HomePage() {
   };
 
 
+  // Screenshot File Selection & Base64 Compression
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, JPEG).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Screenshot file is larger than 5MB. Please choose a smaller image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      const dataUrl = uploadEvent.target?.result as string;
+      if (dataUrl) {
+        setUtrScreenshot(dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // UTR ID Verification
   const handleUtrSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!utrInput.trim()) return;
 
     setUtrStatus('Verifying transaction with Razorpay live records...');
+    setUtrUploading(true);
     try {
       const targetEmail = (utrEmail.trim() || user?.email || 'member@gmail.com').toLowerCase();
+
+      // If user attached screenshot, optionally upload to server media store
+      let finalScreenshotUrl = utrScreenshot;
+      if (utrScreenshot && utrScreenshot.startsWith('data:image/')) {
+        try {
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: `utr_proof_${Date.now()}`,
+              dataUrl: utrScreenshot
+            })
+          });
+          const uploadData = await uploadRes.json();
+          if (uploadData.success && uploadData.url) {
+            finalScreenshotUrl = uploadData.url;
+          }
+        } catch (e) {
+          // If upload fails, fallback to keeping dataUrl
+        }
+      }
+
       const res = await fetch('/api/razorpay/utr-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           utrId: utrInput.trim(),
-          email: targetEmail
+          email: targetEmail,
+          upiId: utrUpiId.trim(),
+          screenshotUrl: finalScreenshotUrl
         })
       });
 
@@ -377,7 +430,14 @@ export default function HomePage() {
           }
           setIsPro(true);
           if (user) {
-            const updatedUser = { ...user, isPro: true, paymentId: data.paymentId || user.paymentId };
+            const updatedUser = {
+              ...user,
+              isPro: true,
+              paymentId: data.paymentId || user.paymentId,
+              utrId: utrInput.trim(),
+              upiId: utrUpiId.trim() || user.upiId,
+              screenshotUrl: finalScreenshotUrl || user.screenshotUrl
+            };
             setUser(updatedUser);
             safeStorage.setItem('tradinghath_user', JSON.stringify(updatedUser));
           }
@@ -387,15 +447,17 @@ export default function HomePage() {
             router.push('/dashboard');
           }, 1200);
         } else {
-          // Fake / unverified UTR: DO NOT GRANT ACCESS
+          // Unverified / queued for admin manual review with screenshot
           safeStorage.setItem('tradinghath_isPro', 'false');
-          setUtrStatus('⚠️ Payment not found in Razorpay records. Your UTR has been sent to admin for manual review. Access will remain locked until verified.');
+          setUtrStatus('✓ Payment details & screenshot submitted successfully! Our admin will verify your UTR and Screenshot to activate your access shortly.');
         }
       } else {
         setUtrStatus(data.error || 'Failed to verify UTR.');
       }
     } catch (err) {
       setUtrStatus('Submission failed. Please check your connection and try again.');
+    } finally {
+      setUtrUploading(false);
     }
   };
 
@@ -1434,8 +1496,83 @@ export default function HomePage() {
                 required
               />
 
-              <button type="submit" className="btn-trading-glow" style={{ width: '100%', padding: '12px', borderRadius: '6px' }}>
-                Verify & Activate Access
+              <input
+                type="text"
+                placeholder="UPI ID (Optional, e.g. 7660984586-2@ybl)"
+                value={utrUpiId}
+                onChange={(e) => setUtrUpiId(e.target.value)}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #d1d7dc',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  color: '#1c1d1f',
+                  fontSize: '13px',
+                  outline: 'none'
+                }}
+              />
+
+              {/* Payment Screenshot Upload */}
+              <div style={{
+                border: '1.5px dashed #cbd5e1',
+                borderRadius: '8px',
+                padding: '12px',
+                backgroundColor: '#f8fafc',
+                textAlign: 'center'
+              }}>
+                {utrScreenshot ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                      <img
+                        src={utrScreenshot}
+                        alt="Payment Screenshot Preview"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d1d7dc' }}
+                      />
+                      <span style={{ fontSize: '12px', color: '#137333', fontWeight: '600', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        ✓ Screenshot Attached
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUtrScreenshot('')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontWeight: '700'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label style={{ display: 'block', cursor: 'pointer' }}>
+                    <div style={{ fontSize: '12.5px', color: '#5624d0', fontWeight: '700', marginBottom: '2px' }}>
+                      📸 Attach Payment Screenshot (Optional / Recommended)
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>
+                      Upload Google Pay, PhonePe, Paytm, or Bank confirmation receipt
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleScreenshotChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={utrUploading}
+                className="btn-trading-glow"
+                style={{ width: '100%', padding: '12px', borderRadius: '6px', cursor: utrUploading ? 'not-allowed' : 'pointer' }}
+              >
+                {utrUploading ? 'Verifying with Razorpay...' : 'Verify & Activate Lifetime Access'}
               </button>
 
               <button

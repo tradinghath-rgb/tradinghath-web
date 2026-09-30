@@ -24,6 +24,8 @@ export interface UserRecord {
   createdAt: string;
   paymentId?: string;
   utrId?: string;
+  upiId?: string;
+  screenshotUrl?: string;
   amount: number;
   deleted?: boolean;
 }
@@ -49,6 +51,7 @@ const _mem: {
       amount: 399,
       paymentId: 'pay_TiIQWIACcfyC6Q',
       utrId: '104717026863',
+      upiId: '7660984586-2@ybl',
       proGrantedAt: '2026-09-30T20:52:51.000Z',
       createdAt: '2026-09-30T20:52:51.000Z',
       deleted: false
@@ -146,7 +149,7 @@ export async function dbRegisterUser(user: UserRecord): Promise<void> {
 export async function dbUpdateUserProStatus(
   userIdOrEmail: string,
   isPro: boolean,
-  extra?: { paymentId?: string; utrId?: string; amount?: number }
+  extra?: { paymentId?: string; utrId?: string; amount?: number; upiId?: string; screenshotUrl?: string }
 ): Promise<void> {
   const users = await dbGetAllUsersRaw();
   const cleanKey = userIdOrEmail.trim().toLowerCase();
@@ -165,6 +168,8 @@ export async function dbUpdateUserProStatus(
         proGrantedAt: isPro ? (u.proGrantedAt || new Date().toISOString()) : undefined,
         paymentId: extra?.paymentId || u.paymentId,
         utrId: extra?.utrId || u.utrId,
+        upiId: extra?.upiId || u.upiId,
+        screenshotUrl: extra?.screenshotUrl || u.screenshotUrl,
         amount: extra?.amount !== undefined ? extra.amount : (isPro ? 399 : u.amount),
         deleted: false,
       };
@@ -183,6 +188,8 @@ export async function dbUpdateUserProStatus(
       createdAt: new Date().toISOString(),
       paymentId: extra?.paymentId,
       utrId: extra?.utrId,
+      upiId: extra?.upiId,
+      screenshotUrl: extra?.screenshotUrl,
       amount: extra?.amount !== undefined ? extra.amount : (isPro ? 399 : 0),
     };
     updated.unshift(newUser);
@@ -228,6 +235,8 @@ export interface UtrRecord {
   id: string;
   email: string;
   utrNumber: string;
+  upiId?: string;
+  screenshotUrl?: string;
   paymentDate: string;
   paymentTime?: string;
   paymentMethod: string;

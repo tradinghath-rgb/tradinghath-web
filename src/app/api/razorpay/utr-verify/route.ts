@@ -4,7 +4,7 @@ import { dbUpdateUserProStatus, dbSubmitUtr } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
-    const { utrId, email } = await req.json();
+    const { utrId, email, upiId, screenshotUrl } = await req.json();
 
     if (!utrId || utrId.trim().length < 8) {
       return NextResponse.json(
@@ -15,6 +15,8 @@ export async function POST(req: Request) {
 
     const cleanUtr = utrId.trim();
     const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanUpiId = (upiId || '').trim();
+    const cleanScreenshot = (screenshotUrl || '').trim();
 
     // Check Razorpay payments API strictly
     const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_live_TclwORJF0hO0sJ';
@@ -36,7 +38,8 @@ export async function POST(req: Request) {
             p.id === cleanUtr ||
             acquirer.rrn === cleanUtr ||
             acquirer.bank_transaction_id === cleanUtr ||
-            acquirer.upi_transaction_id === cleanUtr
+            acquirer.upi_transaction_id === cleanUtr ||
+            (cleanUpiId && p.vpa && p.vpa.toLowerCase() === cleanUpiId.toLowerCase())
           )
         );
       });
@@ -51,11 +54,14 @@ export async function POST(req: Request) {
     if (verifiedViaRzp && matchedPayment) {
       const paymentId = matchedPayment.id;
       const targetUser = cleanEmail || matchedPayment.email || 'member@gmail.com';
+      const actualUpi = cleanUpiId || matchedPayment.vpa || matchedPayment.acquirer_data?.payer_account_type || '';
 
       // 1. Permanently update database record to isPro: true
       await dbUpdateUserProStatus(targetUser, true, {
         paymentId,
         utrId: cleanUtr,
+        upiId: actualUpi,
+        screenshotUrl: cleanScreenshot,
         amount: 399,
       });
 
@@ -65,6 +71,8 @@ export async function POST(req: Request) {
           id: `utr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           email: targetUser,
           utrNumber: cleanUtr,
+          upiId: actualUpi,
+          screenshotUrl: cleanScreenshot,
           paymentDate: new Date().toLocaleDateString('en-IN'),
           paymentTime: new Date().toLocaleTimeString('en-IN'),
           paymentMethod: matchedPayment.method || 'UPI',
@@ -84,6 +92,8 @@ export async function POST(req: Request) {
         isPro: true,
         message: 'Payment verified with Razorpay! Pro lifetime access granted.',
         utrId: cleanUtr,
+        upiId: actualUpi,
+        screenshotUrl: cleanScreenshot,
         paymentId,
         email: targetUser,
       });
@@ -96,6 +106,8 @@ export async function POST(req: Request) {
           id: `utr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           email: cleanEmail,
           utrNumber: cleanUtr,
+          upiId: cleanUpiId,
+          screenshotUrl: cleanScreenshot,
           paymentDate: new Date().toLocaleDateString('en-IN'),
           paymentTime: new Date().toLocaleTimeString('en-IN'),
           paymentMethod: 'UPI',
@@ -112,8 +124,10 @@ export async function POST(req: Request) {
       success: true,
       status: 'pending_admin_approval',
       isPro: false, // STRICT: Access remains locked!
-      message: 'UTR ID submitted. Your payment is pending verification by the admin. Access will be unlocked once admin verifies your ₹399 payment.',
+      message: 'Payment details & screenshot received! It is queued for administrator review. If already paid, admin will verify your UTR / Screenshot and activate your account immediately.',
       utrId: cleanUtr,
+      upiId: cleanUpiId,
+      screenshotUrl: cleanScreenshot,
       email: cleanEmail,
     });
   } catch (error: any) {

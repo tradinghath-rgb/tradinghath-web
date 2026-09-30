@@ -1099,7 +1099,44 @@ export default function AdminPage() {
 
                         {u.utrId && (
                           <div style={{ fontSize: '11.5px', color: '#5624d0', marginTop: '4px', fontWeight: '600' }}>
-                            UTR Ref: {u.utrId} (₹399)
+                            UTR Ref: {u.utrId} {u.amount ? `(₹${u.amount})` : '(₹399)'}
+                          </div>
+                        )}
+
+                        {u.upiId && (
+                          <div style={{ fontSize: '11.5px', color: '#0f766e', marginTop: '2px', fontWeight: '600' }}>
+                            UPI ID: {u.upiId}
+                          </div>
+                        )}
+
+                        {u.paymentId && (
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', fontFamily: 'monospace' }}>
+                            Razorpay ID: {u.paymentId}
+                          </div>
+                        )}
+
+                        {u.screenshotUrl && (
+                          <div style={{ marginTop: '6px' }}>
+                            <a
+                              href={u.screenshotUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '11.5px',
+                                color: '#5624d0',
+                                backgroundColor: '#f3ecfc',
+                                border: '1px solid #d8b4fe',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                fontWeight: '700'
+                              }}
+                            >
+                              📸 View Payment Screenshot
+                            </a>
                           </div>
                         )}
                       </div>
