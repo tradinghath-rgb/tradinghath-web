@@ -271,9 +271,58 @@ export default function HomePage() {
 
     loadCharts();
 
+    // Automatic Payment Detection when user returns from UPI app / Razorpay
+    const checkPendingPayment = async () => {
+      try {
+        const awaiting = safeStorage.getItem('tradinghath_awaiting_payment');
+        const storedUser = safeStorage.getItem('tradinghath_user');
+        if (!awaiting || !storedUser) return;
+
+        const parsed = JSON.parse(storedUser);
+        const email = parsed.email;
+        if (!email) return;
+
+        const res = await fetch('/api/razorpay/auto-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (data.success && data.isPro) {
+          safeStorage.removeItem('tradinghath_awaiting_payment');
+          safeStorage.removeItem('tradinghath_payment_timestamp');
+          safeStorage.setItem('tradinghath_isPro', 'true');
+          setIsPro(true);
+          const updated = { ...parsed, isPro: true, paymentId: data.paymentId };
+          setUser(updated);
+          safeStorage.setItem('tradinghath_user', JSON.stringify(updated));
+          
+          alert('🎉 Payment verified automatically! Your Pro Lifetime Access is now active. Opening your Vault...');
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        // silent fail on network glitch
+      }
+    };
+
+    // Run immediately on page load in case user returned via browser redirection
+    checkPendingPayment();
+
     const chartsInterval = setInterval(loadCharts, 4000);
-    const handleWindowFocus = () => loadCharts();
+    // Periodically poll for pending payment for 2 minutes after clicking payment button
+    const autoCheckInterval = setInterval(checkPendingPayment, 3500);
+
+    const handleWindowFocus = () => {
+      loadCharts();
+      checkPendingPayment();
+    };
     window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkPendingPayment();
+      }
+    });
 
     // Rotate reviews automatically every 2 hours while page is open
     const reviewsInterval = setInterval(() => {
@@ -289,6 +338,7 @@ export default function HomePage() {
 
     return () => {
       clearInterval(chartsInterval);
+      clearInterval(autoCheckInterval);
       clearInterval(reviewsInterval);
       window.removeEventListener('focus', handleWindowFocus);
     };
@@ -342,12 +392,29 @@ export default function HomePage() {
       return;
     }
 
-    // 3. Logged in user proceeding to payment
+    // 3. Mark pending verification in local storage so when user switches back from UPI app, we auto-verify
+    try {
+      safeStorage.setItem('tradinghath_awaiting_payment', 'true');
+      safeStorage.setItem('tradinghath_payment_timestamp', String(Date.now()));
+    } catch (e) {}
+
+    // 4. Construct direct payment link with prefilled user details
+    let finalPaymentLink = DIRECT_PAYMENT_LINK;
+    try {
+      const url = new URL(DIRECT_PAYMENT_LINK);
+      if (user.email) url.searchParams.set('email', user.email);
+      if (user.phone) url.searchParams.set('phone', user.phone);
+      if (user.username) url.searchParams.set('name', user.username);
+      finalPaymentLink = url.toString();
+    } catch (e) {
+      finalPaymentLink = DIRECT_PAYMENT_LINK;
+    }
+
     // Opens PhonePe / GPay / Paytm on phones or Razorpay gateway
     try {
-      window.open(DIRECT_PAYMENT_LINK, '_blank');
+      window.open(finalPaymentLink, '_blank');
     } catch (e) {
-      window.location.href = DIRECT_PAYMENT_LINK;
+      window.location.href = finalPaymentLink;
     }
   };
 
