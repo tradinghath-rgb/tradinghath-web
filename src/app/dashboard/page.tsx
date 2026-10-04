@@ -397,6 +397,145 @@ export default function DashboardPage() {
     window.location.href = '/login';
   };
 
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const handleRazorpayPayment = async () => {
+    if (!user || user.email === 'Free Preview Mode') {
+      alert('Please log in or create an account first so your lifetime access can be linked to your email.');
+      window.location.href = '/login';
+      return;
+    }
+
+    if (isPro || isAdmin) {
+      alert('Your account already has Lifetime Pro Access!');
+      setShowUnlockModal(false);
+      return;
+    }
+
+    setPaymentLoading(true);
+
+    try {
+      safeStorage.setItem('tradinghath_awaiting_payment', 'true');
+      safeStorage.setItem('tradinghath_payment_timestamp', String(Date.now()));
+    } catch (e) {}
+
+    try {
+      // Step A: Attempt Standard Checkout (Opens PhonePe / GPay / Paytm / UPI apps modal)
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        const orderRes = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: 399,
+            currency: 'INR',
+            notes: { email: user.email, name: user.username }
+          })
+        });
+        const orderData = await orderRes.json();
+
+        if (orderData.success && orderData.orderId) {
+          const rzp = new (window as any).Razorpay({
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency || 'INR',
+            name: 'TradingHath',
+            description: 'Lifetime Access (₹399) - Charts & Video Vault',
+            image: '/logo/general-profile-picture.png',
+            order_id: orderData.orderId,
+            prefill: {
+              name: user.username || '',
+              email: user.email || '',
+              contact: user.phone || ''
+            },
+            notes: {
+              email: user.email || '',
+              plan: 'TradingHath Lifetime Access 399'
+            },
+            theme: {
+              color: '#00e5ff'
+            },
+            modal: {
+              ondismiss: function () {
+                setPaymentLoading(false);
+              }
+            },
+            handler: async function (response: any) {
+              setPaymentLoading(true);
+              try {
+                const verifyRes = await fetch('/api/razorpay/verify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    email: user.email,
+                    phone: user.phone
+                  })
+                });
+                const verifyData = await verifyRes.json();
+
+                if (verifyData.success) {
+                  safeStorage.removeItem('tradinghath_awaiting_payment');
+                  safeStorage.removeItem('tradinghath_payment_timestamp');
+                  safeStorage.setItem('tradinghath_isPro', 'true');
+                  setIsPro(true);
+                  const updatedUser = { ...user, isPro: true, paymentId: response.razorpay_payment_id };
+                  setUser(updatedUser);
+                  safeStorage.setItem('tradinghath_user', JSON.stringify(updatedUser));
+                  setShowUnlockModal(false);
+                  alert('🎉 Payment Successful! Lifetime Pro Access activated. All charts and videos are now unlocked!');
+                  window.location.reload();
+                } else {
+                  alert(verifyData.error || 'Payment verification failed. Please contact support or enter UTR.');
+                }
+              } catch (verr) {
+                console.error('Verification error:', verr);
+                alert('Payment received! Refreshing vault...');
+                window.location.reload();
+              } finally {
+                setPaymentLoading(false);
+              }
+            }
+          });
+
+          rzp.on('payment.failed', function (resp: any) {
+            console.error('Razorpay payment failed:', resp.error);
+            alert(`Payment failed: ${resp.error.description || 'Transaction declined'}`);
+            setPaymentLoading(false);
+          });
+
+          rzp.open();
+          setPaymentLoading(false);
+          return;
+        }
+      }
+
+      // Step B: Fallback to Dynamic Payment Link if checkout SDK unavailable
+      const linkRes = await fetch('/api/razorpay/create-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          phone: user.phone,
+          name: user.username
+        })
+      });
+      const linkData = await linkRes.json();
+
+      if (linkData.success && linkData.paymentLink) {
+        window.location.href = linkData.paymentLink;
+      } else {
+        throw new Error(linkData.error || 'Could not generate dynamic payment link');
+      }
+    } catch (err: any) {
+      console.error('Payment initiation error:', err);
+      alert('Could not open payment checkout: ' + (err.message || 'Please try again'));
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const handleDownloadChart = async (e: React.MouseEvent, url: string, title: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -2299,15 +2438,15 @@ export default function DashboardPage() {
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{
-                      backgroundColor: '#e6f4ea',
-                      color: '#137333',
-                      border: '1px solid #ceead6',
+                      backgroundColor: (isPro || isAdmin) ? '#e6f4ea' : '#fee2e2',
+                      color: (isPro || isAdmin) ? '#137333' : '#c02424',
+                      border: (isPro || isAdmin) ? '1px solid #ceead6' : '1px solid #fecaca',
                       padding: '2px 8px',
                       borderRadius: '4px',
                       fontSize: '11px',
                       fontWeight: '700'
                     }}>
-                      ✓ LIFETIME PRO MEMBER
+                      {(isPro || isAdmin) ? '✓ LIFETIME PRO MEMBER' : 'FREE ACCOUNT'}
                     </span>
                   </div>
                 </div>
@@ -2334,8 +2473,16 @@ export default function DashboardPage() {
 
                 <div style={{ padding: '12px', backgroundColor: '#f7f9fa', borderRadius: '8px', border: '1px solid #d1d7dc' }}>
                   <div style={{ fontSize: '11.5px', color: '#6a6f73', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Membership Status</div>
-                  <div style={{ fontSize: '13px', color: '#137333', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldCheck size={16} /> ₹399 Lifetime Access Unlocked (All Videos & Charts)
+                  <div style={{ fontSize: '13px', color: (isPro || isAdmin) ? '#137333' : '#b45309', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {(isPro || isAdmin) ? (
+                      <>
+                        <ShieldCheck size={16} /> ₹399 Lifetime Access Unlocked (All Videos & Charts)
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={15} color="#b45309" /> Free Preview Mode (Payment required to unlock all charts & videos)
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2781,23 +2928,21 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <a
-                href="https://rzp.io/rzp/2a3h6cU"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handleRazorpayPayment}
+                disabled={paymentLoading}
                 className="btn-trading-glow"
                 style={{
-                  display: 'block',
                   width: '100%',
                   padding: '13px',
                   fontSize: '14px',
                   borderRadius: '6px',
-                  textDecoration: 'none',
-                  marginBottom: '10px'
+                  marginBottom: '10px',
+                  cursor: paymentLoading ? 'not-allowed' : 'pointer'
                 }}
               >
-                Pay ₹399 via UPI / Razorpay (Instant Access)
-              </a>
+                {paymentLoading ? 'Connecting Razorpay...' : 'Pay ₹399 via UPI / Razorpay (Instant Access)'}
+              </button>
 
               <Link
                 href="/"
