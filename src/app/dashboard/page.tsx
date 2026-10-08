@@ -271,14 +271,6 @@ export default function DashboardPage() {
 
           let allPosts = Array.from(postMap.values());
 
-          // Enforce correct language categorization
-          allPosts = allPosts.map(p => {
-            if (p.id === 'vid_2' || p.title.toLowerCase().includes('reel 15')) {
-              return { ...p, language: 'english' };
-            }
-            return p;
-          });
-
           // Sort descending: newest posts first (latest createdAt at the top, then 24 down to 1)
           allPosts = sortPostsDescending(allPosts);
 
@@ -1384,28 +1376,36 @@ export default function DashboardPage() {
                   key={item.id}
                   onClick={() => setLanguageFilter(item.id as any)}
                   style={{
-                    fontSize: '12.5px',
+                    fontSize: '13px',
                     fontWeight: '700',
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    border: languageFilter === item.id ? '1.5px solid #5624d0' : '1px solid #d1d7dc',
+                    padding: '7px 16px',
+                    borderRadius: '24px',
+                    border: languageFilter === item.id ? '2px solid #5624d0' : '1.5px solid #d1d7dc',
                     cursor: 'pointer',
                     backgroundColor: languageFilter === item.id ? '#f3ecfc' : '#ffffff',
-                    color: languageFilter === item.id ? '#5624d0' : '#2d2f31',
+                    color: languageFilter === item.id ? '#5624d0' : '#1c1d1f',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
+                    boxShadow: languageFilter === item.id ? '0 2px 8px rgba(86, 36, 208, 0.18)' : '0 1px 3px rgba(0,0,0,0.04)',
                     transition: 'all 0.15s ease'
                   }}
                 >
                   <span>{item.label}</span>
                   <span style={{
-                    fontSize: '11px',
-                    backgroundColor: languageFilter === item.id ? '#5624d0' : '#e4e8eb',
-                    color: languageFilter === item.id ? '#ffffff' : '#2d2f31',
-                    padding: '1px 7px',
-                    borderRadius: '10px',
-                    fontWeight: '800'
+                    fontSize: '12px',
+                    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    backgroundColor: languageFilter === item.id ? '#5624d0' : '#1c1d1f',
+                    color: '#ffffff',
+                    padding: '2px 9px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '24px',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.15)'
                   }}>
                     {item.count}
                   </span>
