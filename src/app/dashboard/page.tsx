@@ -1376,36 +1376,37 @@ export default function DashboardPage() {
                   key={item.id}
                   onClick={() => setLanguageFilter(item.id as any)}
                   style={{
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: '700',
-                    padding: '7px 16px',
-                    borderRadius: '24px',
-                    border: languageFilter === item.id ? '2px solid #5624d0' : '1.5px solid #d1d7dc',
+                    padding: '8px 18px',
+                    borderRadius: '30px',
+                    border: languageFilter === item.id ? '2px solid #5624d0' : '1.5px solid #cbd5e1',
                     cursor: 'pointer',
                     backgroundColor: languageFilter === item.id ? '#f3ecfc' : '#ffffff',
-                    color: languageFilter === item.id ? '#5624d0' : '#1c1d1f',
+                    color: languageFilter === item.id ? '#5624d0' : '#0f172a',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: languageFilter === item.id ? '0 2px 8px rgba(86, 36, 208, 0.18)' : '0 1px 3px rgba(0,0,0,0.04)',
+                    gap: '10px',
+                    boxShadow: languageFilter === item.id ? '0 2px 8px rgba(86, 36, 208, 0.2)' : '0 1px 3px rgba(0,0,0,0.05)',
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  <span>{item.label}</span>
+                  <span style={{ letterSpacing: '-0.2px' }}>{item.label}</span>
                   <span style={{
-                    fontSize: '12px',
-                    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                    backgroundColor: languageFilter === item.id ? '#5624d0' : '#1c1d1f',
-                    color: '#ffffff',
-                    padding: '2px 9px',
-                    borderRadius: '12px',
+                    fontSize: '13px',
                     fontWeight: '800',
-                    letterSpacing: '0.5px',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    backgroundColor: languageFilter === item.id ? '#5624d0' : '#f1f5f9',
+                    color: languageFilter === item.id ? '#ffffff' : '#0f172a',
+                    border: languageFilter === item.id ? '1px solid #431ba8' : '1px solid #cbd5e1',
+                    padding: '3px 10px',
+                    borderRadius: '14px',
+                    lineHeight: '1',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minWidth: '24px',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.15)'
+                    minWidth: '28px',
+                    textAlign: 'center'
                   }}>
                     {item.count}
                   </span>
