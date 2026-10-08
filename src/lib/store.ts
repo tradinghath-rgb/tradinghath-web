@@ -516,8 +516,7 @@ export const DEFAULT_CHARTS: PostItem[] = [
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   },
-  // --- NEW CHARTS 32 to 37 (Scheduled 2 by 2 by 2 across 3 days: Morning & Evening) ---
-  // Day 1: Today (2026-09-24)
+  // --- CHARTS 32 to 37 (All Live with Telugu & English Video Explanations) ---
   {
     id: 'chart_32',
     title: 'Chart 32: Entry Setup & Timeframe Alignment (Reel 32)',
@@ -526,8 +525,11 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-32chart.jpg',
     chartUrls: ['/charts/reel-32chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-32(SECRET ENTRY SETUP).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-32(SECRET ENTRY SETUP).mp4',
+    videoUrlEnglish: '/videos/english/REEL-32(SECRET ENTRY SETUP).mp4',
     downloadUrl: '/charts/reel-32chart.jpg',
-    scheduledAt: undefined, // Released & LIVE immediately
+    scheduledAt: undefined,
     published: true,
     createdAt: '2026-09-24T00:00:00.000Z'
   },
@@ -539,12 +541,14 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-33chart.jpg',
     chartUrls: ['/charts/reel-33chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-33(CRT STRATEGY).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-33(CRT STRATEGY).mp4',
+    videoUrlEnglish: '/videos/english/REEL-33(CRT STRATEGY).mp4',
     downloadUrl: '/charts/reel-33chart.jpg',
-    scheduledAt: '2026-09-24T12:30:00.000Z', // 6:00 PM IST (Day 1 Evening)
-    published: false,
+    scheduledAt: undefined,
+    published: true,
     createdAt: '2026-09-24T12:30:00.000Z'
   },
-  // Day 2: Tomorrow (2026-09-25)
   {
     id: 'chart_34',
     title: 'Chart 34: Rejection Candle & Liquidity Sweep (Reel 34)',
@@ -553,9 +557,12 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-34chart.jpg',
     chartUrls: ['/charts/reel-34chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-34(MASTER REJECTION CANDLE).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-34(MASTER REJECTION CANDLE).mp4',
+    videoUrlEnglish: '/videos/english/REEL-34(MASTER REJECTION CANDLE).mp4',
     downloadUrl: '/charts/reel-34chart.jpg',
-    scheduledAt: '2026-09-25T04:00:00.000Z', // 9:30 AM IST (Day 2 Morning)
-    published: false,
+    scheduledAt: undefined,
+    published: true,
     createdAt: '2026-09-25T04:00:00.000Z'
   },
   {
@@ -566,12 +573,14 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-35chart.jpg',
     chartUrls: ['/charts/reel-35chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-35(DEMAND AND SUPPLY ZONE).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-35(DEMAND AND SUPPLY ZONE).mp4',
+    videoUrlEnglish: '/videos/english/REEL-35(DEMAND AND SUPPLY ZONE).mp4',
     downloadUrl: '/charts/reel-35chart.jpg',
-    scheduledAt: '2026-09-25T12:30:00.000Z', // 6:00 PM IST (Day 2 Evening)
-    published: false,
+    scheduledAt: undefined,
+    published: true,
     createdAt: '2026-09-25T12:30:00.000Z'
   },
-  // Day 3: Day After Tomorrow (2026-09-26)
   {
     id: 'chart_36',
     title: 'Chart 36: Trade With Trendline & Smart Money Break (Reel 36)',
@@ -580,9 +589,12 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-36chart.jpg',
     chartUrls: ['/charts/reel-36chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-36(TRADE WITH TRENLINE).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-36(TRADE WITH TRENLINE).mp4',
+    videoUrlEnglish: '/videos/english/REEL-36(TRADE WITH TRENLINE).mp4',
     downloadUrl: '/charts/reel-36chart.jpg',
-    scheduledAt: '2026-09-26T04:00:00.000Z', // 9:30 AM IST (Day 3 Morning)
-    published: false,
+    scheduledAt: undefined,
+    published: true,
     createdAt: '2026-09-26T04:00:00.000Z'
   },
   {
@@ -593,9 +605,12 @@ export const DEFAULT_CHARTS: PostItem[] = [
     language: 'both',
     chartUrl: '/charts/reel-37chart.jpg',
     chartUrls: ['/charts/reel-37chart.jpg'],
+    videoUrl: '/videos/telugu/REEL-37(MASTER CHOCH).mp4',
+    videoUrlTelugu: '/videos/telugu/REEL-37(MASTER CHOCH).mp4',
+    videoUrlEnglish: '/videos/english/REEL-37(MASTER CHOCH).mp4',
     downloadUrl: '/charts/reel-37chart.jpg',
-    scheduledAt: '2026-09-26T12:30:00.000Z', // 6:00 PM IST (Day 3 Evening)
-    published: false,
+    scheduledAt: undefined,
+    published: true,
     createdAt: '2026-09-26T12:30:00.000Z'
   }
 ];
@@ -913,8 +928,68 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
   },
+  {
+    id: 'vid_te_32',
+    title: 'Reel 32: Entry Setup & Timeframe Alignment (Telugu)',
+    description: 'Master institutional entry trigger rules, high/low range boundaries, and 15-min confirmation setups.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-32(SECRET ENTRY SETUP).mp4',
+    published: true,
+    createdAt: '2026-09-24T00:00:00.000Z'
+  },
+  {
+    id: 'vid_te_33',
+    title: 'Reel 33: CRT Strategy & Liquidity + CHOCH (Telugu)',
+    description: 'Candle Range Theory combined with liquidity sweep, breakdown validation, and CHOCH + FVG master entries.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-33(CRT STRATEGY).mp4',
+    published: true,
+    createdAt: '2026-09-24T12:30:00.000Z'
+  },
+  {
+    id: 'vid_te_34',
+    title: 'Reel 34: Rejection Candle & Liquidity Sweep (Telugu)',
+    description: 'Spot upper rejection wicks at major resistance zones, liquidity sweep execution, and FVG breakdown entries.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-34(MASTER REJECTION CANDLE).mp4',
+    published: true,
+    createdAt: '2026-09-25T04:00:00.000Z'
+  },
+  {
+    id: 'vid_te_35',
+    title: 'Reel 35: Demand / Supply Zone Masterclass (Telugu)',
+    description: 'Pinpoint precise institutional buy and sell blocks with fresh demand mitigation and stop-loss placement rules.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-35(DEMAND AND SUPPLY ZONE).mp4',
+    published: true,
+    createdAt: '2026-09-25T12:30:00.000Z'
+  },
+  {
+    id: 'vid_te_36',
+    title: 'Reel 36: Trade With Trendline & Smart Money Break (Telugu)',
+    description: 'Overcome standard retail trendline traps. Execute clean retests, supply/demand confluence, and momentum continuation.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-36(TRADE WITH TRENLINE).mp4',
+    published: true,
+    createdAt: '2026-09-26T04:00:00.000Z'
+  },
+  {
+    id: 'vid_te_37',
+    title: 'Reel 37: Master CHOCH Reversal Architecture (Telugu)',
+    description: 'Identify macro shifts from sellers to buyers (S>B), structural supply failure, and sniper Fair Value Gap entries.',
+    type: 'video',
+    language: 'telugu',
+    videoUrl: '/videos/telugu/REEL-37(MASTER CHOCH).mp4',
+    published: true,
+    createdAt: '2026-09-26T12:30:00.000Z'
+  },
 
-  // --- ENGLISH REELS (All 29 Lessons) ---
+  // --- ENGLISH REELS (All 37 Lessons) ---
   {
     id: 'vid_en_1',
     title: 'Reel 1: Volume Secret Formula (English)',
@@ -1076,6 +1151,16 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     createdAt: '2025-01-01T00:00:00.000Z'
   },
   {
+    id: 'vid_en_17',
+    title: 'Reel 17: Support & Resistance Truth (English)',
+    description: 'The real mechanics behind support & resistance levels in smart money trading in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-17(SUPPORT AND RESISTANCE).mp4',
+    published: true,
+    createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
     id: 'vid_en_18',
     title: 'Reel 18: Head & Shoulder True Pattern (English)',
     description: 'Identify institutional traps in traditional head & shoulder patterns.',
@@ -1214,6 +1299,66 @@ export const DEFAULT_VIDEOS: PostItem[] = [
     videoUrl: '/videos/english/REEL-31(MARKET REACTIONS AT SUPPORT&RESISTAMCE).mp4',
     published: true,
     createdAt: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_32',
+    title: 'Reel 32: Entry Setup & Timeframe Alignment (English)',
+    description: 'Master institutional entry trigger rules, high/low range boundaries, and 15-min confirmation setups in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-32(SECRET ENTRY SETUP).mp4',
+    published: true,
+    createdAt: '2026-09-24T00:00:00.000Z'
+  },
+  {
+    id: 'vid_en_33',
+    title: 'Reel 33: CRT Strategy & Liquidity + CHOCH (English)',
+    description: 'Candle Range Theory combined with liquidity sweep, breakdown validation, and CHOCH + FVG master entries in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-33(CRT STRATEGY).mp4',
+    published: true,
+    createdAt: '2026-09-24T12:30:00.000Z'
+  },
+  {
+    id: 'vid_en_34',
+    title: 'Reel 34: Rejection Candle & Liquidity Sweep (English)',
+    description: 'Spot upper rejection wicks at major resistance zones, liquidity sweep execution, and FVG breakdown entries in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-34(MASTER REJECTION CANDLE).mp4',
+    published: true,
+    createdAt: '2026-09-25T04:00:00.000Z'
+  },
+  {
+    id: 'vid_en_35',
+    title: 'Reel 35: Demand / Supply Zone Masterclass (English)',
+    description: 'Pinpoint precise institutional buy and sell blocks with fresh demand mitigation and stop-loss placement rules in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-35(DEMAND AND SUPPLY ZONE).mp4',
+    published: true,
+    createdAt: '2026-09-25T12:30:00.000Z'
+  },
+  {
+    id: 'vid_en_36',
+    title: 'Reel 36: Trade With Trendline & Smart Money Break (English)',
+    description: 'Overcome standard retail trendline traps. Execute clean retests, supply/demand confluence, and momentum continuation in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-36(TRADE WITH TRENLINE).mp4',
+    published: true,
+    createdAt: '2026-09-26T04:00:00.000Z'
+  },
+  {
+    id: 'vid_en_37',
+    title: 'Reel 37: Master CHOCH Reversal Architecture (English)',
+    description: 'Identify macro shifts from sellers to buyers (S>B), structural supply failure, and sniper Fair Value Gap entries in English.',
+    type: 'video',
+    language: 'english',
+    videoUrl: '/videos/english/REEL-37(MASTER CHOCH).mp4',
+    published: true,
+    createdAt: '2026-09-26T12:30:00.000Z'
   }
 ];
 
